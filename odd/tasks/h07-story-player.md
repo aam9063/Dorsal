@@ -69,6 +69,16 @@ Covered end to end: right zone advances, left zone goes back, `ArrowRight`/`Arro
 
 The player screenshot shows one progress bar (one available story), the close button, and story 01 with the season year and the total kilometres.
 
+### Native review (lineage `review-d3275349706dd74d`) and its three findings
+
+Approved and burned. This was the first review that could run after the tracker's base advanced to `9a3f3b8`, which shrank the candidate from the accumulated 58 paths to this milestone's 16.
+
+| Id       | Severity   | Claim                                                                                                                                     | Disposition                                                                                                                                                                                                                                                                                                  |
+| -------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `R3-001` | warning    | The story index desynchronizes if the available story count changes after mount, and the player then renders nothing instead of clamping. | **Accepted**, and handed to the running H-08 task together with a test: the count becomes fixture-dependent exactly when more stories exist, so a clamp belongs there rather than as a cosmetic edit now.                                                                                                    |
+| `R3-002` | warning    | The `reducePlayer` switch has no `default`, so an invalid input at runtime returns `undefined`.                                           | **Rejected with evidence.** `PlayerInput` is a closed union and `noImplicitReturns` is on, so the compiler proves every path returns a `PlayerState`; adding a `default` that returns the state would be precisely the silent ignore the finding warns about. Inputs come from code, never from parsed data. |
+| `R3-003` | suggestion | The end-to-end timing assertions use `page.waitForTimeout`, a flakiness source.                                                           | **Accepted**, and handed to the running H-08 task, which is already deleting the single-story clamps in that same file: "the story must not have changed" becomes polling instead of a fixed wait.                                                                                                           |
+
 ### Limitation this milestone cannot remove, and who removes it
 
 With only story 01 available, a UI assertion like "advancing changes the index" cannot distinguish advance from a no-op, so the end-to-end assertions are written against the computed story count and are **clamped**. The advance logic itself is proven by the 10 machine unit tests, including the bounds at both ends and the no-wrap rule; the end-to-end proves the wiring.

@@ -52,7 +52,42 @@ S5 — The player contract (`odd/tasks/h07-story-player.md`, decision 1): a stor
 
 ## Evidence of verification
 
-(filled at T6)
+### `pnpm check` — green
+
+`tsc` · `eslint` · `prettier` · **122 unit tests** · `depcruise` 69 modules / 138 dependencies · both repo guards.
+
+### `pnpm test:e2e` — 54 passed, zero skipped
+
+Three of them are new for this milestone: story 02 shows the totals derived in the test from the fixture, story 03 is skipped without leaving a gap on `few-activities`, and story 04 renders one cell per active day.
+
+### `pnpm verify` — three fixtures, both themes
+
+```
+--fixture runner-es      --viewport mobile   --theme both   16 screenshots · 594 requests · 0 console problems · 0.0 ms drift
+--fixture cyclist        --viewport desktop  --theme both   16 screenshots · 594 requests · 0 console problems · 0.0 ms drift
+--fixture few-activities --viewport mobile   --theme dark    4 screenshots · 296 requests · 0 console problems · 0.0 ms drift
+```
+
+The runner now walks the wrapped with the player's own controls and saves one screenshot per story, which is what "capturas de `pnpm verify` en claro y oscuro con 3 fixtures" actually requires. Before that change it could only photograph the season numbers.
+
+### The inherited obligation is discharged
+
+`e2e/player.spec.ts` no longer contains the single-story clamps: the assertions are strict (`data-index` `'0'` → `'1'` → `'0'`), and every player test asserts `available.length > 1`, so advance, back and hold-pause are now proven with at least two stories. The H-07 review's `R3-001` was folded in at the same time: `clampIndex` is exported from the machine, the player reads every render value through it, and unit tests cover an index past the end.
+
+### Two defects this milestone found and fixed after the writer's own run
+
+1. **The portada's name field could not be tapped.** The player's tap zones are painted above the story, so a pointer tap on the input advanced the story instead of focusing the field, and the optional name was keyboard-only on a phone. Fixed by letting the story own no pointer events (`pointer-events-none`) and opting interactive elements back in, with the story content above the zones. A new end-to-end test clicks the field, types a name and asserts the story index did not move; it failed against the previous code.
+2. **The monthly profile emitted an invalid SVG path** (`M0,0.0,87.6 …`, one coordinate too many), which threw a console error on every render of story 03. The writer's own verification never saw it because the runner did not open the player. Found the moment the runner started walking the stories; fixed by joining the points once.
+
+### Deviations from the artboards, accepted and recorded
+
+| Deviation                                                                                              | Why                                                                                                                                |
+| ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| The name field is keyboard-and-pointer but the story still auto-advances while it is focused after 7 s | Fixing the timing interaction needs a player change outside this milestone's scope; recorded in the feature map as a known pitfall |
+| The weekday card says "presente en N semanas" instead of "49 de 52 domingos"                           | The summary carries no total-weeks figure; adding one is a `src/core/` change, not a story change                                  |
+| The "casi 12 días enteros" sublabel of story 02 is omitted                                             | It needs a days-equivalent derivation that belongs to the metric, not the story                                                    |
+| The HC badge uses accent-on-ink                                                                        | The artboard's inverted chip measures about 2.8:1, below AA                                                                        |
+| `pnpm verify` captures the stories as screenshots but does not assert their text                       | Story text assertions live in `e2e/stories.spec.ts`, where they are derived from the fixture rather than hardcoded                 |
 
 ## Progress
 
