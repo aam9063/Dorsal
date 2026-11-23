@@ -1,12 +1,12 @@
 name: CI
 
+# Feature branches are covered by their pull request, so only the branches
+# that get merged into run on push: one verification per commit instead of two.
 on:
   push:
     branches:
       - main
       - dev
-      - 'feature/**'
-      - 'fix/**'
   pull_request:
     branches:
       - main
@@ -33,21 +33,18 @@ jobs:
   e2e:
     name: End-to-end
     runs-on: ubuntu-latest
+    # Browsers and the ~200 apt packages WebKit needs are already in this image,
+    # so no install step exists. The tag must match playwright in pnpm-lock.yaml:
+    # a mismatch fails the run immediately instead of silently testing another
+    # version.
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.1-jammy
+      options: --user 1001
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm fixtures
-      # WebKit pulls ~200 apt packages. That normally takes ~1.5 min, but one
-      # run took 13 min on a slow Ubuntu mirror, so the step is bounded instead
-      # of being allowed to sit there.
-      - name: Install Playwright browsers and their system packages
-        run: pnpm exec playwright install --with-deps chromium webkit
-        timeout-minutes: 20
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v7
         if: failure()
