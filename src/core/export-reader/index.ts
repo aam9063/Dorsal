@@ -49,12 +49,16 @@ function field(row: readonly string[], index: number): string {
   return row[index] ?? EMPTY
 }
 
-/** Plain non-negative integer (`58`); `null` when absent, `'invalid'` otherwise. */
-function readOptionalInteger(text: string): number | null | 'invalid' {
+/**
+ * A whole quantity that the export writes with a decimal tail (`150.0`, `243.0`
+ * for heart rate and elevation), rounded to the integer the model stores.
+ * `null` when absent, `'invalid'` otherwise.
+ */
+function readOptionalWholeNumber(text: string): number | null | 'invalid' {
   if (text === EMPTY) {
     return null
   }
-  return /^\d+$/.test(text) ? Number(text) : 'invalid'
+  return /^\d+(\.\d+)?$/.test(text) ? Math.round(Number(text)) : 'invalid'
 }
 
 /**
@@ -118,9 +122,9 @@ function normalizeRow(row: readonly string[]): Activity | null {
   const elapsedTimeS = readRequiredSeconds(field(row, COLUMN.elapsedSeconds))
   const movingTimeS = readRequiredSeconds(field(row, COLUMN.movingSeconds))
   const distanceM = readOptionalMetres(field(row, COLUMN.distanceMetres))
-  const elevationGainM = readOptionalInteger(field(row, COLUMN.elevationGainM))
-  const maxHeartRate = readOptionalInteger(field(row, COLUMN.heartRateMax))
-  const avgHeartRate = readOptionalInteger(field(row, COLUMN.heartRateAvg))
+  const elevationGainM = readOptionalWholeNumber(field(row, COLUMN.elevationGainM))
+  const maxHeartRate = readOptionalWholeNumber(field(row, COLUMN.heartRateMax))
+  const avgHeartRate = readOptionalWholeNumber(field(row, COLUMN.heartRateAvg))
   if (
     elapsedTimeS === null ||
     elapsedTimeS === 'invalid' ||
@@ -153,16 +157,23 @@ function normalizeRow(row: readonly string[]): Activity | null {
 }
 
 /**
- * Reads an `activities.csv` export of the layout documented in
- * `docs/export-format.md` into kept 2026 activities plus small counters.
- *
- * Rows are handled one at a time through Papa Parse's `step` callback, so no
- * intermediate array of every row exists (BRIEF §4.2: rows from other years
- * are never held in memory, they only increment a counter). A row that cannot
- * be normalized is skipped and counted without ever throwing or aborting the
- * parse. Pure and deterministic: the same text always yields the same result.
+ * Incremental reader used by the worker, where rows arrive in chunks from the
+ * `File` and progress must be reported before the end. `src/core/` may not
+ * touch `File` or `Blob`, so the transport stays outside and only the row
+ * decision lives here.
  */
-export function readActivities(csvText: string): ReadResult {
+export interface SeasonAccumulator {
+  /** Feeds one parsed row. The first row is treated as a header when it looks like one. */
+  addRow(row: readonly string[]): void
+  /** Rows kept so far, so progress never waits for the file to finish. */
+  readonly keptRows: number
+  /** Rows seen so far, header excluded. */
+  readonly seenRows: number
+  /** The activities kept so far and the final counters. */
+  finish(): ReadResult
+}
+
+export function createSeasonAccumulator(): SeasonAccumulator {
   const activities: Activity[] = []
   let totalRows = 0
   let inSeason = 0
@@ -170,18 +181,16 @@ export function readActivities(csvText: string): ReadResult {
   let corruptRows = 0
   let isHeaderRow = true
 
-  Papa.parse<string[]>(csvText, {
-    header: false,
-    skipEmptyLines: 'greedy',
-    step: (result) => {
+  return {
+    addRow(row: readonly string[]): void {
       if (isHeaderRow) {
         isHeaderRow = false
-        if (looksLikeHeader(result.data)) {
+        if (looksLikeHeader(row)) {
           return
         }
       }
       totalRows += 1
-      const activity = normalizeRow(result.data)
+      const activity = normalizeRow(row)
       if (activity === null) {
         corruptRows += 1
         return
@@ -193,10 +202,41 @@ export function readActivities(csvText: string): ReadResult {
       activities.push(activity)
       inSeason += 1
     },
+    get keptRows(): number {
+      return inSeason
+    },
+    get seenRows(): number {
+      return totalRows
+    },
+    finish(): ReadResult {
+      return {
+        activities,
+        stats: { totalRows, inSeason, discardedOtherYear, corruptRows },
+      }
+    },
+  }
+}
+
+/**
+ * Reads an `activities.csv` export of the layout documented in
+ * `docs/export-format.md` into kept 2026 activities plus small counters.
+ *
+ * Rows are handled one at a time through {@link createSeasonAccumulator}, so no
+ * intermediate array of every row exists (BRIEF §4.2: rows from other years are
+ * never held in memory, they only increment a counter). A row that cannot be
+ * normalized is skipped and counted without ever throwing or aborting the
+ * parse. Pure and deterministic: the same text always yields the same result.
+ */
+export function readActivities(csvText: string): ReadResult {
+  const accumulator = createSeasonAccumulator()
+
+  Papa.parse<string[]>(csvText, {
+    header: false,
+    skipEmptyLines: 'greedy',
+    step: (result) => {
+      accumulator.addRow(result.data)
+    },
   })
 
-  return {
-    activities,
-    stats: { totalRows, inSeason, discardedOtherYear, corruptRows },
-  }
+  return accumulator.finish()
 }

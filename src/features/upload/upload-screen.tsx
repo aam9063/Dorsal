@@ -1,6 +1,26 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router'
 import { t } from '../../shared/i18n'
+import type { YearSummary } from '../../core/model/year-summary'
+import { ProcessingScreen, handOffSeasonSummary } from '../processing'
 
 export function UploadScreen() {
+  const navigate = useNavigate()
+  const [file, setFile] = useState<File | null>(null)
+
+  if (file !== null) {
+    return (
+      <ProcessingScreen
+        file={file}
+        onComplete={(summary: YearSummary) => {
+          handOffSeasonSummary(summary)
+          void navigate('/resultado')
+        }}
+        onCancel={() => setFile(null)}
+      />
+    )
+  }
+
   return (
     <section
       data-testid="upload-root"
@@ -19,6 +39,24 @@ export function UploadScreen() {
           ))}
         </ol>
       </details>
+      <div>
+        <label
+          htmlFor="upload-file"
+          className="inline-flex min-h-11 cursor-pointer items-center rounded-pill bg-accent px-8 font-semibold text-ink"
+        >
+          {t.upload.pickFile}
+        </label>
+        <input
+          id="upload-file"
+          data-testid="upload-input"
+          type="file"
+          accept=".csv"
+          className="sr-only"
+          onChange={(event) => {
+            setFile(event.target.files?.[0] ?? null)
+          }}
+        />
+      </div>
       <p className="text-sm text-fg-subtle" data-testid="upload-provisional">
         {t.upload.provisional}
       </p>

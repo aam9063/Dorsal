@@ -2,6 +2,7 @@ export const es = {
   brand: {
     name: 'Dorsal',
     tagline: 'Tu temporada 2026',
+    chip: '26',
   },
   theme: {
     label: 'Tema',
@@ -19,12 +20,157 @@ export const es = {
     skipToContent: 'Saltar al contenido',
   },
   landing: {
+    navAriaLabel: 'Principal',
+    navHow: 'Cómo funciona',
+    navPrivacy: 'Privacidad',
+    navFaq: 'Preguntas',
+    headerCta: 'Crear mi Dorsal',
     eyebrow: 'Resumen deportivo 2026 · Gratis',
     title: 'Tu año entero, en un dorsal.',
     subtitle:
-      'Sube el activities.csv de la exportación de tu cuenta de Strava y te devolvemos tu 2026 contado como una carrera. Sin registro, sin suscripción y sin que el archivo salga de tu dispositivo.',
+      'Sube el activities.csv de la exportación de tu cuenta de Strava y te devolvemos tu 2026 contado como una carrera: tus kilómetros, tu perfil de etapa, tus rachas y un dorsal listo para compartir. Sin registro ni suscripción.',
     cta: 'Subir mi activities.csv',
-    provisional: 'Portada provisional. La portada definitiva se construye en el hito H-04.',
+    secondary: '¿Cómo lo descargo?',
+    privacyNote: 'Se procesa en tu navegador. Tu archivo no sale de tu dispositivo.',
+    exampleLabel: 'Ejemplo',
+    card: {
+      seasonLabel: 'Temporada 2026',
+      kmLabel: 'km',
+      km: '3214',
+      name: 'Lucía M.',
+      stats: [
+        { value: '412', label: 'Activ.' },
+        { value: '287 h', label: 'En movimiento' },
+        { value: '41.380', label: 'm desnivel' },
+      ],
+      everestValue: '4,7×',
+      everestLabel: 'Everest de desnivel',
+      streakLabel: 'Racha más larga',
+      streakValue: '23 días',
+    },
+    steps: {
+      eyebrow: 'Cómo funciona',
+      title: 'Tres pasos. Cero cuentas.',
+      description:
+        'No hace falta registrarse ni conectar nada. Solo el archivo que Strava ya te da gratis.',
+      items: [
+        {
+          title: 'Pide tu archivo',
+          body: 'En Strava, entra en Ajustes › Mi cuenta › Descargar o eliminar tu cuenta y pulsa «Solicitar archivo». Te llega un email con el enlace; puede tardar unas horas.',
+        },
+        {
+          title: 'Súbelo aquí',
+          body: 'Descomprime el archivo que te llega y sube aquí activities.csv, el que está en la raíz. Trae todo tu historial, pero solo contamos tus actividades de 2026.',
+        },
+        {
+          title: 'Recibe tu Dorsal',
+          body: 'Ocho historias sobre tu temporada y una tarjeta en formato vertical para Instagram, WhatsApp o donde quieras.',
+        },
+      ],
+    },
+    previews: {
+      eyebrow: 'Lo que vas a ver',
+      title: 'Tu temporada, por etapas.',
+      description:
+        'Cada historia sale de tus datos reales. Si no corres, no hablamos de ritmos: se adapta a tu deporte.',
+      listAriaLabel: 'Las ocho historias de tu temporada',
+      yearArt: '2026',
+      archetypeArt: '¿Quién eres?',
+      materialArt: '842 km',
+      items: [
+        {
+          number: '01',
+          title: 'La portada',
+          description: 'Tu número de temporada, con tu nombre si quieres.',
+        },
+        { number: '02', title: 'Los números', description: 'Kilómetros, horas y Everests.' },
+        {
+          number: '03',
+          title: 'El perfil de tu año',
+          description: 'Tus meses como una etapa de montaña.',
+        },
+        {
+          number: '04',
+          title: 'Constancia',
+          description: 'Los 365 días, uno a uno, y tu mejor racha.',
+        },
+        {
+          number: '05',
+          title: 'Tu arquetipo',
+          description: '¿Madrugador metódico o guerrero de fin de semana?',
+        },
+        {
+          number: '06',
+          title: 'Tu material',
+          description: 'Las zapatillas y la bici que te llevaron.',
+        },
+        {
+          number: '07',
+          title: 'El año en latidos',
+          description: 'Cuántas veces latió tu corazón entrenando.',
+        },
+        { number: '08', title: 'Tu dorsal', description: 'El número y la tarjeta para compartir.' },
+      ],
+    },
+    privacyStrip: {
+      title: 'Tu archivo no viaja a ningún servidor.',
+      items: [
+        {
+          title: 'Todo pasa en tu navegador',
+          body: 'El archivo se lee y se calcula en tu dispositivo. Al cerrar la pestaña no queda nada.',
+        },
+        {
+          title: 'Sin registro ni email',
+          body: 'No pedimos cuenta, ni contraseña de Strava, ni permisos. Solo el archivo.',
+        },
+        {
+          title: 'Solo 2026',
+          body: 'Leemos tu historial entero, pero solo contamos tus actividades de 2026. El resto se descarta en tu navegador.',
+        },
+      ],
+    },
+    faq: {
+      eyebrow: 'Preguntas',
+      title: 'Lo que todo el mundo pregunta',
+      items: [
+        {
+          question: '¿Qué archivo tengo que subir?',
+          answer:
+            'Siempre activities.csv. El envío de Strava llega comprimido en un .zip. Descomprímelo y sube el archivo activities.csv, que está en la raíz.',
+        },
+        {
+          question: '¿Necesito Strava de pago?',
+          answer:
+            'No. La exportación de datos está disponible para cualquier cuenta, gratuita o de pago.',
+        },
+        {
+          question: '¿Por qué no me llega el archivo al momento?',
+          answer:
+            'Strava lo prepara y te lo envía por email. Si llevas muchos años registrando actividades, puede tardar varias horas.',
+        },
+        {
+          question: '¿Se guardan mis datos en algún sitio?',
+          answer:
+            'No. Se procesa en tu navegador y se descarta al cerrar la pestaña. Solo se guarda en tu dispositivo la imagen que tú decidas descargar.',
+        },
+        {
+          question: '¿Vale para bici, natación o trail?',
+          answer:
+            'Sí. Las historias se adaptan a tu deporte principal y te enseñan el reparto entre todos los que practiques.',
+        },
+        {
+          question: '¿Es una app oficial de Strava?',
+          answer:
+            'No. Dorsal es un proyecto independiente y no tiene ninguna relación con Strava, Inc.',
+        },
+      ],
+    },
+    footer: {
+      madeWith: '© 2026 Dorsal · Hecho por corredores, para corredores.',
+      navAriaLabel: 'Pie de página',
+      howLink: 'Cómo funciona',
+      ctaLink: 'Subir mi activities.csv',
+    },
   },
   upload: {
     title: 'Sube tu archivo de Strava',
@@ -38,12 +184,32 @@ export const es = {
         'Súbelo aquí. Trae todo tu historial, pero solo usamos las actividades de 2026.',
       ],
     },
+    pickFile: 'Elegir activities.csv',
     provisional:
-      'Pantalla provisional. La subida real, con validación y errores, se construye en H-06.',
+      'Selector de archivo provisional. La subida real, con validación y estados de error, se construye en H-06.',
+  },
+  processing: {
+    title: 'Preparando tu temporada…',
+    phaseReading: 'Leyendo tu archivo…',
+    phaseComputing: 'Calculando tus números…',
+    phaseDone: 'Listo',
+    seenRowsLabel: 'Filas leídas',
+    keptRowsLabel: 'Actividades de 2026',
+    cancel: 'Cancelar',
+    errorTitle: 'No pudimos procesar el archivo',
+    errorUnreadable:
+      'No se pudo leer el archivo. Comprueba que es el activities.csv de la exportación y vuelve a intentarlo.',
+    errorGeneric: 'Algo falló al procesar el archivo. Vuelve a intentarlo.',
+    back: 'Volver a intentarlo',
   },
   result: {
     title: 'Tu temporada 2026',
     subtitle: 'Aquí irán las ocho historias y tu dorsal.',
+    kilometres: 'Kilómetros',
+    movingTime: 'Tiempo en movimiento',
+    activities: 'Actividades',
+    activeDays: 'Días activos',
+    elevation: 'Desnivel positivo (m)',
     provisional: 'Pantalla provisional. El reproductor de historias se construye en H-07.',
   },
   notFound: {

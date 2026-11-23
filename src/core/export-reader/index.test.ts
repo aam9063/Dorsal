@@ -1,7 +1,7 @@
 import Papa from 'papaparse'
 import { describe, expect, it } from 'vitest'
 import { generatePersonaCsv, HEADER, type PersonaName } from '../../../fixtures/generator'
-import { readActivities } from './index'
+import { createSeasonAccumulator, readActivities } from './index'
 
 /** Turns sparse column overrides into full 104-field rows. */
 function rowsOf(rows: readonly Record<number, string>[]): string[][] {
@@ -13,7 +13,7 @@ function csvOf(rows: readonly Record<number, string>[]): string {
   return Papa.unparse([[...HEADER], ...rowsOf(rows)])
 }
 
-const AUGUST_ROW = '5 nov 2026, 18:32:11'
+const NOVEMBER_ROW = '5 nov 2026, 18:32:11'
 
 const PERSONAS_IN_SEASON_ORDER = [
   'runner-es',
@@ -155,7 +155,7 @@ describe('readActivities on fixture personas', () => {
 describe('raw csv edge cases the fixtures do not cover', () => {
   it('rejects a comma-decimal metre value instead of reading it as ten times the distance', () => {
     const oneActivity = (metres: string): string =>
-      csvOf([{ 0: '1', 1: AUGUST_ROW, 3: 'Carrera', 5: '3600', 16: '3600.0', 17: metres }])
+      csvOf([{ 0: '1', 1: NOVEMBER_ROW, 3: 'Carrera', 5: '3600', 16: '3600.0', 17: metres }])
 
     const commaDecimal = readActivities(oneActivity('1234,6'))
     expect(commaDecimal.activities).toEqual([])
@@ -173,7 +173,15 @@ describe('raw csv edge cases the fixtures do not cover', () => {
   it('reads the metre column, not the kilometre column, when the two disagree', () => {
     const result = readActivities(
       csvOf([
-        { 0: '7', 1: AUGUST_ROW, 3: 'Carrera', 5: '3600', 6: '99,00', 16: '3600.0', 17: '1234.6' },
+        {
+          0: '7',
+          1: NOVEMBER_ROW,
+          3: 'Carrera',
+          5: '3600',
+          6: '99,00',
+          16: '3600.0',
+          17: '1234.6',
+        },
       ]),
     )
 
@@ -182,7 +190,7 @@ describe('raw csv edge cases the fixtures do not cover', () => {
 
   it('rejects a negative time or elevation instead of keeping it', () => {
     const negativeTime = readActivities(
-      csvOf([{ 0: '2', 1: AUGUST_ROW, 3: 'Carrera', 5: '-3600', 16: '3600.0', 17: '5000.0' }]),
+      csvOf([{ 0: '2', 1: NOVEMBER_ROW, 3: 'Carrera', 5: '-3600', 16: '3600.0', 17: '5000.0' }]),
     )
     expect(negativeTime.activities).toEqual([])
     expect(negativeTime.stats.corruptRows).toBe(1)
@@ -191,7 +199,7 @@ describe('raw csv edge cases the fixtures do not cover', () => {
       csvOf([
         {
           0: '3',
-          1: AUGUST_ROW,
+          1: NOVEMBER_ROW,
           3: 'Carrera',
           5: '3600',
           16: '3600.0',
@@ -207,8 +215,8 @@ describe('raw csv edge cases the fixtures do not cover', () => {
   it('does not eat the first row of a file without a header', () => {
     const headerless = Papa.unparse(
       rowsOf([
-        { 0: '10', 1: AUGUST_ROW, 3: 'Carrera', 5: '3600', 16: '3600.0', 17: '5000.0' },
-        { 0: '11', 1: AUGUST_ROW, 3: 'Carrera', 5: '3600', 16: '3600.0', 17: '5000.0' },
+        { 0: '10', 1: NOVEMBER_ROW, 3: 'Carrera', 5: '3600', 16: '3600.0', 17: '5000.0' },
+        { 0: '11', 1: NOVEMBER_ROW, 3: 'Carrera', 5: '3600', 16: '3600.0', 17: '5000.0' },
       ]),
     )
 
@@ -216,5 +224,62 @@ describe('raw csv edge cases the fixtures do not cover', () => {
 
     expect(result.stats.totalRows).toBe(2)
     expect(result.activities).toHaveLength(2)
+  })
+})
+
+describe('incremental accumulator', () => {
+  it('produces exactly what readActivities produces, one row at a time', () => {
+    for (const persona of PERSONAS_IN_SEASON_ORDER) {
+      const csv = generatePersonaCsv(persona)
+      const rows = Papa.parse<string[]>(csv, { skipEmptyLines: 'greedy' }).data
+      const accumulator = createSeasonAccumulator()
+
+      for (const row of rows) {
+        accumulator.addRow(row)
+      }
+
+      expect(accumulator.finish()).toEqual(readActivities(csv))
+    }
+  })
+
+  it('reports progress while rows arrive instead of waiting for the end', () => {
+    const rows = Papa.parse<string[]>(generatePersonaCsv('runner-es'), {
+      skipEmptyLines: 'greedy',
+    }).data
+    const accumulator = createSeasonAccumulator()
+
+    accumulator.addRow(rows[0] ?? [])
+    expect(accumulator.seenRows).toBe(0)
+
+    accumulator.addRow(rows[1] ?? [])
+    expect(accumulator.seenRows).toBe(1)
+    expect(accumulator.keptRows + 1).toBeGreaterThanOrEqual(1)
+  })
+})
+
+describe('numbers the export writes with a decimal tail', () => {
+  it('reads heart rate and elevation written as 150.0 instead of marking the row corrupt', () => {
+    const csv = csvOf([
+      {
+        0: '42',
+        1: '22 nov 2026, 7:28:41',
+        3: 'Bicicleta',
+        5: '14389',
+        7: '150.0',
+        16: '11971.0',
+        17: '61730.0',
+        20: '243.0',
+        31: '132.0',
+      },
+    ])
+
+    const { activities, stats } = readActivities(csv)
+
+    expect(stats.corruptRows).toBe(0)
+    expect(activities).toHaveLength(1)
+    expect(activities[0]?.maxHeartRate).toBe(150)
+    expect(activities[0]?.avgHeartRate).toBe(132)
+    expect(activities[0]?.elevationGainM).toBe(243)
+    expect(activities[0]?.distanceM).toBe(61730)
   })
 })

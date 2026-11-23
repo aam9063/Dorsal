@@ -35,10 +35,10 @@ const EXPORT_DATE_PATTERN =
 
 /**
  * Decision 2 of `odd/tasks/h02-export-reader.md`: the export carries no
- * timezone offset, so the file is treated as already-local wall-clock time.
- * This identity is the single place where a conversion would be applied if
- * that assumption is ever disproven; it exists so the change stays one line
- * instead of being scattered through the reader.
+ * timezone offset, and its time matches what the Strava UI shows for the same
+ * activity, so the value is local wall-clock time. Confirmed by observation,
+ * not assumed. This identity is the single place a conversion would go if a
+ * different export were ever found to write UTC.
  */
 function asExportedLocalWallClock(value: PlainDateTime): PlainDateTime {
   return value
@@ -114,4 +114,33 @@ export function isInSeason2026(value: PlainDateTime): boolean {
     toComparable(value) >= toComparable(SEASON_START) &&
     toComparable(value) <= toComparable(SEASON_END)
   )
+}
+
+/** `0` is Sunday and `6` is Saturday, so no locale is involved. */
+export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6
+
+/**
+ * Days since 1970-01-01 for a calendar date, using Howard Hinnant's civil
+ * algorithm. Monotonic, so two dates are consecutive when their ordinals
+ * differ by one, and a streak needs no date arithmetic anywhere else.
+ */
+export function dayOrdinal(value: PlainDateTime): number {
+  const { year, month, day } = value
+  const shiftedYear = month <= 2 ? year - 1 : year
+  const era = Math.floor(shiftedYear / 400)
+  const yearOfEra = shiftedYear - era * 400
+  const shiftedMonth = month + (month > 2 ? -3 : 9)
+  const dayOfYear = Math.floor((153 * shiftedMonth + 2) / 5) + day - 1
+  const dayOfEra =
+    yearOfEra * 365 + Math.floor(yearOfEra / 4) - Math.floor(yearOfEra / 100) + dayOfYear
+  return era * 146_097 + dayOfEra - 719_468
+}
+
+/**
+ * Weekday of a calendar date. 1970-01-01 was a Thursday, hence the `+ 4`, and
+ * the extra `+ 7` keeps the modulo positive for dates before the epoch.
+ */
+export function weekdayOf(value: PlainDateTime): Weekday {
+  const shifted = (dayOrdinal(value) % 7) + 7 + 4
+  return (shifted % 7) as Weekday
 }
