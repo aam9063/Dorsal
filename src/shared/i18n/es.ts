@@ -38,12 +38,32 @@ export const es = {
         'Súbelo aquí. Trae todo tu historial, pero solo usamos las actividades de 2026.',
       ],
     },
+    pickFile: 'Elegir activities.csv',
     provisional:
-      'Pantalla provisional. La subida real, con validación y errores, se construye en H-06.',
+      'Selector de archivo provisional. La subida real, con validación y estados de error, se construye en H-06.',
+  },
+  processing: {
+    title: 'Preparando tu temporada…',
+    phaseReading: 'Leyendo tu archivo…',
+    phaseComputing: 'Calculando tus números…',
+    phaseDone: 'Listo',
+    seenRowsLabel: 'Filas leídas',
+    keptRowsLabel: 'Actividades de 2026',
+    cancel: 'Cancelar',
+    errorTitle: 'No pudimos procesar el archivo',
+    errorUnreadable:
+      'No se pudo leer el archivo. Comprueba que es el activities.csv de la exportación y vuelve a intentarlo.',
+    errorGeneric: 'Algo falló al procesar el archivo. Vuelve a intentarlo.',
+    back: 'Volver a intentarlo',
   },
   result: {
     title: 'Tu temporada 2026',
     subtitle: 'Aquí irán las ocho historias y tu dorsal.',
+    kilometres: 'Kilómetros',
+    movingTime: 'Tiempo en movimiento',
+    activities: 'Actividades',
+    activeDays: 'Días activos',
+    elevation: 'Desnivel positivo (m)',
     provisional: 'Pantalla provisional. El reproductor de historias se construye en H-07.',
   },
   notFound: {
