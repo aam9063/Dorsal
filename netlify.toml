@@ -1,0 +1,31 @@
+[build]
+  command = "pnpm build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  PNPM_VERSION = "11.4.0"
+
+[dev]
+  command = "pnpm dev"
+  targetPort = 5173
+
+# Client-side routing: /subir and /resultado are not files on disk.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# H-12 owns the CSP test against the deploy preview. Until then this header is
+# the draft: no third-party origin, no inline script, no eval. style-src keeps
+# 'unsafe-inline' because the story animations set inline styles; H-12 tightens
+# it once the animation layer is decided.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "no-referrer"
+    Permissions-Policy = "geolocation=(), camera=(), microphone=(), payment=()"
+    Cross-Origin-Opener-Policy = "same-origin"

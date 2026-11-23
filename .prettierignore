@@ -1,0 +1,14 @@
+node_modules
+dist
+artifacts
+coverage
+playwright-report
+test-results
+pnpm-lock.yaml
+fixtures/generated
+Strava Wrapped 2026-project
+.atl
+
+# Governance documents, kept exactly as Albert wrote them
+AGENTS.md
+BRIEF.md
