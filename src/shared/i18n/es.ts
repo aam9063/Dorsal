@@ -328,6 +328,20 @@ export const es = {
       weekSingular: 'semana',
       weekPlural: 'semanas',
     },
+    '06-material': {
+      title: 'Tu material',
+      eyebrow: 'Etapa 6 · Tu material',
+      starLead: {
+        shoes: 'La zapatilla que más te llevó.',
+        bikes: 'La bici que más te llevó.',
+      },
+      hoursLabel: 'En movimiento',
+      rankingLabel: 'Todo tu material, de más a menos horas.',
+      retirementBadge: 'Toca jubilarlas',
+      retirementNote: 'Más de 800 km en 2026: el export solo cuenta esta temporada.',
+      rowActivitySingular: 'actividad',
+      rowActivityPlural: 'actividades',
+    },
   },
   notFound: {
     title: 'Esta página no existe',

@@ -60,6 +60,7 @@ describe('story registry', () => {
       '02-numeros',
       '03-perfil',
       '04-constancia',
+      '06-material',
     ])
   })
 })
