@@ -96,8 +96,12 @@ function FilePicker({ onChoose }: { onChoose: (file: File) => void }) {
         event.preventDefault()
         setIsDragging(true)
       }}
-      onDragLeave={() => {
-        setIsDragging(false)
+      onDragLeave={(event) => {
+        // Moving over a child fires dragleave on the label; only a drag that
+        // really left the zone should drop the highlight.
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setIsDragging(false)
+        }
       }}
       onDrop={(event) => {
         event.preventDefault()
