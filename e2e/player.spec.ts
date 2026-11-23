@@ -35,22 +35,24 @@ async function openPlayer(page: Page) {
 
 test('opens from the season numbers and shows one bar per available story', async ({ page }) => {
   const available = await openPlayer(page)
-  expect(available.length).toBeGreaterThan(0)
+  expect(available.length).toBeGreaterThan(1)
 
   await expect(page.locator('[data-testid^="player-progress-bar-"]')).toHaveCount(available.length)
-  await expect(page.locator('[data-testid^="player-story-"]')).toHaveCount(available.length)
+  // The player mounts exactly one story at a time (AnimatePresence popLayout).
   await expect(page.getByTestId('player-story-01-portada')).toBeVisible()
 })
 
 test('the right zone advances and the left zone goes back', async ({ page }) => {
   const available = await openPlayer(page)
+  // Story 02 is never omitted (BRIEF §6), so advance and back are proven with
+  // at least two available stories; the single-story clamps are gone.
+  expect(available.length).toBeGreaterThan(1)
   const root = page.getByTestId('player-root')
   await expect(root).toHaveAttribute('data-index', '0')
 
   await page.getByTestId('player-zone-next').click()
-  // Clamped: with one available story this also pins that the last story does
-  // not wrap; once story 02 lands the same assertion proves the advance.
-  await expect(root).toHaveAttribute('data-index', String(Math.min(1, available.length - 1)))
+  await expect(root).toHaveAttribute('data-index', '1')
+  await expect(page.getByTestId('player-story-02-numeros')).toBeVisible()
 
   await page.getByTestId('player-zone-previous').click()
   await expect(root).toHaveAttribute('data-index', '0')
@@ -58,11 +60,13 @@ test('the right zone advances and the left zone goes back', async ({ page }) => 
 
 test('ArrowRight advances and ArrowLeft goes back', async ({ page }) => {
   const available = await openPlayer(page)
+  expect(available.length).toBeGreaterThan(1)
   const root = page.getByTestId('player-root')
   await expect(root).toHaveAttribute('data-index', '0')
 
   await page.keyboard.press('ArrowRight')
-  await expect(root).toHaveAttribute('data-index', String(Math.min(1, available.length - 1)))
+  await expect(root).toHaveAttribute('data-index', '1')
+  await expect(page.getByTestId('player-story-02-numeros')).toBeVisible()
 
   await page.keyboard.press('ArrowLeft')
   await expect(root).toHaveAttribute('data-index', '0')
@@ -82,15 +86,30 @@ test('Space pauses and resumes', async ({ page }) => {
 test('holding pauses, the story does not change while held, releasing resumes', async ({
   page,
 }) => {
-  await openPlayer(page)
+  const available = await openPlayer(page)
+  expect(available.length).toBeGreaterThan(1)
   const root = page.getByTestId('player-root')
   const zone = page.getByTestId('player-zone-next')
 
   await zone.dispatchEvent('pointerdown')
   await expect(root).toHaveAttribute('data-paused', 'true')
 
-  await page.waitForTimeout(AUTO_ADVANCE_MS + 1500)
-  await expect(root).toHaveAttribute('data-index', '0')
+  // The hold outlasts the automatic advance. Instead of a fixed sleep, poll
+  // until real elapsed time passes the advance delay while the story stays put
+  // (review of H-08: no unconditional waitForTimeout in a negative assertion).
+  const startedAt = Date.now()
+  const holdMs = AUTO_ADVANCE_MS + 1500
+  await expect
+    .poll(
+      async () => {
+        const index = await root.getAttribute('data-index')
+        const paused = await root.getAttribute('data-paused')
+        const elapsed = Date.now() - startedAt
+        return elapsed >= holdMs && index === '0' && paused === 'true' ? 'held' : 'drifted'
+      },
+      { timeout: holdMs + 10_000, intervals: [250, 500] },
+    )
+    .toBe('held')
 
   await zone.dispatchEvent('pointerup')
   await expect(root).toHaveAttribute('data-paused', 'false')
@@ -118,10 +137,10 @@ test.describe('with prefers-reduced-motion: reduce', () => {
   test('the story does not advance on its own', async ({ page }) => {
     await openPlayer(page)
 
+    // Kept as a real elapsed-time measurement: under reduced motion there is
+    // no event or state change to poll for — the absence of the advance IS the
+    // assertion, so the wait must genuinely cover the advance delay.
     await page.waitForTimeout(AUTO_ADVANCE_MS + 1500)
-    // With a single available story the machine already stops at the last
-    // story; once story 02 lands this assertion proves the reduced-motion
-    // guard, and the tap test above proves the advance it suppresses.
     await expect(page.getByTestId('player-root')).toHaveAttribute('data-index', '0')
   })
 })

@@ -34,7 +34,14 @@ export function reducePlayer(state: PlayerState, input: PlayerInput, count: numb
   }
 }
 
-function clampIndex(index: number, count: number): number {
+/**
+ * Clamps an index to `0 .. count - 1` (`0` when there is no story). The machine
+ * uses it on every transition, and the player also uses it at render time: the
+ * available story count can change after mount while the state index survives,
+ * and an index past the end must resolve to the last available story, never
+ * render nothing (review of H-08).
+ */
+export function clampIndex(index: number, count: number): number {
   if (count <= 0) {
     return 0
   }
