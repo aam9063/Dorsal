@@ -133,3 +133,46 @@ describe('buildYearSummary and the YearSummary schema', () => {
     expect(() => YearSummary.parse(totalsRows)).toThrow()
   })
 })
+
+describe('YearSummary bounds', () => {
+  const activityIn = (month: number, day: number): Activity => ({
+    id: `${String(month)}-${String(day)}`,
+    startLocal: at(month, day, 9),
+    sport: 'run',
+    sportRaw: 'Carrera',
+    distanceM: 1000,
+    movingTimeS: 1800,
+    elapsedTimeS: 1800,
+    elevationGainM: 0,
+    avgHeartRate: null,
+    maxHeartRate: null,
+    gear: null,
+  })
+
+  const honest = buildYearSummary([activityIn(1, 5), activityIn(2, 6), activityIn(3, 7)])
+
+  it('accepts the honest summary it builds', () => {
+    expect(YearSummary.safeParse(honest).success).toBe(true)
+  })
+
+  it('rejects a negative total distance', () => {
+    const tampered = { ...honest, totals: { ...honest.totals, distanceM: -1 } }
+
+    expect(YearSummary.safeParse(tampered).success).toBe(false)
+  })
+
+  it('rejects a negative distance in a monthly entry', () => {
+    const profile = honest.monthlyProfile
+    expect(profile).not.toBeNull()
+    if (profile === null) {
+      return
+    }
+    const months = profile.months.map((entry, index) =>
+      index === 0 ? { ...entry, distanceM: -5 } : entry,
+    )
+
+    const tampered = { ...honest, monthlyProfile: { ...profile, months } }
+
+    expect(YearSummary.safeParse(tampered).success).toBe(false)
+  })
+})

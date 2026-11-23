@@ -13,7 +13,7 @@ function csvOf(rows: readonly Record<number, string>[]): string {
   return Papa.unparse([[...HEADER], ...rowsOf(rows)])
 }
 
-const AUGUST_ROW = '5 nov 2026, 18:32:11'
+const NOVEMBER_ROW = '5 nov 2026, 18:32:11'
 
 const PERSONAS_IN_SEASON_ORDER = [
   'runner-es',
@@ -155,7 +155,7 @@ describe('readActivities on fixture personas', () => {
 describe('raw csv edge cases the fixtures do not cover', () => {
   it('rejects a comma-decimal metre value instead of reading it as ten times the distance', () => {
     const oneActivity = (metres: string): string =>
-      csvOf([{ 0: '1', 1: AUGUST_ROW, 3: 'Carrera', 5: '3600', 16: '3600.0', 17: metres }])
+      csvOf([{ 0: '1', 1: NOVEMBER_ROW, 3: 'Carrera', 5: '3600', 16: '3600.0', 17: metres }])
 
     const commaDecimal = readActivities(oneActivity('1234,6'))
     expect(commaDecimal.activities).toEqual([])
@@ -173,7 +173,15 @@ describe('raw csv edge cases the fixtures do not cover', () => {
   it('reads the metre column, not the kilometre column, when the two disagree', () => {
     const result = readActivities(
       csvOf([
-        { 0: '7', 1: AUGUST_ROW, 3: 'Carrera', 5: '3600', 6: '99,00', 16: '3600.0', 17: '1234.6' },
+        {
+          0: '7',
+          1: NOVEMBER_ROW,
+          3: 'Carrera',
+          5: '3600',
+          6: '99,00',
+          16: '3600.0',
+          17: '1234.6',
+        },
       ]),
     )
 
@@ -182,7 +190,7 @@ describe('raw csv edge cases the fixtures do not cover', () => {
 
   it('rejects a negative time or elevation instead of keeping it', () => {
     const negativeTime = readActivities(
-      csvOf([{ 0: '2', 1: AUGUST_ROW, 3: 'Carrera', 5: '-3600', 16: '3600.0', 17: '5000.0' }]),
+      csvOf([{ 0: '2', 1: NOVEMBER_ROW, 3: 'Carrera', 5: '-3600', 16: '3600.0', 17: '5000.0' }]),
     )
     expect(negativeTime.activities).toEqual([])
     expect(negativeTime.stats.corruptRows).toBe(1)
@@ -191,7 +199,7 @@ describe('raw csv edge cases the fixtures do not cover', () => {
       csvOf([
         {
           0: '3',
-          1: AUGUST_ROW,
+          1: NOVEMBER_ROW,
           3: 'Carrera',
           5: '3600',
           16: '3600.0',
@@ -207,8 +215,8 @@ describe('raw csv edge cases the fixtures do not cover', () => {
   it('does not eat the first row of a file without a header', () => {
     const headerless = Papa.unparse(
       rowsOf([
-        { 0: '10', 1: AUGUST_ROW, 3: 'Carrera', 5: '3600', 16: '3600.0', 17: '5000.0' },
-        { 0: '11', 1: AUGUST_ROW, 3: 'Carrera', 5: '3600', 16: '3600.0', 17: '5000.0' },
+        { 0: '10', 1: NOVEMBER_ROW, 3: 'Carrera', 5: '3600', 16: '3600.0', 17: '5000.0' },
+        { 0: '11', 1: NOVEMBER_ROW, 3: 'Carrera', 5: '3600', 16: '3600.0', 17: '5000.0' },
       ]),
     )
 

@@ -14,7 +14,7 @@ const ARCHETYPE_IDS = [
 const monthSchema = z.number().int().min(1).max(12)
 const daySchema = z.number().int().min(1).max(31)
 const monthDaySchema = z.strictObject({ month: monthSchema, day: daySchema })
-const monthDistanceSchema = z.strictObject({ month: monthSchema, distanceM: z.number() })
+const monthDistanceSchema = z.strictObject({ month: monthSchema, distanceM: z.number().min(0) })
 
 /**
  * The worker-to-UI contract of the whole season: **only 2026 aggregates**
@@ -29,27 +29,27 @@ const monthDistanceSchema = z.strictObject({ month: monthSchema, distanceM: z.nu
  */
 export const YearSummary = z.strictObject({
   totals: z.strictObject({
-    distanceM: z.number(),
-    movingTimeS: z.number(),
+    distanceM: z.number().min(0),
+    movingTimeS: z.number().min(0),
     activityCount: z.number().int().min(0),
     activeDays: z.number().int().min(0),
-    elevationGainM: z.number(),
+    elevationGainM: z.number().min(0),
     bySport: z.array(
       z.strictObject({
         sport: z.enum(SPORT_KINDS),
-        movingTimeS: z.number(),
-        share: z.number(),
+        movingTimeS: z.number().min(0),
+        share: z.number().min(0).max(1),
       }),
     ),
-    trackLaps: z.number(),
-    everests: z.number(),
+    trackLaps: z.number().min(0),
+    everests: z.number().min(0),
   }),
   monthlyProfile: z
     .strictObject({
       months: z.array(monthDistanceSchema).length(12),
       peak: monthDistanceSchema,
       valley: monthDistanceSchema,
-      comeback: z.number().nullable(),
+      comeback: z.number().min(0).nullable(),
     })
     .nullable(),
   consistency: z
@@ -58,7 +58,7 @@ export const YearSummary = z.strictObject({
         z.strictObject({
           month: monthSchema,
           day: daySchema,
-          movingTimeS: z.number(),
+          movingTimeS: z.number().min(0),
           level: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]),
         }),
       ),
@@ -85,8 +85,8 @@ export const YearSummary = z.strictObject({
       items: z.array(
         z.strictObject({
           name: z.string(),
-          distanceM: z.number(),
-          movingTimeS: z.number(),
+          distanceM: z.number().min(0),
+          movingTimeS: z.number().min(0),
           activityCount: z.number().int().min(0),
           needsRetiring: z.boolean(),
         }),
@@ -97,16 +97,18 @@ export const YearSummary = z.strictObject({
     .nullable(),
   heartbeats: z
     .strictObject({
-      beats: z.number(),
-      restingDays: z.number(),
-      peak: z.strictObject({ bpm: z.number(), month: monthSchema, day: daySchema }).nullable(),
-      coverage: z.number(),
+      beats: z.number().min(0),
+      restingDays: z.number().min(0),
+      peak: z
+        .strictObject({ bpm: z.number().min(0), month: monthSchema, day: daySchema })
+        .nullable(),
+      coverage: z.number().min(0).max(1),
     })
     .nullable(),
   bibCard: z.strictObject({
-    number: z.number().int(),
-    distanceKm: z.number(),
-    monthlyDistanceM: z.array(z.number()).length(12),
+    number: z.number().int().min(0),
+    distanceKm: z.number().min(0),
+    monthlyDistanceM: z.array(z.number().min(0)).length(12),
   }),
   availability: z.strictObject({
     monthlyProfile: z.boolean(),
