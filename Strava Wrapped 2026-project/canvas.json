@@ -1,0 +1,253 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 3150,
+      "title": "Landing",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    {
+      "file": "Subir.dc.html",
+      "x": 1520,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Subir archivo",
+      "is_interactive": true
+    },
+    {
+      "file": "Procesando.dc.html",
+      "x": 1990,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Procesando",
+      "is_interactive": true
+    },
+    {
+      "file": "W1-Portada.dc.html",
+      "x": 0,
+      "y": 3420,
+      "w": 390,
+      "h": 844,
+      "title": "01 · Portada",
+      "is_interactive": true
+    },
+    {
+      "file": "W2-Numeros.dc.html",
+      "x": 470,
+      "y": 3420,
+      "w": 390,
+      "h": 844,
+      "title": "02 · Los números",
+      "is_interactive": true
+    },
+    {
+      "file": "W3-Perfil.dc.html",
+      "x": 940,
+      "y": 3420,
+      "w": 390,
+      "h": 844,
+      "title": "03 · El perfil de tu año",
+      "is_interactive": true
+    },
+    {
+      "file": "W4-Constancia.dc.html",
+      "x": 1410,
+      "y": 3420,
+      "w": 390,
+      "h": 844,
+      "title": "04 · Constancia",
+      "is_interactive": true
+    },
+    {
+      "file": "W5-Arquetipo.dc.html",
+      "x": 1880,
+      "y": 3420,
+      "w": 390,
+      "h": 844,
+      "title": "05 · Tu arquetipo",
+      "is_interactive": true
+    },
+    {
+      "file": "W6-Firma.dc.html",
+      "x": 2350,
+      "y": 3420,
+      "w": 390,
+      "h": 844,
+      "title": "06 · Tu firma",
+      "is_interactive": true
+    },
+    {
+      "file": "W7-Latidos.dc.html",
+      "x": 2820,
+      "y": 3420,
+      "w": 390,
+      "h": 844,
+      "title": "07 · El año en latidos",
+      "is_interactive": true
+    },
+    {
+      "file": "W8-Dorsal.dc.html",
+      "x": 3290,
+      "y": 3420,
+      "w": 390,
+      "h": 844,
+      "title": "08 · Tu dorsal",
+      "is_interactive": true
+    },
+    {
+      "file": "Main-claro.dc.html",
+      "x": 0,
+      "y": 4640,
+      "w": 1440,
+      "h": 3150,
+      "title": "Landing (claro)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    {
+      "file": "Subir-claro.dc.html",
+      "x": 1520,
+      "y": 4640,
+      "w": 390,
+      "h": 844,
+      "title": "Subir archivo (claro)",
+      "is_interactive": true
+    },
+    {
+      "file": "Procesando-claro.dc.html",
+      "x": 1990,
+      "y": 4640,
+      "w": 390,
+      "h": 844,
+      "title": "Procesando (claro)",
+      "is_interactive": true
+    },
+    {
+      "file": "W1-Portada-claro.dc.html",
+      "x": 0,
+      "y": 8150,
+      "w": 390,
+      "h": 844,
+      "title": "01 · Portada (claro)",
+      "is_interactive": true
+    },
+    {
+      "file": "W2-Numeros-claro.dc.html",
+      "x": 470,
+      "y": 8150,
+      "w": 390,
+      "h": 844,
+      "title": "02 · Los números (claro)",
+      "is_interactive": true
+    },
+    {
+      "file": "W3-Perfil-claro.dc.html",
+      "x": 940,
+      "y": 8150,
+      "w": 390,
+      "h": 844,
+      "title": "03 · El perfil de tu año (claro)",
+      "is_interactive": true
+    },
+    {
+      "file": "W4-Constancia-claro.dc.html",
+      "x": 1410,
+      "y": 8150,
+      "w": 390,
+      "h": 844,
+      "title": "04 · Constancia (claro)",
+      "is_interactive": true
+    },
+    {
+      "file": "W5-Arquetipo-claro.dc.html",
+      "x": 1880,
+      "y": 8150,
+      "w": 390,
+      "h": 844,
+      "title": "05 · Tu arquetipo (claro)",
+      "is_interactive": true
+    },
+    {
+      "file": "W6-Firma-claro.dc.html",
+      "x": 2350,
+      "y": 8150,
+      "w": 390,
+      "h": 844,
+      "title": "06 · Tu firma (claro)",
+      "is_interactive": true
+    },
+    {
+      "file": "W7-Latidos-claro.dc.html",
+      "x": 2820,
+      "y": 8150,
+      "w": 390,
+      "h": 844,
+      "title": "07 · El año en latidos (claro)",
+      "is_interactive": true
+    },
+    {
+      "file": "W8-Dorsal-claro.dc.html",
+      "x": 3290,
+      "y": 8150,
+      "w": 390,
+      "h": 844,
+      "title": "08 · Tu dorsal (claro)",
+      "is_interactive": true
+    }
+  ],
+  "annotations": [
+    {
+      "id": "tituloWeb",
+      "x": 0,
+      "y": -300,
+      "w": 240,
+      "maxW": 2380,
+      "text": "Modo oscuro · La web: landing y subida del archivo",
+      "kind": "title1"
+    },
+    {
+      "id": "tituloWrapped",
+      "x": 0,
+      "y": 3180,
+      "w": 240,
+      "maxW": 3680,
+      "text": "Modo oscuro · El wrapped: tu Dorsal 2026 en 8 historias",
+      "kind": "title1"
+    },
+    {
+      "id": "datosEjemplo",
+      "x": 2460,
+      "y": 0,
+      "w": 320,
+      "text": "Todos los números son datos de ejemplo de una atleta ficticia (Lucía). Pulsa Play en la landing para recorrer el flujo completo: landing, subida, procesado y las 8 historias.",
+      "fill": "orange"
+    },
+    {
+      "id": "tituloWebClaro",
+      "x": 0,
+      "y": 4400,
+      "w": 240,
+      "maxW": 2380,
+      "text": "Modo claro · La web",
+      "kind": "title1"
+    },
+    {
+      "id": "tituloWrappedClaro",
+      "x": 0,
+      "y": 7910,
+      "w": 240,
+      "maxW": 3680,
+      "text": "Modo claro · El wrapped",
+      "kind": "title1"
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

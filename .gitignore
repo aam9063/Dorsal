@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# Test, coverage and verification artifacts
+coverage/
+playwright-report/
+test-results/
+artifacts/
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+*.log
+pnpm-debug.log*
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Personal data: never commit a real Strava export or any CSV/ZIP,
+# except the small synthetic fixtures produced by fixtures/generator.
+*.csv
+*.zip
+!fixtures/generated/*.csv

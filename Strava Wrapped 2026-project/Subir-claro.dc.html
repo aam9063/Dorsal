@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Dorsal · Subir archivo (claro)</title>
+<script src="./_runtime/react.js"></script>
+<script src="./_runtime/react-dom.js"></script>
+<script src="./_runtime/support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#C23F00}a:hover{color:#0F100D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFFFFF; color: #0F100D; font-family: Inter, system-ui, sans-serif; padding: 20px 24px 28px; display: flex; flex-direction: column; gap: 22px; overflow: hidden">
+
+<div style="display: flex; align-items: center; justify-content: space-between">
+<a href="Main-claro.dc.html" aria-label="Volver" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #F2F0E9; color: #0F100D">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M11 6l-6 6 6 6"></path></svg>
+</a>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.12em; color: #5E5F58">PASO 1 DE 2</span>
+<span style="width: 44px"></span>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h1 style="margin: 0; font-family: Anton, Impact, sans-serif; font-weight: 400; font-size: 44px; line-height: 0.98; text-transform: uppercase">Sube tu archivo de Strava</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #4A4B44">El .zip que te llegó por email, tal cual. No hace falta descomprimirlo.</p>
+</div>
+
+<label for="zip" style="border: 2px dashed #FC5200; border-radius: 20px; padding: 26px 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; cursor: pointer; background: #F6F5F0; position: relative">
+<span style="width: 56px; height: 56px; border-radius: 50%; background: #FC5200; color: #0F100D; display: flex; align-items: center; justify-content: center">
+<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"></path><path d="M7 9l5-5 5 5"></path><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path></svg>
+</span>
+<span style="font-size: 17px; font-weight: 600">Toca para elegir tu .zip</span>
+<span style="font-size: 13px; color: #5E5F58">o arrástralo aquí desde el ordenador</span>
+<input id="zip" type="file" accept=".zip" style="position: absolute; width: 1px; height: 1px; opacity: 0">
+</label>
+
+<div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 14px; background: #F2F0E9; border: 1px solid #D3D1C7">
+<span style="width: 40px; height: 40px; flex: none; border-radius: 10px; background: #E2E0D6; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; color: #C23F00">ZIP</span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">export_48213377.zip</span>
+<span style="font-size: 12px; color: #5E5F58">412 MB · 1.204 actividades · 412 de 2026</span>
+</span>
+<span style="width: 28px; height: 28px; flex: none; border-radius: 50%; background: #FC5200; color: #0F100D; display: flex; align-items: center; justify-content: center">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-label="Archivo válido" role="img"><path d="M5 12l5 5 9-10"></path></svg>
+</span>
+</div>
+
+<details style="border-radius: 14px; background: #F6F5F0; padding: 4px 16px">
+<summary style="cursor: pointer; min-height: 44px; display: flex; align-items: center; font-size: 14px; font-weight: 600; color: #0F100D">¿Aún no tienes el archivo? Así se pide</summary>
+<ol style="margin: 4px 0 14px; padding-left: 20px; font-size: 13px; line-height: 1.6; color: #4A4B44; display: flex; flex-direction: column; gap: 4px">
+<li>Abre strava.com en el navegador e inicia sesión.</li>
+<li>Ajustes › Mi cuenta › Descargar o eliminar tu cuenta.</li>
+<li>Pulsa «Solicitar archivo».</li>
+<li>Espera el email y descarga el .zip.</li>
+</ol>
+</details>
+
+<div style="flex: 1"></div>
+
+<div style="display: flex; flex-direction: column; gap: 14px">
+<p style="margin: 0; display: flex; gap: 8px; align-items: center; justify-content: center; font-size: 12px; color: #5E5F58">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+Se procesa aquí, en tu móvil. No subimos nada.</p>
+<a href="Procesando-claro.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 58px; border-radius: 999px; background: #FC5200; color: #0F100D; font-weight: 700; font-size: 17px; text-decoration: none">Crear mi Dorsal
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg>
+</a>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

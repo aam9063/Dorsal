@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Dorsal · 04 Constancia (claro)</title>
+<script src="./_runtime/react.js"></script>
+<script src="./_runtime/react-dom.js"></script>
+<script src="./_runtime/support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#C23F00}a:hover{color:#0F100D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFFFFF; color: #0F100D; font-family: Inter, system-ui, sans-serif; padding: 16px 20px 28px; display: flex; flex-direction: column; overflow: hidden">
+
+<div style="display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px">
+<span style="height: 3px; border-radius: 2px; background: #0F100D"></span><span style="height: 3px; border-radius: 2px; background: #0F100D"></span><span style="height: 3px; border-radius: 2px; background: #0F100D"></span><span style="height: 3px; border-radius: 2px; background: #0F100D"></span><span style="height: 3px; border-radius: 2px; background: #D3D1C7"></span><span style="height: 3px; border-radius: 2px; background: #D3D1C7"></span><span style="height: 3px; border-radius: 2px; background: #D3D1C7"></span><span style="height: 3px; border-radius: 2px; background: #D3D1C7"></span>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #5E5F58">ETAPA 4 · CONSTANCIA</span>
+<a href="Main-claro.dc.html" aria-label="Cerrar" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; margin-right: -10px; color: #0F100D">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+</a>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 4px; margin-top: 18px">
+<span style="font-size: 17px; color: #4A4B44">Te pusiste las zapatillas</span>
+<span style="display: flex; align-items: baseline; gap: 10px"><span style="font-family: Anton, Impact, sans-serif; font-size: 96px; line-height: 0.95; color: #C23F00">268</span><span style="font-family: Anton, Impact, sans-serif; font-size: 30px; text-transform: uppercase">de 365 días</span></span>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 14px; margin-top: 22px" role="img" aria-label="Calendario de 2026 con un cuadrado por día; más claro indica más volumen">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #5E5F58; letter-spacing: 0.08em">ENE – JUN</span>
+<div style="display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 10px); grid-template-columns: repeat(26, 10px); gap: 3px">
+<sc-for list="{{ firstHalf }}" as="d" hint-placeholder-count="182">
+<span style="width: 10px; height: 10px; border-radius: 2px; background: {{ d.bg }}"></span>
+</sc-for>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #5E5F58; letter-spacing: 0.08em">JUL – DIC</span>
+<div style="display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 10px); grid-template-columns: repeat(27, 10px); gap: 3px">
+<sc-for list="{{ secondHalf }}" as="d" hint-placeholder-count="183">
+<span style="width: 10px; height: 10px; border-radius: 2px; background: {{ d.bg }}"></span>
+</sc-for>
+</div>
+</div>
+<div style="display: flex; align-items: center; gap: 4px; font-size: 11px; color: #5E5F58">
+<span style="margin-right: 4px">Menos</span>
+<span style="width: 10px; height: 10px; border-radius: 2px; background: #ECEAE2"></span><span style="width: 10px; height: 10px; border-radius: 2px; background: #FDCBB3"></span><span style="width: 10px; height: 10px; border-radius: 2px; background: #FD8A55"></span><span style="width: 10px; height: 10px; border-radius: 2px; background: #FC5200"></span>
+<span style="margin-left: 4px">Más</span>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px; margin-top: 22px">
+<div style="display: flex; gap: 14px; align-items: center; padding: 12px 14px; border-radius: 14px; background: #F2F0E9">
+<span style="font-family: Anton, Impact, sans-serif; font-size: 34px; line-height: 1; color: #C23F00; min-width: 52px">23</span>
+<span style="font-size: 14px; line-height: 1.4; color: #4A4B44"><strong style="color: #0F100D">días seguidos</strong>, del 3 al 25 de marzo. Tu racha más larga.</span>
+</div>
+<div style="display: flex; gap: 14px; align-items: center; padding: 12px 14px; border-radius: 14px; background: #F2F0E9">
+<span style="font-family: Anton, Impact, sans-serif; font-size: 34px; line-height: 1; color: #C23F00; min-width: 52px">49</span>
+<span style="font-size: 14px; line-height: 1.4; color: #4A4B44">de 52 <strong style="color: #0F100D">domingos</strong> saliste. El domingo es tuyo.</span>
+</div>
+</div>
+
+<div style="flex: 1"></div>
+
+<div style="display: flex; gap: 12px">
+<a href="W3-Perfil-claro.dc.html" aria-label="Historia anterior" style="width: 56px; height: 56px; flex: none; border-radius: 50%; border: 1.5px solid #D3D1C7; display: flex; align-items: center; justify-content: center; color: #0F100D">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M11 6l-6 6 6 6"></path></svg>
+</a>
+<a href="W5-Arquetipo-claro.dc.html" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; border-radius: 999px; background: #0F100D; color: #FFFFFF; font-weight: 700; font-size: 16px; text-decoration: none">Siguiente etapa
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg>
+</a>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+var colors = ['#ECEAE2', '#FDCBB3', '#FD8A55', '#FC5200'];
+var weekdayP = [0.55, 0.85, 0.6, 0.85, 0.35, 0.7, 0.95];
+var days = [];
+for (var i = 0; i < 365; i++) {
+var w = i % 7;
+var p = weekdayP[w];
+if (i >= 212 && i <= 242) p = p * 0.3;
+var r = ((i * 9301 + 49297) % 233280) / 233280;
+var active = r < p || (i >= 61 && i <= 83);
+var level = active ? 1 + Math.floor(((i * 7919) % 100) / 34) : 0;
+if (level > 3) level = 3;
+days.push({ bg: colors[level] });
+}
+return { firstHalf: days.slice(0, 182), secondHalf: days.slice(182) };
+}
+}
+</script>
+</body>
+</html>
