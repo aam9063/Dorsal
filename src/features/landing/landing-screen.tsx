@@ -1,5 +1,7 @@
+import { useRef } from 'react'
 import { Link } from 'react-router'
 import { t } from '../../shared/i18n'
+import { useGsapReveal } from '../../shared/hooks'
 import { ScrollRow } from '../../shared/ui'
 
 const NAV_ITEMS = [
@@ -82,6 +84,7 @@ function LandingHeader() {
         ))}
         <Link
           to="/subir"
+          data-anim-button
           className="inline-flex min-h-11 items-center rounded-pill bg-accent px-5 font-semibold text-ink"
         >
           {t.landing.headerCta}
@@ -93,7 +96,10 @@ function LandingHeader() {
 
 function ExampleBibCard() {
   return (
-    <div className="hidden flex-col items-center gap-6 lg:flex lg:min-w-[320px] lg:flex-[1_1_420px]">
+    <div
+      className="hidden flex-col items-center gap-6 lg:flex lg:min-w-[320px] lg:flex-[1_1_420px]"
+      data-anim-hero
+    >
       <div aria-hidden="true" className="relative my-14 w-full max-w-[390px]">
         <div className="relative w-full -rotate-4 rounded-panel bg-bone px-6 pb-6 pt-5 text-ink shadow-[0_30px_70px_rgba(15,16,13,0.35)]">
           <span className="absolute left-3.5 top-3.5 size-3 rounded-full bg-bg" />
@@ -106,7 +112,7 @@ function ExampleBibCard() {
             <span>{t.landing.card.kmLabel}</span>
           </div>
 
-          <p className="text-center font-display text-[156px] leading-[1.02]">
+          <p className="text-center font-display text-[156px] leading-[1.02]" data-anim-counter>
             {t.landing.card.km}
           </p>
           <p className="text-center text-lg font-bold uppercase tracking-[0.24em]">
@@ -116,7 +122,9 @@ function ExampleBibCard() {
           <div className="mt-3 grid grid-cols-3 gap-2 border-t-2 border-dashed border-ink pt-3 text-center">
             {t.landing.card.stats.map((stat) => (
               <div key={stat.label} className="flex flex-col gap-0.5">
-                <span className="font-display text-2xl">{stat.value}</span>
+                <span className="font-display text-2xl" data-anim-counter>
+                  {stat.value}
+                </span>
                 <span className="font-mono text-[11px] uppercase tracking-[0.1em]">
                   {stat.label}
                 </span>
@@ -126,14 +134,14 @@ function ExampleBibCard() {
         </div>
 
         <div className="absolute -left-2 top-2 flex rotate-3 items-center gap-2 rounded-pill border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-fg">
-          <span className="font-display text-lg text-accent-text">
+          <span className="font-display text-lg text-accent-text" data-anim-counter>
             {t.landing.card.everestValue}
           </span>
           {t.landing.card.everestLabel}
         </div>
         <div className="absolute -right-2 -bottom-2 flex -rotate-2 items-center gap-2 rounded-pill border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-fg">
           {t.landing.card.streakLabel}
-          <span className="font-display text-lg text-accent-text">
+          <span className="font-display text-lg text-accent-text" data-anim-counter>
             {t.landing.card.streakValue}
           </span>
         </div>
@@ -152,19 +160,26 @@ function LandingHero() {
       className={`${SECTION_WIDTH} flex-row flex-wrap items-center gap-16 pb-28 pt-16`}
     >
       <div className="flex min-w-0 flex-1 basis-[500px] flex-col gap-7">
-        <p className="font-mono text-[13px] uppercase tracking-[0.14em] text-accent-text">
+        <p
+          className="font-mono text-[13px] uppercase tracking-[0.14em] text-accent-text"
+          data-anim-hero
+        >
           {t.landing.eyebrow}
         </p>
-        <h1 className="font-display text-[clamp(60px,8vw,116px)] uppercase leading-[0.94]">
+        <h1
+          className="font-display text-[clamp(60px,8vw,116px)] uppercase leading-[0.94]"
+          data-anim-hero
+        >
           {t.landing.title}
         </h1>
-        <p className="max-w-[540px] text-[19px] leading-relaxed text-fg-muted">
+        <p className="max-w-[540px] text-[19px] leading-relaxed text-fg-muted" data-anim-hero>
           {t.landing.subtitle}
         </p>
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4" data-anim-hero>
           <Link
             to="/subir"
             data-testid="landing-cta"
+            data-anim-button
             className="inline-flex min-h-14 items-center gap-3 rounded-pill bg-accent px-7 text-[17px] font-bold text-ink"
           >
             <UploadIcon />
@@ -177,7 +192,7 @@ function LandingHero() {
             {t.landing.secondary}
           </a>
         </div>
-        <p className="flex items-center gap-2.5 text-sm text-fg-subtle">
+        <p className="flex items-center gap-2.5 text-sm text-fg-subtle" data-anim-hero>
           <LockIcon />
           {t.landing.privacyNote}
         </p>
@@ -190,7 +205,7 @@ function LandingHero() {
 function LandingSteps() {
   return (
     <section id="como" aria-labelledby="como-title" className="w-full scroll-mt-6 bg-bone text-ink">
-      <div className={`${SECTION_WIDTH} gap-[52px] py-24 sm:py-26`}>
+      <div className={`${SECTION_WIDTH} gap-[52px] py-24 sm:py-26`} data-anim-section>
         <div className="flex max-w-[720px] flex-col gap-4">
           <p className="font-mono text-[13px] uppercase tracking-[0.14em] text-label-ink">
             {t.landing.steps.eyebrow}
@@ -335,6 +350,7 @@ function LandingPreviews() {
       id="historias"
       aria-labelledby="historias-title"
       className={`${SECTION_WIDTH} gap-10 py-24 sm:py-26`}
+      data-anim-section
     >
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex max-w-[640px] flex-col gap-4">
@@ -360,6 +376,7 @@ function LandingPreviews() {
             return (
               <li
                 key={item.number}
+                data-anim-card
                 className={`flex h-[320px] w-[180px] shrink-0 flex-col justify-between gap-6 rounded-card p-5 ${
                   variant === 'raised'
                     ? 'border border-line bg-surface text-fg'
@@ -412,7 +429,7 @@ function LandingPrivacyStrip() {
       aria-labelledby="privacidad-title"
       className="w-full scroll-mt-6 bg-accent text-ink"
     >
-      <div className={`${SECTION_WIDTH} gap-12 py-24 sm:py-26`}>
+      <div className={`${SECTION_WIDTH} gap-12 py-24 sm:py-26`} data-anim-section>
         <h2
           id="privacidad-title"
           className="max-w-[900px] font-display text-[clamp(48px,6vw,88px)] uppercase leading-[0.96]"
@@ -441,6 +458,7 @@ function LandingFaq() {
       id="faq"
       aria-labelledby="faq-title"
       className={`${SECTION_WIDTH} flex-row flex-wrap gap-12 py-24 sm:py-26`}
+      data-anim-section
     >
       <div className="flex min-w-0 flex-1 basis-[320px] flex-col gap-4">
         <p className="font-mono text-[13px] uppercase tracking-[0.14em] text-accent-text">
@@ -522,8 +540,11 @@ function LandingFooter() {
 }
 
 export function LandingScreen() {
+  const rootReference = useRef<HTMLDivElement>(null)
+  useGsapReveal(rootReference)
+
   return (
-    <div data-testid="landing-root">
+    <div data-testid="landing-root" ref={rootReference}>
       <LandingHeader />
       <LandingHero />
       <LandingSteps />
