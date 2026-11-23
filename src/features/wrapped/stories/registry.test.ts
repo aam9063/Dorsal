@@ -9,14 +9,34 @@ function summaryWith(overrides: Partial<YearSummary['availability']>): YearSumma
 }
 
 describe('story registry', () => {
-  it('offers story 01 (portada) for every summary, including an empty season', () => {
+  it('offers stories 01, 02 and 04 for every summary, including an empty season', () => {
     const summary = buildYearSummary([])
-    expect(availableStories(STORIES, summary).map((story) => story.id)).toEqual(['01-portada'])
+    expect(availableStories(STORIES, summary).map((story) => story.id)).toEqual([
+      '01-portada',
+      '02-numeros',
+      '04-constancia',
+    ])
     expect(
       availableStories(STORIES, summaryWith({ archetype: false, gear: false })).map(
         (story) => story.id,
       ),
-    ).toEqual(['01-portada'])
+    ).toEqual(['01-portada', '02-numeros', '04-constancia'])
+  })
+
+  it('omits story 03 exactly when the monthly profile is unavailable', () => {
+    const withoutProfile = availableStories(STORIES, summaryWith({ monthlyProfile: false }))
+    expect(withoutProfile.map((story) => story.id)).toEqual([
+      '01-portada',
+      '02-numeros',
+      '04-constancia',
+    ])
+    const withProfile = availableStories(STORIES, summaryWith({ monthlyProfile: true }))
+    expect(withProfile.map((story) => story.id)).toEqual([
+      '01-portada',
+      '02-numeros',
+      '03-perfil',
+      '04-constancia',
+    ])
   })
 
   it('skips an unavailable story so the bar count shrinks', () => {
@@ -35,6 +55,11 @@ describe('story registry', () => {
   })
 
   it('keeps the registry in story order', () => {
-    expect(STORIES.map((story) => story.id)).toEqual(['01-portada'])
+    expect(STORIES.map((story) => story.id)).toEqual([
+      '01-portada',
+      '02-numeros',
+      '03-perfil',
+      '04-constancia',
+    ])
   })
 })
