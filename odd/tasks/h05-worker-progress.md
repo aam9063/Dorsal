@@ -48,7 +48,40 @@ S6 — A requirement discovered in review, not in the brief (recorded in `odd/ta
 
 ## Evidence of verification
 
-(filled at T5)
+### `pnpm check` and `pnpm test:e2e` — green
+
+```
+tsc · eslint · prettier · 99 unit tests · depcruise 56 modules / 95 dependencies · both guards
+pnpm test:e2e   21 passed  (smoke + season, on chromium mobile, webkit mobile and chromium desktop)
+```
+
+The season end-to-end test derives its expected numbers by running `readActivities` and `buildYearSummary` in node over the same fixture, then asserts that the screen shows those numbers **through the real worker path**. It runs `pnpm fixtures` in `beforeAll` when the file is absent and never skips itself.
+
+### The acceptance criterion nobody had measured
+
+H-05 asks for "UI fluida durante el procesado (sin long tasks > 50 ms en el hilo principal)". That could not be measured because `pnpm verify` refused `--perf`. It is now implemented, and getting there needed two rejected instruments:
+
+1. `PerformanceObserver` with `entryTypes: ['longtask']` — **rejected on evidence**: the entry type is supported, the observer registers without error, a deliberate 220 ms block on the main thread is executed, and no entry is ever reported.
+2. `entryTypes: ['long-animation-frame']` — reported inconsistently: it caught the block when registered inside one `evaluate` that also ran the block, and reported nothing when registered through `addInitScript` or after navigation.
+
+The instrument in use measures what a blocked thread actually looks like: a 10 ms interval recording how late each tick arrives. Validated by blocking the thread for 220 ms, which it reported as **213 ms of drift**.
+
+Measured on the whole flow (landing, `/subir`, chunked analysis of the 356-row `runner-es` fixture through the worker, and the result screen):
+
+```
+verify: worst main-thread drift 6.2 ms of a 50 ms budget
+worstDrift 6.2 | overBudgetScreens 0 | ok true
+```
+
+`--fixture <persona>` also exists now: it uploads `fixtures/generated/<persona>.csv` on `/subir`, screenshots the processing state, waits for the season numbers and writes `perf.json` next to the other evidence.
+
+### Privacy, unchanged
+
+The verify run reports one origin and zero external requests; the analysis happens in the worker and nothing is persisted. The summary crosses the boundary validated by `YearSummary`.
+
+## Progress
+
+T1 to T5 done.
 
 ## Progress
 
