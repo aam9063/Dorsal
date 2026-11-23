@@ -1,2 +1,6 @@
 export { useAnalysis } from './use-analysis'
 export { useThemePreference } from './use-theme-preference'
+export { usePrefersReducedMotion } from './use-prefers-reduced-motion'
+export { useAutoAdvance } from './use-auto-advance'
+export { useFocusOnMount } from './use-focus-on-mount'
+export type { AutoAdvanceOptions } from './use-auto-advance'
