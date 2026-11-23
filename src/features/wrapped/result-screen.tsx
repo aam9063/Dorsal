@@ -1,6 +1,10 @@
+import { useRef, useState } from 'react'
 import { t } from '../../shared/i18n'
 import { formatDuration, formatKilometres, formatNumber } from '../../shared/format'
 import { handedOffSeasonSummary } from '../processing'
+import { Player } from './player/player'
+import { STORIES } from './stories/registry'
+import { StoryContent } from './stories/story-content'
 
 function Stat({ testId, label, value }: { testId: string; label: string; value: string }) {
   return (
@@ -15,6 +19,8 @@ function Stat({ testId, label, value }: { testId: string; label: string; value: 
 
 export function ResultScreen() {
   const summary = handedOffSeasonSummary()
+  const [playerOpen, setPlayerOpen] = useState(false)
+  const openPlayerRef = useRef<HTMLButtonElement>(null)
 
   if (summary === null) {
     return (
@@ -67,6 +73,32 @@ export function ResultScreen() {
           value={formatNumber(totals.elevationGainM)}
         />
       </dl>
+      <button
+        ref={openPlayerRef}
+        type="button"
+        data-testid="result-open-player"
+        onClick={() => {
+          setPlayerOpen(true)
+        }}
+        className="self-start"
+      >
+        <span className="inline-flex min-h-11 items-center rounded-pill bg-accent px-8 font-semibold text-ink">
+          {t.result.openPlayer}
+        </span>
+      </button>
+      {playerOpen && (
+        <Player
+          stories={STORIES}
+          summary={summary}
+          renderStory={(story, storySummary) => (
+            <StoryContent story={story} summary={storySummary} />
+          )}
+          onClose={() => {
+            setPlayerOpen(false)
+            openPlayerRef.current?.focus()
+          }}
+        />
+      )}
     </section>
   )
 }

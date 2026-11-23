@@ -210,7 +210,22 @@ export const es = {
     activities: 'Actividades',
     activeDays: 'Días activos',
     elevation: 'Desnivel positivo (m)',
-    provisional: 'Pantalla provisional. El reproductor de historias se construye en H-07.',
+    provisional: 'Pantalla provisional.',
+    openPlayer: 'Ver mi temporada en historias',
+  },
+  player: {
+    close: 'Cerrar las historias',
+    zoneNext: 'Siguiente historia',
+    zonePrevious: 'Historia anterior',
+    progressLabel: 'Progreso de las historias',
+  },
+  stories: {
+    '01-portada': {
+      title: 'La portada',
+      seasonLabel: 'Temporada',
+      year: '2026',
+      kilometresLabel: 'Kilómetros',
+    },
   },
   notFound: {
     title: 'Esta página no existe',
