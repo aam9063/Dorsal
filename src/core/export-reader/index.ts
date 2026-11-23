@@ -49,12 +49,16 @@ function field(row: readonly string[], index: number): string {
   return row[index] ?? EMPTY
 }
 
-/** Plain non-negative integer (`58`); `null` when absent, `'invalid'` otherwise. */
-function readOptionalInteger(text: string): number | null | 'invalid' {
+/**
+ * A whole quantity that the export writes with a decimal tail (`150.0`, `243.0`
+ * for heart rate and elevation), rounded to the integer the model stores.
+ * `null` when absent, `'invalid'` otherwise.
+ */
+function readOptionalWholeNumber(text: string): number | null | 'invalid' {
   if (text === EMPTY) {
     return null
   }
-  return /^\d+$/.test(text) ? Number(text) : 'invalid'
+  return /^\d+(\.\d+)?$/.test(text) ? Math.round(Number(text)) : 'invalid'
 }
 
 /**
@@ -118,9 +122,9 @@ function normalizeRow(row: readonly string[]): Activity | null {
   const elapsedTimeS = readRequiredSeconds(field(row, COLUMN.elapsedSeconds))
   const movingTimeS = readRequiredSeconds(field(row, COLUMN.movingSeconds))
   const distanceM = readOptionalMetres(field(row, COLUMN.distanceMetres))
-  const elevationGainM = readOptionalInteger(field(row, COLUMN.elevationGainM))
-  const maxHeartRate = readOptionalInteger(field(row, COLUMN.heartRateMax))
-  const avgHeartRate = readOptionalInteger(field(row, COLUMN.heartRateAvg))
+  const elevationGainM = readOptionalWholeNumber(field(row, COLUMN.elevationGainM))
+  const maxHeartRate = readOptionalWholeNumber(field(row, COLUMN.heartRateMax))
+  const avgHeartRate = readOptionalWholeNumber(field(row, COLUMN.heartRateAvg))
   if (
     elapsedTimeS === null ||
     elapsedTimeS === 'invalid' ||

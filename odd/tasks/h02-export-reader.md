@@ -162,6 +162,18 @@ A later candidate still carried this milestone's files, so a reliability review 
 | R3-001 | warning  | The `readRequiredSeconds` null branch is dead code.                                                           | Same finding as the first review; still deferred to H-05, where this function is touched again.                                                                                                                                                                                                                                                                                                                                                                               |
 | R3-002 | warning  | Synchronous CSV parsing blocks the event loop, which contradicts the streaming intent of the `step` callback. | **Accepted, with a consequence recorded**: `Papa.parse(text, { step })` over a string runs in a single tick, so memory stays bounded but no progress tick can be emitted until it finishes. Blocking the worker thread is intended; having no progress is not. H-05 must therefore parse a `File` through `chunk` (asynchronous) or feed the parser in slices, so the processing screen can report real progress. This is a requirement on H-05, not a defect of this reader. |
 
+## Defect found by the first real export (H-05)
+
+The reader marked **all 913 rows** of Albert's real export as corrupt, so the result screen showed zeros. Root cause was in this milestone's assumption, inherited from H-01: the document said heart rate, elevation and effort were "plain integers", and the generator emitted them that way, so 99 tests passed over a format that no real file produces. The reference export actually writes them with a decimal tail: `150.0` for a maximum heart rate, `243.0` for elevation gain, `132.0` for an average.
+
+Fixed in three places so it cannot come back:
+
+- the reader accepts `dd.d` for those columns and rounds to the integer the model stores (`readOptionalWholeNumber`),
+- the generator emits the decimal tail, so every fixture reproduces reality,
+- `docs/export-format.md` states the real shape instead of the assumption.
+
+A test now feeds a row with `150.0` / `243.0` / `132.0` and asserts it parses as 150 / 243 / 132 with zero corrupt rows. Re-reading the real export gives `totalRows 913, inSeason 175, discardedOtherYear 738, corruptRows 0`, which is when the defect is actually gone.
+
 ## Progress
 
 T1 to T5 done. H-03 (metrics and the `YearSummary` schema) is unblocked.

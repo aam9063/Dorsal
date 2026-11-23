@@ -842,10 +842,10 @@ function rowFields(spec: ActivitySpec): string[] {
     fields[COL.distanceMetres] = `${spec.distanceHundredths * 10}.0`
   }
   if (spec.maxHeartRate !== null) {
-    fields[COL.heartRateMax] = String(spec.maxHeartRate)
+    fields[COL.heartRateMax] = `${spec.maxHeartRate}.0`
   }
   if (spec.elevationGainM !== null) {
-    fields[COL.elevationGain] = String(spec.elevationGainM)
+    fields[COL.elevationGain] = `${spec.elevationGainM}.0`
   }
   if (spec.gear !== null) {
     fields[COL.gear] = spec.gear
@@ -854,7 +854,7 @@ function rowFields(spec: ActivitySpec): string[] {
     fields[COL.relativeEffort] = String(spec.relativeEffort)
   }
   if (spec.avgHeartRate !== null) {
-    fields[COL.heartRateAvg] = String(spec.avgHeartRate)
+    fields[COL.heartRateAvg] = `${spec.avgHeartRate}.0`
   }
   return fields
 }

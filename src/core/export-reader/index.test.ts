@@ -248,3 +248,30 @@ describe('incremental accumulator', () => {
     expect(accumulator.keptRows + 1).toBeGreaterThanOrEqual(1)
   })
 })
+
+describe('numbers the export writes with a decimal tail', () => {
+  it('reads heart rate and elevation written as 150.0 instead of marking the row corrupt', () => {
+    const csv = csvOf([
+      {
+        0: '42',
+        1: '22 nov 2026, 7:28:41',
+        3: 'Bicicleta',
+        5: '14389',
+        7: '150.0',
+        16: '11971.0',
+        17: '61730.0',
+        20: '243.0',
+        31: '132.0',
+      },
+    ])
+
+    const { activities, stats } = readActivities(csv)
+
+    expect(stats.corruptRows).toBe(0)
+    expect(activities).toHaveLength(1)
+    expect(activities[0]?.maxHeartRate).toBe(150)
+    expect(activities[0]?.avgHeartRate).toBe(132)
+    expect(activities[0]?.elevationGainM).toBe(243)
+    expect(activities[0]?.distanceM).toBe(61730)
+  })
+})
