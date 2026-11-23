@@ -13,7 +13,20 @@ export interface AnalyzeProgress {
   keptRows: number
 }
 
-export type AnalyzeFailureCode = 'unreadable' | 'contract' | 'failed'
+/** Reads the analysis produced by the worker, one counter per documented state. */
+export interface AnalyzeReadStats {
+  /** Data rows seen, the header excluded. */
+  totalRows: number
+  /** Rows that became 2026 activities. */
+  inSeason: number
+  /** Valid rows outside the 2026 season, discarded at read time. */
+  discardedOtherYear: number
+  /** Rows that could not be normalized and were ignored. */
+  corruptRows: number
+}
+
+export type AnalyzeFailureCode =
+  'unreadable' | 'notStrava' | 'zipInsteadOfCsv' | 'contract' | 'failed'
 
 export interface AnalyzeFailure {
   code: AnalyzeFailureCode
@@ -22,10 +35,12 @@ export interface AnalyzeFailure {
 
 /**
  * Outcome of one analysis. Bad data never throws: it arrives as a typed
- * failure, and a cancelled run produces no summary.
+ * failure, a cancelled run produces no summary, and a successful one carries
+ * the read stats the refusal and warning states need (odd/tasks/h06-upload-errors.md,
+ * decision 7).
  */
 export type AnalyzeOutcome =
-  | { status: 'ok'; summary: YearSummary }
+  | { status: 'ok'; summary: YearSummary; stats: AnalyzeReadStats }
   | { status: 'cancelled' }
   | { status: 'error'; failure: AnalyzeFailure }
 

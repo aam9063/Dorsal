@@ -5,6 +5,7 @@ import type {
   AnalyzeFailureCode,
   AnalyzeOutcome,
   AnalyzePhase,
+  AnalyzeReadStats,
   YearSummary,
 } from '../../worker/client'
 
@@ -14,8 +15,8 @@ const BUTTON_CLASS =
 
 interface ProcessingScreenProps {
   file: File
-  /** Called once with the validated summary when the run finishes. */
-  onComplete: (summary: YearSummary) => void
+  /** Called once with the validated summary and the read stats of the run. */
+  onComplete: (summary: YearSummary, stats: AnalyzeReadStats) => void
   /** Called when the user cancels the run. */
   onCancel: () => void
 }
@@ -35,6 +36,35 @@ function failureMessage(code: AnalyzeFailureCode | undefined): string {
   return code === 'unreadable' ? t.processing.errorUnreadable : t.processing.errorGeneric
 }
 
+function WorkerFailure({
+  testId,
+  title,
+  body,
+  onBack,
+}: {
+  testId: string
+  title: string
+  body: string
+  onBack: () => void
+}) {
+  return (
+    <section data-testid={testId} className={SECTION_CLASS}>
+      <h1 className="text-5xl">{title}</h1>
+      <p className="text-base text-fg-muted" role="alert">
+        {body}
+      </p>
+      <button
+        type="button"
+        data-testid="processing-cancel"
+        className={BUTTON_CLASS}
+        onClick={onBack}
+      >
+        {t.processing.back}
+      </button>
+    </section>
+  )
+}
+
 function ProcessingError({
   code,
   onBack,
@@ -42,6 +72,26 @@ function ProcessingError({
   code: AnalyzeFailureCode | undefined
   onBack: () => void
 }) {
+  if (code === 'zipInsteadOfCsv') {
+    return (
+      <WorkerFailure
+        testId="upload-error-zip"
+        title={t.upload.errors.zipTitle}
+        body={t.upload.errors.zipBody}
+        onBack={onBack}
+      />
+    )
+  }
+  if (code === 'notStrava') {
+    return (
+      <WorkerFailure
+        testId="upload-error-not-strava"
+        title={t.upload.errors.notStravaTitle}
+        body={t.upload.errors.notStravaBody}
+        onBack={onBack}
+      />
+    )
+  }
   return (
     <section data-testid="processing-root" className={SECTION_CLASS}>
       <h1 className="text-5xl">{t.processing.errorTitle}</h1>
@@ -63,7 +113,7 @@ function ProcessingError({
 export function ProcessingScreen({ file, onComplete, onCancel }: ProcessingScreenProps) {
   function handleFinished(outcome: AnalyzeOutcome): void {
     if (outcome.status === 'ok') {
-      onComplete(outcome.summary)
+      onComplete(outcome.summary, outcome.stats)
     }
     if (outcome.status === 'cancelled') {
       onCancel()

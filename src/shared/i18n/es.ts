@@ -1,3 +1,7 @@
+import { formatNumber } from '../format'
+
+const EMPTY = ''
+
 export const es = {
   brand: {
     name: 'Dorsal',
@@ -185,8 +189,27 @@ export const es = {
       ],
     },
     pickFile: 'Elegir activities.csv',
-    provisional:
-      'Selector de archivo provisional. La subida real, con validación y estados de error, se construye en H-06.',
+    dropHere: 'o arrástralo aquí',
+    hint: 'Solo aceptamos activities.csv, de hasta 50 MB.',
+    retry: 'Volver a elegir otro archivo',
+    errors: {
+      extensionTitle: 'Este archivo no es un CSV',
+      extensionBody:
+        'Solo aceptamos activities.csv. Si tu exportación llegó comprimida, descomprímela y elige activities.csv, el archivo que está en la raíz.',
+      sizeTitle: 'El archivo es demasiado grande',
+      sizeBody:
+        'El límite es de 50 MB y tu archivo lo supera. Comprueba que has elegido activities.csv y no la exportación completa.',
+      zipTitle: 'Ese es el archivo comprimido, no el CSV',
+      zipBody:
+        'Dorsal necesita activities.csv, que va dentro del archivo comprimido de la exportación. Descomprímelo en tu dispositivo y elige activities.csv, el que está en la raíz.',
+      notStravaTitle: 'Este CSV no parece de Strava',
+      notStravaBody:
+        'La primera fila no tiene las columnas de activities.csv. Comprueba que has elegido el archivo de tu exportación y vuelve a intentarlo.',
+      noSeasonTitle: 'Este archivo no tiene actividades de 2026',
+      noSeasonBody:
+        'Comprueba que has elegido el archivo de tu exportación y vuelve a intentarlo. Si entrenaste en 2026, revisa que el archivo incluye ese año.',
+      unsupportedTitle: 'Tu navegador no puede leer el archivo',
+    },
   },
   processing: {
     title: 'Preparando tu temporada…',
@@ -217,3 +240,29 @@ export const es = {
     cta: 'Volver al inicio',
   },
 } as const
+
+/**
+ * Copy for the refusal to open the wrapped when no activity survived the 2026
+ * filter, with the real counts of the run (BRIEF §5.4).
+ */
+export function uploadNoSeasonMessage(totalRows: number): string {
+  return `Leímos ${formatNumber(totalRows)} actividades y ninguna es de 2026.`
+}
+
+/** List with the Spanish joining, e.g. `[Worker, FileReader]` → "Worker y FileReader". */
+export function joinAnd(items: readonly string[]): string {
+  if (items.length <= 1) {
+    return items.join(EMPTY)
+  }
+  return `${items.slice(0, -1).join(', ')} y ${items[items.length - 1] ?? EMPTY}`
+}
+
+/** Copy for the unsupported-browser state, naming each missing API. */
+export function uploadUnsupportedMessage(missing: readonly string[]): string {
+  return `Para leer el archivo en tu dispositivo, a tu navegador le falta ${joinAnd(missing)}. Actualiza el navegador o prueba con otro y vuelve a intentarlo.`
+}
+
+/** Copy for the warning about rows that could not be read and were ignored. */
+export function resultCorruptWarning(corruptRows: number): string {
+  return `Ignoramos ${formatNumber(corruptRows)} filas que no pudimos leer. Los números cuentan solo las actividades válidas.`
+}
