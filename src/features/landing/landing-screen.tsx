@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import { t } from '../../shared/i18n'
+import { ScrollRow } from '../../shared/ui'
 
 const NAV_ITEMS = [
   { href: '#como', label: t.landing.navHow },
@@ -348,12 +349,12 @@ function LandingPreviews() {
           {t.landing.previews.description}
         </p>
       </div>
-      <div
-        tabIndex={0}
-        data-testid="landing-stories"
-        className="-mx-5 overflow-x-auto px-5 pb-3 sm:-mx-8 sm:px-8"
+      <ScrollRow
+        testId="landing-stories"
+        label={t.landing.previews.listAriaLabel}
+        className="-mx-5 px-5 pb-3 sm:-mx-8 sm:px-8"
       >
-        <ul aria-label={t.landing.previews.listAriaLabel} className="flex w-max gap-5">
+        <ul className="flex w-max gap-5">
           {t.landing.previews.items.map((item, index) => {
             const variant = CARD_VARIANTS[index]
             return (
@@ -399,7 +400,7 @@ function LandingPreviews() {
             )
           })}
         </ul>
-      </div>
+      </ScrollRow>
     </section>
   )
 }
