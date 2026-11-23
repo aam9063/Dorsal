@@ -8,6 +8,7 @@ export type {
   AnalyzeOutcome,
   AnalyzePhase,
   AnalyzeProgress,
+  AnalyzeReadStats,
 } from './contract'
 export type { YearSummary } from '../core/model/year-summary'
 
