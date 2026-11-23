@@ -1,12 +1,12 @@
 name: CI
 
+# Feature branches are covered by their pull request, so only the branches
+# that get merged into run on push: one verification per commit instead of two.
 on:
   push:
     branches:
       - main
       - dev
-      - 'feature/**'
-      - 'fix/**'
   pull_request:
     branches:
       - main
