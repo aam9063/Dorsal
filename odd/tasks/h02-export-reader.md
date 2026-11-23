@@ -135,6 +135,24 @@ Then with the fix in place: `Tests 20 passed (20)`. A test that cannot fail is n
 
 `pnpm check` failed at `format:check` on 51 untouched files. Cause: `core.autocrlf=true` writes the working tree as CRLF while the repository stores LF, and Prettier expects LF. CI was unaffected because it checks out LF. Fixed with `.gitattributes` (`* text=auto eol=lf`), which makes every OS see what CI sees. Verified with `git ls-files --eol` before and after, and `git diff HEAD` empty after the normalisation.
 
+### Native review receipt (RDD)
+
+The first attempt to review the accumulated branch was refused at preflight (`lens_context_budget_exceeded`, 63 paths from `main`'s initial commit: no authority created, nothing to repair). Once `main` was promoted and the base advanced to `dev`'s tip, the candidate was only this milestone's eight paths and the review ran to completion.
+
+| Item    | Value                                                               |
+| ------- | ------------------------------------------------------------------- |
+| Lineage | `review-b4d4c89245b00dfe`                                           |
+| Tier    | medium, 8 files, 892 changed lines, correction budget 200           |
+| Lenses  | `review-risk`, `review-reliability`, 2 host-relayed model runs      |
+| Outcome | **approved**, authority burned (`gentle-ai.review-acknowledged/v1`) |
+
+Two advisory findings, both non-blocking and both deferred to H-05, where this file changes anyway to report progress:
+
+| Id     | Severity   | Claim                                                                                     | Disposition                                                                                                                                                                |
+| ------ | ---------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R3-001 | suggestion | `elapsedTimeS === null` is dead code, because `readRequiredSeconds` never returns `null`. | Accepted; it is a real dead branch, removed in H-05 rather than re-triggering a review cycle for a cosmetic edit.                                                          |
+| R3-002 | warning    | `FIELD_COUNT` is a magic constant not referenced by any external specification.           | Accepted with a correction: `docs/export-format.md` does state the 104-column contract, so the constant is documented; the reference is added to the code comment in H-05. |
+
 ## Progress
 
 T1 to T5 done. H-03 (metrics and the `YearSummary` schema) is unblocked.
