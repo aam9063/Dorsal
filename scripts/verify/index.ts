@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
@@ -21,11 +22,22 @@ const ROUTES = [
   { path: '/resultado', name: 'result', root: '[data-testid="result-root"]' },
 ] as const
 
-const NOT_IMPLEMENTED = ['--fixture', '--trace', '--perf', '--heap'] as const
+const NOT_IMPLEMENTED = ['--trace', '--heap'] as const
+
+/** A main thread blocked longer than this stops being fluid (BRIEF §9, H-05). */
+const LONG_TASK_BUDGET_MS = 50
+
+declare global {
+  interface Window {
+    __dorsalLongTasks?: { name: string; startTime: number; duration: number }[]
+  }
+}
 
 interface Options {
   viewport: ViewportName | 'both'
   theme: 'light' | 'dark' | 'both'
+  fixture: string | null
+  perf: boolean
 }
 
 interface VerificationFailure {
@@ -74,7 +86,14 @@ function parseOptions(argv: readonly string[]): Options {
     }
   }
 
-  return { viewport, theme }
+  const fixture = valueOf('--fixture') ?? null
+  if (fixture !== null && !existsSync(path.join('fixtures', 'generated', `${fixture}.csv`))) {
+    throw new Error(
+      `--fixture expects a generated fixture, "${fixture}" is missing: run pnpm fixtures first`,
+    )
+  }
+
+  return { viewport, theme, fixture, perf: argv.includes('--perf') }
 }
 
 function selectedViewports(option: Options['viewport']): ViewportName[] {
@@ -134,6 +153,48 @@ function attachCollectors(
   })
 }
 
+/**
+ * Measures main-thread responsiveness. `PerformanceObserver` was tried first and
+ * rejected on evidence: `longtask` never fired for a blocked page and
+ * `long-animation-frame` reported inconsistently, both checked by blocking the
+ * thread on purpose. A 10 ms interval whose ticks arrive late is what a blocked
+ * thread actually looks like, and it caught a deliberate 220 ms block as 213 ms
+ * of drift.
+ */
+const RESPONSIVENESS_TICK_MS = 10
+
+interface ResponsivenessEntry {
+  screen: string
+  worstDriftMs: number
+}
+
+declare global {
+  interface Window {
+    __dorsalDrift?: number[]
+  }
+}
+
+async function watchResponsiveness(page: Page): Promise<void> {
+  await page.addInitScript((tick: number) => {
+    window.__dorsalDrift = []
+    let previous = performance.now()
+    setInterval(() => {
+      const now = performance.now()
+      window.__dorsalDrift?.push(now - previous - tick)
+      previous = now
+    }, tick)
+  }, RESPONSIVENESS_TICK_MS)
+}
+
+async function readWorstDrift(page: Page, screen: string): Promise<ResponsivenessEntry> {
+  const worstDriftMs = await page.evaluate(() => {
+    const samples = window.__dorsalDrift ?? []
+    window.__dorsalDrift = []
+    return samples.reduce((max, value) => Math.max(max, value), 0)
+  })
+  return { screen, worstDriftMs }
+}
+
 function problemsOf(consoleLog: readonly ConsoleEntry[]): ConsoleEntry[] {
   return consoleLog.filter(
     (entry) => entry.type === 'error' || entry.type === 'pageerror' || entry.type === 'warning',
@@ -150,6 +211,7 @@ async function run(): Promise<number> {
   const network: NetworkEntry[] = []
   const screenshots: string[] = []
   const failures: VerificationFailure[] = []
+  const responsiveness: ResponsivenessEntry[] = []
 
   let screen = 'startup'
   let server: ViteDevServer | null = null
@@ -169,6 +231,9 @@ async function run(): Promise<number> {
         })
         const page = await context.newPage()
         attachCollectors(page, () => screen, consoleLog, network)
+        if (options.perf) {
+          await watchResponsiveness(page)
+        }
 
         try {
           for (const route of ROUTES) {
@@ -179,6 +244,35 @@ async function run(): Promise<number> {
               const file = path.join(screensDir, `${screen}.png`)
               await page.screenshot({ path: file, fullPage: true })
               screenshots.push(file)
+            } catch (error) {
+              failures.push({
+                screen,
+                message: error instanceof Error ? error.message : String(error),
+              })
+            }
+          }
+          if (options.fixture !== null) {
+            try {
+              screen = `season-${viewport}-${theme}`
+              await page.goto(`${BASE_URL}/subir`, { waitUntil: 'load' })
+              await page.setInputFiles(
+                '[data-testid="upload-input"]',
+                path.join('fixtures', 'generated', `${options.fixture}.csv`),
+              )
+              await page
+                .screenshot({
+                  path: path.join(screensDir, `processing-${viewport}-${theme}.png`),
+                  fullPage: true,
+                })
+                .catch(() => undefined)
+              await page.waitForSelector('[data-testid="result-total-distance"]', {
+                state: 'visible',
+                timeout: 30_000,
+              })
+              const file = path.join(screensDir, `season-${viewport}-${theme}.png`)
+              await page.screenshot({ path: file, fullPage: true })
+              screenshots.push(file)
+              responsiveness.push(await readWorstDrift(page, screen))
             } catch (error) {
               failures.push({
                 screen,
@@ -205,6 +299,14 @@ async function run(): Promise<number> {
     }
 
     const summaryProblems = problemsOf(consoleLog)
+    const summaryOverBudget = responsiveness.filter(
+      (entry) => entry.worstDriftMs > LONG_TASK_BUDGET_MS,
+    )
+    await writeFile(
+      path.join(outDir, 'perf.json'),
+      JSON.stringify({ budgetMs: LONG_TASK_BUDGET_MS, samples: responsiveness }, null, 2),
+      'utf8',
+    )
     await writeFile(
       path.join(outDir, 'console.log'),
       consoleLog.map((entry) => `[${entry.screen}] ${entry.type}: ${entry.text}`).join('\n'),
@@ -215,10 +317,13 @@ async function run(): Promise<number> {
       path.join(outDir, 'summary.json'),
       JSON.stringify(
         {
-          ok: failures.length === 0 && summaryProblems.length === 0,
+          ok:
+            failures.length === 0 && summaryProblems.length === 0 && summaryOverBudget.length === 0,
           options,
           screenshots,
           requests: network.length,
+          worstDriftMs: responsiveness.reduce((max, entry) => Math.max(max, entry.worstDriftMs), 0),
+          overBudgetScreens: summaryOverBudget.length,
           consoleProblems: summaryProblems.length,
           failures,
           lastScreen: screen,
@@ -231,6 +336,7 @@ async function run(): Promise<number> {
   }
 
   const problems = problemsOf(consoleLog)
+  const overBudget = responsiveness.filter((entry) => entry.worstDriftMs > LONG_TASK_BUDGET_MS)
 
   process.stdout.write(`verify: ${String(screenshots.length)} screenshots in ${outDir}\n`)
   process.stdout.write(
@@ -244,7 +350,21 @@ async function run(): Promise<number> {
     process.stderr.write(`verify failed on ${failure.screen}: ${failure.message}\n`)
   }
 
-  return failures.length === 0 && problems.length === 0 ? 0 : 1
+  if (responsiveness.length > 0) {
+    const worst = responsiveness.reduce((max, entry) => Math.max(max, entry.worstDriftMs), 0)
+    process.stdout.write(
+      `verify: worst main-thread drift ${worst.toFixed(1)} ms of a ${String(LONG_TASK_BUDGET_MS)} ms budget
+`,
+    )
+  }
+  for (const entry of overBudget) {
+    process.stderr.write(
+      `main thread blocked on ${entry.screen}: ${entry.worstDriftMs.toFixed(1)} ms
+`,
+    )
+  }
+
+  return failures.length === 0 && problems.length === 0 && overBudget.length === 0 ? 0 : 1
 }
 
 run().then(
