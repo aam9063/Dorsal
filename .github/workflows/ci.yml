@@ -42,19 +42,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm fixtures
-      # WebKit pulls ~200 apt packages; downloading them costs ~13 min per
-      # cold run, so the archive cache lives in a directory the runner owns.
-      - name: Point the apt archive cache at a cacheable directory
-        run: |
-          mkdir -p "$HOME/apt-archives"
-          echo 'Dir::Cache::archives "/home/runner/apt-archives";' | sudo tee /etc/apt/apt.conf.d/99-dorsal-apt-cache
-      - name: Restore the apt package cache
-        uses: actions/cache@v6
-        with:
-          path: /home/runner/apt-archives
-          key: apt-playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            apt-playwright-${{ runner.os }}-
+      # WebKit pulls ~200 apt packages. That normally takes ~1.5 min, but one
+      # run took 13 min on a slow Ubuntu mirror, so the step is bounded instead
+      # of being allowed to sit there.
       - name: Install Playwright browsers and their system packages
         run: pnpm exec playwright install --with-deps chromium webkit
         timeout-minutes: 20
