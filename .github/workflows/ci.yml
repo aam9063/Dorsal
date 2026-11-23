@@ -42,7 +42,12 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm fixtures
-      - run: pnpm exec playwright install --with-deps chromium webkit
+      # WebKit pulls ~200 apt packages. That normally takes ~1.5 min, but one
+      # run took 13 min on a slow Ubuntu mirror, so the step is bounded instead
+      # of being allowed to sit there.
+      - name: Install Playwright browsers and their system packages
+        run: pnpm exec playwright install --with-deps chromium webkit
+        timeout-minutes: 20
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v7
         if: failure()
