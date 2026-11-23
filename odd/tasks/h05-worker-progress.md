@@ -79,6 +79,15 @@ worstDrift 6.2 | overBudgetScreens 0 | ok true
 
 The verify run reports one origin and zero external requests; the analysis happens in the worker and nothing is persisted. The summary crosses the boundary validated by `YearSummary`.
 
+### Second native review (lineage `review-ff669746f938ae45`)
+
+Approved and burned, with two non-blocking findings and their dispositions:
+
+| Id       | Severity   | Claim                                                                                                   | Disposition                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| -------- | ---------- | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `R3-001` | warning    | Duplicate `data-testid` on sibling rendering paths makes element selection non-deterministic.           | **Accepted as cosmetic, not fixed.** The duplicate ids are real: `processing-root` and `processing-cancel` are declared once per rendering branch. The branches are mutually exclusive, so only one exists in the DOM at a time and no selector can match two elements; the tests and `pnpm verify --fixture` both select deterministically, which the green runs confirm. Deduplicating them would mean extracting a shared shell for two branches that differ only in their body, which is churn without behaviour. |
+| `R3-002` | suggestion | The ref is updated unconditionally on every render, creating dependency cycles and possible re-renders. | **Rejected with evidence.** `onFinishedRef.current = onFinished` is assigned inside a `useEffect`, not during render (`src/shared/hooks/use-analysis.ts`), which is the documented pattern for keeping a callback current without re-subscribing. There is no render-time mutation to remove.                                                                                                                                                                                                                         |
+
 ## Progress
 
 T1 to T5 done.
