@@ -32,3 +32,6 @@ pnpm-debug.log*
 *.csv
 *.zip
 !fixtures/generated/*.csv
+
+# Local agent tooling cache
+.atl/
