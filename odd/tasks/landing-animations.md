@@ -55,7 +55,36 @@ Consolidating on GSAP everywhere would mean rewriting the player's transitions a
 
 ## Evidence of verification
 
-(filled at T4)
+### `pnpm check` and `pnpm test:e2e` — green
+
+`tsc` · `eslint` · `prettier` · **164 tests** (15 of them new, for the animation policy) · `depcruise` 77 modules · both guards. End to end: **99 passed**.
+
+### The reveal rule changed on evidence, and that is the interesting part
+
+The brief I wrote said "animate `opacity` and `transform`". The first implementation faded content in and **axe failed contrast twice** on elements caught mid-fade, exactly the failure this project already hit in H-08. The shipped version never animates opacity: every reveal is a short rise from a few pixels using `gsap.from`, so the element is legible at every instant of the animation and the audit can run at any moment.
+
+That is a deliberate deviation from my own constraint, made because the constraint was wrong, and it is recorded rather than quietly dropped.
+
+### Nothing is hidden in the markup
+
+Every element renders visible and the hook moves it. With JavaScript blocked, a failed import or a thrown error, the page is still readable — which is the requirement that mattered more than the animation.
+
+### Reduced motion
+
+The hook returns before the first GSAP call when `prefers-reduced-motion: reduce` matches, and an end-to-end test emulates the media query before navigating and asserts the headline and the call to action are at full opacity with no waiting. The pure decision lives in `gsap-reveal-policy.ts` so it can be tested in the node environment, where the hook itself cannot run.
+
+### The bundle cost, on the record
+
+```
+pnpm build → dist/assets/index-*.js   668.15 kB (gzip 218.61 kB)
+             dist/assets/index-*.css   34.74 kB (gzip   7.36 kB)
+```
+
+Vite warns about the chunk size. GSAP's own dist measures about 27.9 kB gzip for the core plus 17.6 kB for `ScrollTrigger`; the bundle is an upper bound because Vite tree-shakes the ESM source. The honest reading: the landing now ships two animation libraries, and the follow-up decision in "The stack decision this records" is to port the player to GSAP and drop Motion, or to accept the weight.
+
+### What was deliberately left alone
+
+The FAQ disclosure is native (`<details>`) and animating it would need `height`, which the constraints forbid. The scroll row's thumb already transitions in CSS. Decorative story art follows its card.
 
 ## Progress
 
