@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { es } from './es'
+import {
+  es,
+  joinAnd,
+  resultCorruptWarning,
+  uploadNoSeasonMessage,
+  uploadUnsupportedMessage,
+} from './es'
 
 function collectStrings(value: unknown, path: string[] = []): { path: string; text: string }[] {
   if (typeof value === 'string') {
@@ -43,5 +49,46 @@ describe('spanish copy', () => {
     const unzipAnswer = es.landing.faq.items.find((item) => item.answer.includes('.zip'))
     expect(unzipAnswer).toBeDefined()
     expect(unzipAnswer?.answer).toContain('activities.csv')
+  })
+})
+
+describe('upload error copy', () => {
+  it('has one title and one body per documented state', () => {
+    const { errors } = es.upload
+    const states = [
+      ['extension', errors.extensionTitle, errors.extensionBody],
+      ['size', errors.sizeTitle, errors.sizeBody],
+      ['zip', errors.zipTitle, errors.zipBody],
+      ['notStrava', errors.notStravaTitle, errors.notStravaBody],
+      ['noSeason', errors.noSeasonTitle, errors.noSeasonBody],
+    ] as const
+    for (const [key, title, body] of states) {
+      expect(title.trim().length, key).toBeGreaterThan(0)
+      expect(body.trim().length, key).toBeGreaterThan(0)
+    }
+    expect(errors.unsupportedTitle.trim().length).toBeGreaterThan(0)
+  })
+
+  it('explains how to take activities.csv out of the archive', () => {
+    expect(es.upload.errors.zipBody).toContain('activities.csv')
+    expect(es.upload.errors.zipBody.toLowerCase()).toContain('descompr')
+  })
+
+  it('quotes the season error with the counts the run observed', () => {
+    expect(es.upload.errors.noSeasonTitle).toContain('2026')
+    expect(uploadNoSeasonMessage(913)).toContain('913')
+    expect(uploadNoSeasonMessage(913)).toContain('2026')
+    expect(uploadNoSeasonMessage(0)).toContain('0')
+  })
+
+  it('names the browser APIs the flow needs when they are missing', () => {
+    expect(joinAnd(['Worker', 'FileReader'])).toBe('Worker y FileReader')
+    const message = uploadUnsupportedMessage(['Worker', 'FileReader'])
+    expect(message).toContain('Worker')
+    expect(message).toContain('FileReader')
+  })
+
+  it('counts the ignored corrupt rows next to the season numbers', () => {
+    expect(resultCorruptWarning(2)).toContain('2')
   })
 })

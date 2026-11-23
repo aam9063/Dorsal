@@ -1,13 +1,20 @@
 import type { YearSummary } from '../../core/model/year-summary'
+import type { AnalyzeReadStats } from '../../worker/client'
 
-let handedOff: YearSummary | null = null
+/** The validated summary of a run plus the read stats its warnings need. */
+export interface SeasonHandoff {
+  summary: YearSummary
+  stats: AnalyzeReadStats
+}
 
-/** Keeps the summary of the run that just finished for the result screen. */
-export function handOffSeasonSummary(summary: YearSummary): void {
-  handedOff = summary
+let handedOff: SeasonHandoff | null = null
+
+/** Keeps the validated summary of the run that just finished for the result screen. */
+export function handOffSeasonSummary(season: SeasonHandoff): void {
+  handedOff = season
 }
 
 /** The summary handed off by the last completed run, `null` before any run. */
-export function handedOffSeasonSummary(): YearSummary | null {
+export function handedOffSeasonSummary(): SeasonHandoff | null {
   return handedOff
 }
