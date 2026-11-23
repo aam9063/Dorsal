@@ -14,11 +14,17 @@ export function formatKilometres(metres: number): string {
   return oneDecimalFormat.format(metres / 1000)
 }
 
-/** Seconds as `34 h 12 min`; below one hour only the minutes are shown. */
+/**
+ * Seconds as `34 h 12 min`; below one hour only the minutes are shown, and a
+ * whole number of hours drops the `0 min` that would only add noise.
+ */
 export function formatDuration(seconds: number): string {
   const hours = Math.floor(seconds / 3600)
   const minutes = Math.floor((seconds % 3600) / 60)
-  return hours > 0
-    ? `${formatNumber(hours)} h ${formatNumber(minutes)} min`
-    : `${formatNumber(minutes)} min`
+  if (hours === 0) {
+    return `${formatNumber(minutes)} min`
+  }
+  return minutes === 0
+    ? `${formatNumber(hours)} h`
+    : `${formatNumber(hours)} h ${formatNumber(minutes)} min`
 }
