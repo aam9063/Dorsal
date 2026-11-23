@@ -5,8 +5,9 @@ const EMPTY = ''
 export const es = {
   brand: {
     name: 'Dorsal',
-    tagline: 'Tu temporada 2026',
     chip: '26',
+    home: 'Volver al inicio',
+    tagline: 'Tu temporada 2026',
   },
   theme: {
     label: 'Tema',
@@ -66,7 +67,7 @@ export const es = {
       seasonLabel: 'Temporada 2026',
       kmLabel: 'km',
       km: '3214',
-      name: 'Lucía M.',
+      name: 'Javier A.',
       stats: [
         { value: '412', label: 'Activ.' },
         { value: '287 h', label: 'En movimiento' },
