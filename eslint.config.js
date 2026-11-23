@@ -130,7 +130,13 @@ function restrictedSyntax(...groups) {
   return ['error', ...groups.flat()]
 }
 
-const typeAwareFiles = ['src/**/*.{ts,tsx}', 'tests/**/*.ts', 'scripts/**/*.ts', 'e2e/**/*.ts']
+const typeAwareFiles = [
+  'src/**/*.{ts,tsx}',
+  'tests/**/*.ts',
+  'scripts/**/*.ts',
+  'e2e/**/*.ts',
+  'fixtures/**/*.ts',
+]
 
 function appRules({ allowStorage, allowUseEffect }) {
   const syntax = [...NETWORK_SYNTAX, ...DEFAULT_EXPORT_SYNTAX, ...DOUBLE_ASSERTION_SYNTAX]
@@ -237,7 +243,13 @@ export default [
     },
   },
   {
-    files: ['**/*.{test,spec}.{ts,tsx}', 'tests/**/*.ts', 'e2e/**/*.ts', 'scripts/**/*.ts'],
+    files: [
+      '**/*.{test,spec}.{ts,tsx}',
+      'tests/**/*.ts',
+      'e2e/**/*.ts',
+      'scripts/**/*.ts',
+      'fixtures/**/*.ts',
+    ],
     rules: {
       '@typescript-eslint/no-non-null-assertion': 'off',
     },
