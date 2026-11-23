@@ -7,3 +7,10 @@ export type Locale = keyof typeof messages
 export const defaultLocale: Locale = 'es'
 
 export const t = messages[defaultLocale]
+
+export {
+  joinAnd,
+  resultCorruptWarning,
+  uploadNoSeasonMessage,
+  uploadUnsupportedMessage,
+} from './es'

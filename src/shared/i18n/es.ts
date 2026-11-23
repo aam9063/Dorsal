@@ -1,3 +1,7 @@
+import { formatNumber } from '../format'
+
+const EMPTY = ''
+
 export const es = {
   brand: {
     name: 'Dorsal',
@@ -19,6 +23,31 @@ export const es = {
   a11y: {
     skipToContent: 'Saltar al contenido',
   },
+  sports: {
+    run: 'Carrera a pie',
+    ride: 'Bici',
+    swim: 'Natación',
+    walk: 'Caminata',
+    hike: 'Senderismo',
+    other: 'Otro',
+  },
+  months: [
+    'enero',
+    'febrero',
+    'marzo',
+    'abril',
+    'mayo',
+    'junio',
+    'julio',
+    'agosto',
+    'septiembre',
+    'octubre',
+    'noviembre',
+    'diciembre',
+  ],
+  monthsAbbr: ['E', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'],
+  monthsShort: ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'],
+  weekdays: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
   landing: {
     navAriaLabel: 'Principal',
     navHow: 'Cómo funciona',
@@ -185,8 +214,27 @@ export const es = {
       ],
     },
     pickFile: 'Elegir activities.csv',
-    provisional:
-      'Selector de archivo provisional. La subida real, con validación y estados de error, se construye en H-06.',
+    dropHere: 'o arrástralo aquí',
+    hint: 'Solo aceptamos activities.csv, de hasta 50 MB.',
+    retry: 'Volver a elegir otro archivo',
+    errors: {
+      extensionTitle: 'Este archivo no es un CSV',
+      extensionBody:
+        'Solo aceptamos activities.csv. Si tu exportación llegó comprimida, descomprímela y elige activities.csv, el archivo que está en la raíz.',
+      sizeTitle: 'El archivo es demasiado grande',
+      sizeBody:
+        'El límite es de 50 MB y tu archivo lo supera. Comprueba que has elegido activities.csv y no la exportación completa.',
+      zipTitle: 'Ese es el archivo comprimido, no el CSV',
+      zipBody:
+        'Dorsal necesita activities.csv, que va dentro del archivo comprimido de la exportación. Descomprímelo en tu dispositivo y elige activities.csv, el que está en la raíz.',
+      notStravaTitle: 'Este CSV no parece de Strava',
+      notStravaBody:
+        'La primera fila no tiene las columnas de activities.csv. Comprueba que has elegido el archivo de tu exportación y vuelve a intentarlo.',
+      noSeasonTitle: 'Este archivo no tiene actividades de 2026',
+      noSeasonBody:
+        'Comprueba que has elegido el archivo de tu exportación y vuelve a intentarlo. Si entrenaste en 2026, revisa que el archivo incluye ese año.',
+      unsupportedTitle: 'Tu navegador no puede leer el archivo',
+    },
   },
   processing: {
     title: 'Preparando tu temporada…',
@@ -210,10 +258,105 @@ export const es = {
     activities: 'Actividades',
     activeDays: 'Días activos',
     elevation: 'Desnivel positivo (m)',
-    provisional: 'Pantalla provisional. El reproductor de historias se construye en H-07.',
+    provisional: 'Pantalla provisional.',
+    openPlayer: 'Ver mi temporada en historias',
+  },
+  player: {
+    close: 'Cerrar las historias',
+    zoneNext: 'Siguiente historia',
+    zonePrevious: 'Historia anterior',
+    progressLabel: 'Progreso de las historias',
+  },
+  stories: {
+    '01-portada': {
+      title: 'La portada',
+      seasonLabel: 'Temporada',
+      year: '2026',
+      kilometresLabel: 'Kilómetros',
+      greeting: 'tu año ya tiene dorsal.',
+      greetingStandalone: 'Tu año ya tiene dorsal.',
+      introPlural: 'salidas después, toca mirar atrás. Son ocho etapas.',
+      introSingular: 'salida después, toca mirar atrás. Son ocho etapas.',
+      nameLabel: '¿Cómo quieres que te llamemos?',
+      namePlaceholder: 'Tu nombre o apodo (opcional)',
+    },
+    '02-numeros': {
+      title: 'Los números',
+      intro: 'Este año has recorrido',
+      kilometresLabel: 'Kilómetros',
+      lapsLead: 'Son',
+      lapsUnit: 'vueltas',
+      lapsUnitSingular: 'vuelta',
+      lapsTail: 'a una pista de 400 metros. Por calle 1, sin saltarte ninguna.',
+      movingTimeLabel: 'En movimiento',
+      activitiesLabel: 'Actividades',
+      activeDaysSuffix: 'días distintos',
+      elevationLabel: 'De desnivel positivo',
+      everestUnit: 'Everest',
+      everestAria: 'veces el Everest',
+      sportSplitTitle: 'Reparto por deporte',
+      sportSplitAriaLead: 'Reparto del tiempo en movimiento por deporte:',
+    },
+    '03-perfil': {
+      title: 'El perfil de tu año',
+      subtitle:
+        'Si tu temporada fuera una etapa de montaña, este sería su perfil. Kilómetros por mes.',
+      peakBadge: 'HC',
+      peakLabel: 'Puerto de',
+      valleyLabel: 'Valle de',
+      valleyBody: 'Tu mes más flojo del año.',
+      comebackLabel: 'Remontada',
+      comebackBody: 'Después del valle, multiplicaste tu volumen.',
+      profileAriaLead: 'Kilómetros por mes:',
+      unitKm: 'km',
+    },
+    '04-constancia': {
+      title: 'Constancia',
+      intro: 'Días con actividad',
+      activeDaysSuffix: 'de 365 días',
+      heatmapAria:
+        'Calendario de 2026: un cuadrado por cada día con actividad; el color indica el tiempo en movimiento en cuatro niveles.',
+      legendLess: 'Menos tiempo',
+      legendMore: 'Más tiempo',
+      streakUnit: 'días seguidos',
+      streakUnitSingular: 'día seguido',
+      streakFrom: 'del',
+      streakTo: 'al',
+      streakDe: 'de',
+      streakTail: 'Tu racha más larga.',
+      weekdayLead: 'es tu día favorito: presente en',
+      weekSingular: 'semana',
+      weekPlural: 'semanas',
+    },
   },
   notFound: {
     title: 'Esta página no existe',
     cta: 'Volver al inicio',
   },
 } as const
+
+/**
+ * Copy for the refusal to open the wrapped when no activity survived the 2026
+ * filter, with the real counts of the run (BRIEF §5.4).
+ */
+export function uploadNoSeasonMessage(totalRows: number): string {
+  return `Leímos ${formatNumber(totalRows)} actividades y ninguna es de 2026.`
+}
+
+/** List with the Spanish joining, e.g. `[Worker, FileReader]` → "Worker y FileReader". */
+export function joinAnd(items: readonly string[]): string {
+  if (items.length <= 1) {
+    return items.join(EMPTY)
+  }
+  return `${items.slice(0, -1).join(', ')} y ${items[items.length - 1] ?? EMPTY}`
+}
+
+/** Copy for the unsupported-browser state, naming each missing API. */
+export function uploadUnsupportedMessage(missing: readonly string[]): string {
+  return `Para leer el archivo en tu dispositivo, a tu navegador le falta ${joinAnd(missing)}. Actualiza el navegador o prueba con otro y vuelve a intentarlo.`
+}
+
+/** Copy for the warning about rows that could not be read and were ignored. */
+export function resultCorruptWarning(corruptRows: number): string {
+  return `Ignoramos ${formatNumber(corruptRows)} filas que no pudimos leer. Los números cuentan solo las actividades válidas.`
+}

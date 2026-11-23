@@ -195,6 +195,58 @@ async function readWorstDrift(page: Page, screen: string): Promise<Responsivenes
   return { screen, worstDriftMs }
 }
 
+/**
+ * Walks the wrapped with the player's own controls and saves one screenshot per
+ * story. The walk stops when the index stops changing, so it never needs to know
+ * how many stories a fixture produces.
+ */
+async function captureStories(
+  page: Page,
+  screensDir: string,
+  viewport: ViewportName,
+  theme: 'light' | 'dark',
+): Promise<string[]> {
+  const openButton = page.locator('[data-testid="result-open-player"]')
+  if ((await openButton.count()) === 0) {
+    return []
+  }
+  await openButton.click()
+  await page.waitForSelector('[data-testid="player-root"]', { state: 'visible' })
+
+  const shots: string[] = []
+  for (let step = 0; step < 10; step += 1) {
+    const index = await page.getAttribute('[data-testid="player-root"]', 'data-index')
+    const file = path.join(screensDir, `story-${String(step)}-${viewport}-${theme}.png`)
+    await page.screenshot({ path: file })
+    shots.push(file)
+    await page.locator('[data-testid="player-zone-next"]').click()
+    const advanced = await page
+      .waitForFunction(
+        (previous) =>
+          document.querySelector('[data-testid="player-root"]')?.getAttribute('data-index') !==
+          previous,
+        index,
+        { timeout: 2_000 },
+      )
+      .then(() => true)
+      .catch(() => false)
+    // The cross-fade keeps both stories mounted for its duration; a capture
+    // taken here would show two stories overprinted.
+    await page
+      .waitForFunction(
+        () => document.querySelectorAll('[data-testid^="player-story-"]').length === 1,
+        undefined,
+        { timeout: 2_000 },
+      )
+      .catch(() => undefined)
+    if (!advanced) {
+      break
+    }
+  }
+  await page.locator('[data-testid="player-close"]').click()
+  return shots
+}
+
 function problemsOf(consoleLog: readonly ConsoleEntry[]): ConsoleEntry[] {
   return consoleLog.filter(
     (entry) => entry.type === 'error' || entry.type === 'pageerror' || entry.type === 'warning',
@@ -265,13 +317,19 @@ async function run(): Promise<number> {
                   fullPage: true,
                 })
                 .catch(() => undefined)
-              await page.waitForSelector('[data-testid="result-total-distance"]', {
-                state: 'visible',
-                timeout: 30_000,
-              })
+              // A refused fixture is a legitimate outcome: `no-2026` renders an
+              // error state instead of season numbers, so either is awaited.
+              await page.waitForSelector(
+                '[data-testid="result-total-distance"], [data-testid^="upload-error-"]',
+                {
+                  state: 'visible',
+                  timeout: 30_000,
+                },
+              )
               const file = path.join(screensDir, `season-${viewport}-${theme}.png`)
               await page.screenshot({ path: file, fullPage: true })
               screenshots.push(file)
+              screenshots.push(...(await captureStories(page, screensDir, viewport, theme)))
               responsiveness.push(await readWorstDrift(page, screen))
             } catch (error) {
               failures.push({
