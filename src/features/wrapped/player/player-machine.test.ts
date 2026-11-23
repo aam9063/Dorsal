@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { initialPlayerState, reducePlayer } from './player-machine'
+import { clampIndex, initialPlayerState, reducePlayer } from './player-machine'
 
 const FOUR_STORIES = 4
 
@@ -78,5 +78,24 @@ describe('player machine', () => {
   it('does not close when opening an empty player and closing it', () => {
     const state = reducePlayer(initialPlayerState(0), 'close', 0)
     expect(state.closed).toBe(true)
+  })
+
+  describe('render-time clamp', () => {
+    it('clamps an index past the end of the available list to the last story', () => {
+      expect(clampIndex(7, 3)).toBe(2)
+      expect(clampIndex(3, 3)).toBe(2)
+    })
+
+    it('keeps a valid index untouched so the clamp cannot change navigation', () => {
+      expect(clampIndex(1, 3)).toBe(1)
+      expect(clampIndex(0, 1)).toBe(0)
+    })
+
+    it('resolves to the last available story rather than nothing when the count shrinks', () => {
+      // The state index survives a shrinking available list after mount; the
+      // render must index the list with the clamped value, never past its end.
+      const shrunkenCount = 2
+      expect(clampIndex(3, shrunkenCount)).toBe(shrunkenCount - 1)
+    })
   })
 })

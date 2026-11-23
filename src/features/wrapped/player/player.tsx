@@ -4,7 +4,7 @@ import type { YearSummary } from '../../../core/model/year-summary'
 import { useAutoAdvance, useFocusOnMount, usePrefersReducedMotion } from '../../../shared/hooks'
 import { t } from '../../../shared/i18n'
 import { availableStories, type StoryDefinition } from '../stories/registry'
-import { initialPlayerState, reducePlayer, type PlayerInput } from './player-machine'
+import { clampIndex, initialPlayerState, reducePlayer, type PlayerInput } from './player-machine'
 
 /** The automatic advance of BRIEF §7. */
 const AUTO_ADVANCE_MS = 7000
@@ -30,6 +30,10 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
   const available = availableStories(stories, summary)
   const count = available.length
   const [state, setState] = useState(() => initialPlayerState(count))
+  // Render-time clamp: state.index can survive a shrinking available list after
+  // mount, and an out-of-range index must show the last story, not nothing
+  // (review of H-08). Every render read below uses this clamped index.
+  const index = clampIndex(state.index, count)
   const reducedMotion = usePrefersReducedMotion()
   const directionRef = useRef<'forward' | 'back'>('forward')
   const pressedAtRef = useRef<number | null>(null)
@@ -56,16 +60,16 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
   }, [send])
 
   useAutoAdvance({
-    enabled: !state.paused && count > 1 && state.index < count - 1,
+    enabled: !state.paused && count > 1 && index < count - 1,
     delayMs: AUTO_ADVANCE_MS,
-    resetKey: state.index,
+    resetKey: index,
     onAdvance: goNext,
   })
 
   if (count === 0) {
     return null
   }
-  const story = available[state.index]
+  const story = available[index]
   if (story === undefined) {
     return null
   }
@@ -122,7 +126,7 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
   return (
     <section
       data-testid="player-root"
-      data-index={state.index}
+      data-index={index}
       data-paused={state.paused}
       ref={rootRef}
       tabIndex={-1}
@@ -136,9 +140,9 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
           aria-label={t.player.progressLabel}
           className="flex flex-1 gap-1.5"
         >
-          {available.map((barStory, index) => {
-            const isPast = index < state.index
-            const isCurrent = index === state.index
+          {available.map((barStory, barIndex) => {
+            const isPast = barIndex < index
+            const isCurrent = barIndex === index
             const animates = isCurrent && !state.paused && !reducedMotion && count > 1
             return (
               <div
@@ -148,7 +152,7 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
               >
                 {(isPast || isCurrent) && (
                   <motion.div
-                    key={`${barStory.id}-${state.index}`}
+                    key={`${barStory.id}-${index}`}
                     className="h-full origin-left bg-accent"
                     initial={{ scaleX: animates ? 0 : 1 }}
                     animate={{ scaleX: 1 }}
@@ -184,13 +188,17 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
       >
         <AnimatePresence initial={false} mode="popLayout">
           <motion.div
-            key={`${story.id}-${state.index}`}
+            key={`${story.id}-${index}`}
             data-testid={`player-story-${story.id}`}
             initial={{ opacity: 0, x: slide }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -slide }}
             transition={{ duration: reducedMotion ? 0 : 0.3, ease: 'easeOut' }}
-            className="max-w-md"
+            // A story does not own the pointer: taps must reach the advance and
+            // back zones underneath. An interactive element inside a story opts
+            // back in with `pointer-events-auto`, which is how the portada's name
+            // field stays tappable.
+            className="pointer-events-none relative z-20 max-w-md"
           >
             {renderStory(story, summary)}
           </motion.div>

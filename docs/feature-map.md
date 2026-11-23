@@ -55,16 +55,63 @@ Shared conventions, so each entry does not repeat them:
 - Backend/API involved: the worker, through Comlink. `analyze(file, reportProgress)` plus a cancel channel.
 - Known pitfalls: progress carries **counts**, never invented percentages. The parse is chunked over the `File` on purpose: a synchronous parse of a whole string cannot emit a tick until it ends. The summary is validated with Zod on the main thread, so a contract violation surfaces as a processing error.
 
+## Stories 01 to 04
+
+- What it is: the content of the wrapped — the cover, the season numbers, the monthly profile and the consistency grid.
+- Sub-features: optional name on the cover (memory only), the totals and per-sport split, the twelve-month mountain with peak, valley and comeback, the four-level heatmap with the longest streak and the favourite weekday.
+- How to reach it in the UI: `/subir` → choose a file → `/resultado` → "Ver mi wrapped".
+- Selectors for programmatic control: `player-story-01-portada`, `player-story-02-numeros`, `player-story-03-perfil`, `player-story-04-constancia`, `portada-name-input`.
+- Code location: `src/features/wrapped/stories/`.
+- Known pitfalls: a story reads its section of the `YearSummary` and never recomputes a metric; story 03 disappears when there are fewer than three active months, and the player's bars shrink with it. The cover's name field needs `pointer-events-auto` because the player hands the pointer to its own zones. The profile's SVG path is built from the real monthly series, so a malformed join is a console error rather than a silent blank.
+
 ## Result and story player
 
-- What it is: the eight stories plus the shareable bib card.
-- Sub-features: story player (gestures, keyboard, progress bars, skip rules), stories 01–08, share card.
-- How to reach it in the UI: `/resultado`, reachable from the processing screen once H-05 exists.
-- Keyboard shortcuts: planned — ArrowRight/ArrowLeft advance and go back, holding pauses, Escape closes.
-- Selectors for programmatic control: `result-root`, `result-provisional`.
-- Code location: `src/features/wrapped/`.
+- What it is: the eight stories plus the shareable bib card, played as a vertical feed.
+- Sub-features: story player (gestures, keyboard, progress bars, skip rules), stories 01–04 (H-08), stories 05–08 (H-09/H-10/H-11), share card.
+- How to reach it in the UI: `/resultado` → `result-open-player`.
+- Keyboard shortcuts: ArrowRight next story, ArrowLeft previous, Space pause/resume, Escape close; holding the pointer pauses and releasing resumes; automatic advance every 7 s (suppressed under `prefers-reduced-motion`).
+- Selectors for programmatic control: `result-root`, `result-open-player`, `result-totals`, `player-root` (`data-index`, `data-paused`), `player-progress-bar-<story-id>`, `player-story-<story-id>`, `player-zone-next`, `player-zone-previous`, `player-close`.
+- Code location: `src/features/wrapped/` (player in `player/`, registry in `stories/registry.ts`, content map in `stories/story-content.tsx`); each story in `stories/<id>/`.
 - Backend/API involved: none; it consumes the `YearSummary` returned by the worker.
-- Known pitfalls: status **stub** until H-07. The design's story 06 is "Tu firma" (route overlay from GPS files we no longer read); it is replaced by "Tu material" in H-09.
+- Known pitfalls: the available story count is fixture-dependent (story 03 needs three active months), so `player-root[data-index]` can be below the registry length; the render clamps an out-of-range index to the last story. The design's story 06 is "Tu firma" (GPS overlay we no longer read); it becomes "Tu material" in H-09. The portada name input is reachable by keyboard but not by pointer: the player tap zones overlay the story, so a pointer tap advances instead of focusing (needs a player change to fix).
+
+## Story 01 · La portada
+
+- What it is: the season year and an optional name the user types in.
+- Sub-features: name field (in memory only, never persisted).
+- How to reach it in the UI: open the player; it is story 1.
+- Keyboard shortcuts: player-wide ones; typing in the name field consumes Space and ArrowLeft/ArrowRight (the story does not change while typing).
+- Selectors for programmatic control: `portada-name-input`, story root `story-01-portada`.
+- Code location: `src/features/wrapped/stories/01-portada/`.
+- Backend/API involved: none. Worker method(s): none — reads `summary.totals.activityCount`.
+- Known pitfalls: the name lives in `01-portada/season-name.ts` module memory; nothing may persist it. Story 06/08 will read it for the bib card.
+
+## Story 02 · Los números
+
+- What it is: distance, moving time, activities, active days, elevation, track-lap and Everest equivalences and the per-sport time split.
+- How to reach it in the UI: player story 2 (never omitted).
+- Selectors for programmatic control: `numeros-distance`, `numeros-laps`, `numeros-moving-time`, `numeros-activities`, `numeros-active-days`, `numeros-elevation`, `numeros-everests`, `numeros-sport-split`; story root `story-02-numeros`.
+- Code location: `src/features/wrapped/stories/02-numeros/`.
+- Backend/API involved: none. Worker method(s): none — reads `summary.totals`.
+- Known pitfalls: every number comes straight from `totals` — the story never recomputes (H-08 decision 1). The sport split is a `role="img"` list whose `aria-label` states the encoding.
+
+## Story 03 · El perfil de tu año
+
+- What it is: the twelve-month distance profile as a mountain silhouette with the peak ("Puerto HC"), the valley and the comeback ratio.
+- How to reach it in the UI: player story 3; omitted below three active months (the player shrinks the bars, no gap).
+- Selectors for programmatic control: `perfil-peak`, `perfil-valley`, `perfil-comeback` (absent when there is no comeback), `perfil-valley-marker`; story root `story-03-perfil`.
+- Code location: `src/features/wrapped/stories/03-perfil/`.
+- Backend/API involved: none. Worker method(s): none — reads `summary.monthlyProfile`.
+- Known pitfalls: the SVG geometry is computed from the monthly distances (no fixed path). The chart carries an `aria-label` enumerating km per month; peak and valley are also named in visible text.
+
+## Story 04 · Constancia
+
+- What it is: the daily heatmap in four levels, the longest streak with its date range and the favourite weekday.
+- How to reach it in the UI: player story 4 (never omitted).
+- Selectors for programmatic control: `constancia-heatmap` (`role="img"` summary), `constancia-cell-<month>-<day>`, `constancia-legend`, `constancia-active-days`, `constancia-favorite-weekday-weeks`; story root `story-04-constancia`.
+- Code location: `src/features/wrapped/stories/04-constancia/`.
+- Backend/API involved: none. Worker method(s): none — reads `summary.consistency`.
+- Known pitfalls: cells are presentational (`aria-hidden`), so there are never 365 focusable elements (H-08 decision 3); the legend carries the level names so colour never encodes alone. The heatmap only renders days with activity, one cell each.
 
 ## Theme
 
