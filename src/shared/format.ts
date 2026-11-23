@@ -28,3 +28,17 @@ export function formatDuration(seconds: number): string {
     ? `${formatNumber(hours)} h`
     : `${formatNumber(hours)} h ${formatNumber(minutes)} min`
 }
+
+/**
+ * The two halves of a duration for a hero number that renders the hours big and
+ * the rest small: `minutes` is `null` when the duration is a whole number of
+ * hours, so a screen never prints `81 h 0 min`.
+ */
+export function formatHourParts(seconds: number): { hours: string; minutes: string | null } {
+  const wholeHours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  return {
+    hours: formatNumber(wholeHours),
+    minutes: minutes === 0 ? null : formatNumber(minutes),
+  }
+}

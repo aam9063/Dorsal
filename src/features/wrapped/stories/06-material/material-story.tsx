@@ -1,4 +1,9 @@
-import { formatDuration, formatKilometres, formatNumber } from '../../../../shared/format'
+import {
+  formatDuration,
+  formatHourParts,
+  formatKilometres,
+  formatNumber,
+} from '../../../../shared/format'
 import { t } from '../../../../shared/i18n'
 import type { YearSummary } from '../../../../core/model/year-summary'
 
@@ -23,8 +28,7 @@ export function MaterialStory({ summary }: { summary: YearSummary }) {
     return null
   }
 
-  const hours = Math.floor(starItem.movingTimeS / 3600)
-  const minutes = Math.floor((starItem.movingTimeS % 3600) / 60)
+  const starHours = formatHourParts(starItem.movingTimeS)
   const starLead = gear.showsBikes ? copy.starLead.bikes : copy.starLead.shoes
 
   return (
@@ -47,11 +51,11 @@ export function MaterialStory({ summary }: { summary: YearSummary }) {
         <div className="flex flex-col gap-1">
           <span data-testid="material-star-hours" className="flex items-baseline">
             <span className="font-display text-8xl leading-none text-accent-text">
-              {formatNumber(hours)}
+              {starHours.hours}
             </span>
             <span className="font-display text-2xl uppercase">
               {' h '}
-              {formatNumber(minutes)} min
+              {starHours.minutes === null ? null : `${starHours.minutes} min`}
             </span>
           </span>
           <span className="text-[13px] text-fg-subtle">{copy.hoursLabel}</span>

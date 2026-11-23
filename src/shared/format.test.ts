@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDuration, formatKilometres, formatNumber } from './format'
+import { formatDuration, formatHourParts, formatKilometres, formatNumber } from './format'
 
 describe('formatDuration', () => {
   it('shows hours and minutes together', () => {
@@ -23,5 +23,15 @@ describe('formatNumber and formatKilometres', () => {
     expect(formatNumber(30666)).toBe('30.666')
     expect(formatNumber(4760)).toBe('4760')
     expect(formatKilometres(816000)).toBe('816,0')
+  })
+})
+
+describe('formatHourParts', () => {
+  it('returns the minutes only when there are some', () => {
+    expect(formatHourParts(81 * 3600 + 36 * 60)).toEqual({ hours: '81', minutes: '36' })
+  })
+
+  it('returns null minutes for a whole number of hours', () => {
+    expect(formatHourParts(8 * 3600)).toEqual({ hours: '8', minutes: null })
   })
 })

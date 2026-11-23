@@ -91,6 +91,15 @@ The story screenshot matches the design direction written above: the eyebrow, th
 Tests  1 failed | 3 passed      →      Tests 4 passed
 ```
 
+### Native review (lineage `review-a3ad28c353c06652`) and its two findings
+
+Approved and burned.
+
+| Id       | Severity | Claim                                                                                                                                             | Disposition                                                                                                                                                                                                                                                                                                                                                                                                            |
+| -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `R3-001` | warning  | The hero number interpolates hours and minutes by hand, so it diverges from the shared formatter when the moving time is a whole number of hours. | **Fixed.** The reviewer is right and the fix is the interesting part: I had just corrected `formatDuration` to drop `0 min`, and the hero still printed its own `h 0 min`. The decomposition moved into `formatHourParts`, which returns `minutes: null` for whole hours, and it has tests for both cases. A formatting rule that lives in two places drifts — this is that drift, caught by review rather than by me. |
+| `R3-002` | warning  | Using `item.name` as the React key risks reconciliation bugs if two gear items share a name.                                                      | **Rejected with evidence.** `gearOfTheYear` groups activities _by name_, so the returned `items` are unique by construction; two entries with the same name cannot exist in the metric's output.                                                                                                                                                                                                                       |
+
 ### Documentation the writer could not reach
 
 The fixture persona list in `docs/glossary.md` and in `AGENTS.md` §2 still described nine personas, and `AGENTS.md` still said `cyclist-en`, a name retired in H-01. Both are updated here.
