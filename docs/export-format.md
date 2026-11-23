@@ -63,11 +63,15 @@ Format: `d MMM yyyy, H:mm:ss`, for example the shape `5 nov 2026, 18:32:11`.
 
 **Timezone: the file carries no offset, no `Z`, no `UTC`/`GMT` marker.** There is no field that could express one.
 
-Dorsal therefore interprets the value as the local wall-clock time Strava itself shows for the activity, and treats it as already local. Consequences, written down rather than discovered later:
+Dorsal therefore interprets the value as the local wall-clock time Strava itself shows for the activity, and treats it as already local.
+
+**Confirmed, not assumed**: Albert compared an activity in the Strava UI with its row in the export and the time matches, so the value is local wall-clock time. This question is closed; do not reopen it without new evidence.
+
+Consequences, written down rather than discovered later:
 
 - The 2026 filter (BRIEF §5.4) compares the parsed local date against 2026-01-01 00:00 and 2026-12-31 23:59:59.
 - An activity recorded while travelling in another timezone lands at the wall-clock time of that place, so it can fall on a different day than it would at home. The brief already accepts this limit for v1.
-- Residual risk: if a future export turns out to write UTC instead, activities between 00:00 and 02:00 in Spain would shift a day. One 30-second check settles it: open an activity in the Strava UI, compare the shown date and time with the same row in the file. H-01 records the question; it does not guess.
+- There is no residual timezone risk to chase: the comparison above settled it. If a _different_ export is ever found to write UTC, the conversion belongs in `src/core/time/`, in the single function that exists for that purpose.
 
 ## Numbers
 
