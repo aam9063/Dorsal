@@ -35,10 +35,10 @@ const EXPORT_DATE_PATTERN =
 
 /**
  * Decision 2 of `odd/tasks/h02-export-reader.md`: the export carries no
- * timezone offset, so the file is treated as already-local wall-clock time.
- * This identity is the single place where a conversion would be applied if
- * that assumption is ever disproven; it exists so the change stays one line
- * instead of being scattered through the reader.
+ * timezone offset, and its time matches what the Strava UI shows for the same
+ * activity, so the value is local wall-clock time. Confirmed by observation,
+ * not assumed. This identity is the single place a conversion would go if a
+ * different export were ever found to write UTC.
  */
 function asExportedLocalWallClock(value: PlainDateTime): PlainDateTime {
   return value
