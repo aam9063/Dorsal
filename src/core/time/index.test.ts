@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isInSeason2026, parseExportDate, type PlainDateTime } from './index'
+import { dayOrdinal, isInSeason2026, parseExportDate, weekdayOf, type PlainDateTime } from './index'
 
 const MONTH_ABBREVIATIONS = [
   'ene',
@@ -117,5 +117,46 @@ describe('isInSeason2026', () => {
         plainDateTime({ year: 2026, month: 10, day: 25, hour: 2, minute: 30, second: 0 }),
       ),
     ).toBe(true)
+  })
+})
+
+describe('calendar arithmetic', () => {
+  const date = (year: number, month: number, day: number): PlainDateTime => ({
+    year,
+    month,
+    day,
+    hour: 12,
+    minute: 0,
+    second: 0,
+  })
+
+  it('gives consecutive ordinals to consecutive days', () => {
+    expect(dayOrdinal(date(2026, 3, 28)) + 1).toBe(dayOrdinal(date(2026, 3, 29)))
+    expect(dayOrdinal(date(2025, 12, 31)) + 1).toBe(dayOrdinal(date(2026, 1, 1)))
+    expect(dayOrdinal(date(2024, 2, 28)) + 1).toBe(dayOrdinal(date(2024, 2, 29)))
+    expect(dayOrdinal(date(2024, 2, 29)) + 1).toBe(dayOrdinal(date(2024, 3, 1)))
+    expect(dayOrdinal(date(2026, 12, 31)) + 1).toBe(dayOrdinal(date(2027, 1, 1)))
+  })
+
+  it('gives 1970-01-01 the ordinal zero', () => {
+    expect(dayOrdinal(date(1970, 1, 1))).toBe(0)
+  })
+
+  it('knows the weekday of known dates', () => {
+    expect(weekdayOf(date(1970, 1, 1))).toBe(4)
+    expect(weekdayOf(date(2026, 1, 1))).toBe(4)
+    expect(weekdayOf(date(2026, 12, 31))).toBe(4)
+    expect(weekdayOf(date(2024, 2, 29))).toBe(4)
+    expect(weekdayOf(date(2000, 1, 1))).toBe(6)
+    expect(weekdayOf(date(2026, 11, 23))).toBe(1)
+  })
+
+  it('advances the weekday by one per day, wrapping after Saturday', () => {
+    let previous = weekdayOf(date(2026, 1, 1))
+    for (let day = 2; day <= 10; day += 1) {
+      const current = weekdayOf(date(2026, 1, day))
+      expect(current).toBe(((previous + 1) % 7) as typeof previous)
+      previous = current
+    }
   })
 })
