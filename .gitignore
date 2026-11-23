@@ -31,4 +31,9 @@ pnpm-debug.log*
 # except the small synthetic fixtures produced by fixtures/generator.
 *.csv
 *.zip
-!fixtures/generated/*.csv
+
+# Generated fixtures are reproducible, never committed
+fixtures/generated/
+
+# Local agent tooling cache
+.atl/
