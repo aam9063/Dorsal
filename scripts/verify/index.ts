@@ -28,6 +28,11 @@ interface Options {
   theme: 'light' | 'dark' | 'both'
 }
 
+interface VerificationFailure {
+  screen: string
+  message: string
+}
+
 interface ConsoleEntry {
   screen: string
   type: string
@@ -144,15 +149,15 @@ async function run(): Promise<number> {
   const consoleLog: ConsoleEntry[] = []
   const network: NetworkEntry[] = []
   const screenshots: string[] = []
+  const failures: VerificationFailure[] = []
 
   let screen = 'startup'
   let server: ViteDevServer | null = null
   let browser: Browser | null = null
-  let failure: string | null = null
 
   try {
     server = await ensureServer()
-    browser = await chromium.launch()
+    browser = await chromium.launch({ headless: true })
 
     for (const theme of selectedThemes(options.theme)) {
       for (const viewport of selectedViewports(options.viewport)) {
@@ -168,11 +173,18 @@ async function run(): Promise<number> {
         try {
           for (const route of ROUTES) {
             screen = `${route.name}-${viewport}-${theme}`
-            await page.goto(`${BASE_URL}${route.path}`, { waitUntil: 'networkidle' })
-            await page.waitForSelector(route.root, { state: 'visible' })
-            const file = path.join(screensDir, `${screen}.png`)
-            await page.screenshot({ path: file, fullPage: true })
-            screenshots.push(file)
+            try {
+              await page.goto(`${BASE_URL}${route.path}`, { waitUntil: 'load' })
+              await page.waitForSelector(route.root, { state: 'visible' })
+              const file = path.join(screensDir, `${screen}.png`)
+              await page.screenshot({ path: file, fullPage: true })
+              screenshots.push(file)
+            } catch (error) {
+              failures.push({
+                screen,
+                message: error instanceof Error ? error.message : String(error),
+              })
+            }
           }
         } finally {
           await context.close()
@@ -180,7 +192,10 @@ async function run(): Promise<number> {
       }
     }
   } catch (error) {
-    failure = error instanceof Error ? error.message : String(error)
+    failures.push({
+      screen,
+      message: error instanceof Error ? error.message : String(error),
+    })
   } finally {
     if (browser !== null) {
       await browser.close()
@@ -189,7 +204,7 @@ async function run(): Promise<number> {
       await server.close()
     }
 
-    const problems = problemsOf(consoleLog)
+    const summaryProblems = problemsOf(consoleLog)
     await writeFile(
       path.join(outDir, 'console.log'),
       consoleLog.map((entry) => `[${entry.screen}] ${entry.type}: ${entry.text}`).join('\n'),
@@ -200,12 +215,12 @@ async function run(): Promise<number> {
       path.join(outDir, 'summary.json'),
       JSON.stringify(
         {
-          ok: failure === null && problems.length === 0,
+          ok: failures.length === 0 && summaryProblems.length === 0,
           options,
           screenshots,
           requests: network.length,
-          consoleProblems: problems.length,
-          failure,
+          consoleProblems: summaryProblems.length,
+          failures,
           lastScreen: screen,
         },
         null,
@@ -225,11 +240,11 @@ async function run(): Promise<number> {
   for (const entry of problems) {
     process.stderr.write(`console ${entry.type} on ${entry.screen}: ${entry.text}\n`)
   }
-  if (failure !== null) {
-    process.stderr.write(`verify failed on ${screen}: ${failure}\n`)
+  for (const failure of failures) {
+    process.stderr.write(`verify failed on ${failure.screen}: ${failure.message}\n`)
   }
 
-  return failure === null && problems.length === 0 ? 0 : 1
+  return failures.length === 0 && problems.length === 0 ? 0 : 1
 }
 
 run().then(

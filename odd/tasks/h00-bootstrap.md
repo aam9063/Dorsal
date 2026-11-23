@@ -149,6 +149,38 @@ Reviewer answers worth keeping: `$1` inside `pathNot` behaves as intended; the C
 
 After the fixes: `pnpm check` green with 17 tests, `pnpm verify` 12 screenshots with 488 requests and no console problems, `pnpm test:e2e` 15 passed.
 
+## Native review receipts (RDD)
+
+The first attempt on the whole 4.610-line range was refused at preflight (`lens_context_budget_exceeded`, no authority created). After re-slicing into 13 commits of 65 to 360 authored lines, the two slices that carry the risk were reviewed natively and both closed approved with their authority burned:
+
+| Slice                                                                        | Lenses                  | Result                   | Lineage                   |
+| ---------------------------------------------------------------------------- | ----------------------- | ------------------------ | ------------------------- |
+| `feat(lint): ban network persistence and non-determinism` (`3aa41f7`)        | risk, reliability       | approved, receipt burned | `review-d7bb24195dc79249` |
+| `test(verify): add the playwright harness and the verify runner` (`941f144`) | reliability, resilience | approved, receipt burned | `review-e86996a9d8b8be90` |
+
+The remaining slices are the app shell, tokens, docs and CI; they carry no privacy or data surface and are covered by `pnpm check`, `pnpm verify`, the e2e suite and the independent review above.
+
+### Advisory findings and what happened to each
+
+Gate slice (`review-d7bb24195dc79249`), all non-blocking:
+
+| Id     | Severity | Disposition   | What was done                                                                                                                                                                                   |
+| ------ | -------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R3-001 | critical | refuted       | Not trusted on the refuter's word: a real allowed fixture under `fixtures/generated/` passes the guard and a stray CSV at the repo root fails it on Windows, so the path comparison is correct. |
+| R3-002 | warning  | informational | Applied anyway: `networkidle` became `load`, because a pending HMR socket can hold the navigation.                                                                                              |
+| R3-003 | warning  | informational | Accepted: the regex is a heuristic; the real guard is the `accept` attribute of the file input in H-06.                                                                                         |
+
+Verify slice (`review-e86996a9d8b8be90`), all non-blocking:
+
+| Id                     | Severity   | Disposition   | What was done                                                                                                                                                                                                                                                      |
+| ---------------------- | ---------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| R3-001                 | warning    | informational | Late events from a previous navigation can land under the next screen label; accepted, each `goto` is awaited.                                                                                                                                                     |
+| R3-002                 | suggestion | informational | Applied: the duplicate `problems` binding is gone.                                                                                                                                                                                                                 |
+| R3-003                 | suggestion | informational | Applied: `chromium.launch({ headless: true })` is explicit.                                                                                                                                                                                                        |
+| R4-ci-cancel-impact    | warning    | informational | Accepted: `cancel-in-progress` is the intended trade-off for a solo repository.                                                                                                                                                                                    |
+| R4-networkidle-hang    | warning    | informational | Applied: same fix as R3-002 above.                                                                                                                                                                                                                                 |
+| R4-verify-fault-domain | warning    | informational | Applied: a failing route now records a failure and the run continues, so one broken screen no longer hides the rest. Proven by pointing a route at a selector that does not exist: two screens captured, `ok: false`, `failures: ["result-mobile-light"]`, exit 1. |
+
 ## Not verified here (and why)
 
 | Item                                          | Status                                                                                                                                        |
