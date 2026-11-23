@@ -39,10 +39,21 @@ Shared conventions, so each entry does not repeat them:
 - Sub-features: file picker, three-step how-to (including unzipping on iOS and Android), error states, progress hand-off.
 - How to reach it in the UI: `/subir`, or `landing-cta`.
 - Keyboard shortcuts: none yet; the file input must stay reachable by keyboard when H-06 lands.
-- Selectors for programmatic control: `upload-root`, `upload-provisional` (placeholder until H-06 adds `upload-input`).
+- Selectors for programmatic control: `upload-root`, `upload-input` (a provisional picker until H-06 designs the real one).
 - Code location: `src/features/upload/`.
 - Backend/API involved: none; the `File` is passed to the worker (H-05).
-- Known pitfalls: status **stub** until H-06. The design artboards say `.zip`; the accepted input is `.csv` only, and copying "zip" into a call to action is a regression. `src/shared/i18n/es.test.ts` fails if copy tells the user to upload a zip.
+- Known pitfalls: the picker is **provisional** until H-06 gives it the design and the full error states. The design artboards say `.zip`; the accepted input is `.csv` only, and copying "zip" into a call to action is a regression. `src/shared/i18n/es.test.ts` fails if copy tells the user to upload a zip.
+
+## Processing and progress
+
+- What it is: the screen that runs the analysis while the user watches, and the only place that talks to the worker.
+- Sub-features: chunked read of the `File`, real per-phase counters, cancellation.
+- How to reach it in the UI: `/subir` → choose `activities.csv` → the upload screen swaps to the processing screen in place.
+- Keyboard shortcuts: none; the cancel control is a normal button.
+- Selectors for programmatic control: `processing-root`, `processing-progress` (an `aria-live` region), `processing-cancel`.
+- Code location: `src/features/processing/`, `src/worker/`, `src/shared/hooks/use-analysis.ts`.
+- Backend/API involved: the worker, through Comlink. `analyze(file, reportProgress)` plus a cancel channel.
+- Known pitfalls: progress carries **counts**, never invented percentages. The parse is chunked over the `File` on purpose: a synchronous parse of a whole string cannot emit a tick until it ends. The summary is validated with Zod on the main thread, so a contract violation surfaces as a processing error.
 
 ## Result and story player
 

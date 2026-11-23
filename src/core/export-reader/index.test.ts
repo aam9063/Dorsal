@@ -1,7 +1,7 @@
 import Papa from 'papaparse'
 import { describe, expect, it } from 'vitest'
 import { generatePersonaCsv, HEADER, type PersonaName } from '../../../fixtures/generator'
-import { readActivities } from './index'
+import { createSeasonAccumulator, readActivities } from './index'
 
 /** Turns sparse column overrides into full 104-field rows. */
 function rowsOf(rows: readonly Record<number, string>[]): string[][] {
@@ -224,5 +224,62 @@ describe('raw csv edge cases the fixtures do not cover', () => {
 
     expect(result.stats.totalRows).toBe(2)
     expect(result.activities).toHaveLength(2)
+  })
+})
+
+describe('incremental accumulator', () => {
+  it('produces exactly what readActivities produces, one row at a time', () => {
+    for (const persona of PERSONAS_IN_SEASON_ORDER) {
+      const csv = generatePersonaCsv(persona)
+      const rows = Papa.parse<string[]>(csv, { skipEmptyLines: 'greedy' }).data
+      const accumulator = createSeasonAccumulator()
+
+      for (const row of rows) {
+        accumulator.addRow(row)
+      }
+
+      expect(accumulator.finish()).toEqual(readActivities(csv))
+    }
+  })
+
+  it('reports progress while rows arrive instead of waiting for the end', () => {
+    const rows = Papa.parse<string[]>(generatePersonaCsv('runner-es'), {
+      skipEmptyLines: 'greedy',
+    }).data
+    const accumulator = createSeasonAccumulator()
+
+    accumulator.addRow(rows[0] ?? [])
+    expect(accumulator.seenRows).toBe(0)
+
+    accumulator.addRow(rows[1] ?? [])
+    expect(accumulator.seenRows).toBe(1)
+    expect(accumulator.keptRows + 1).toBeGreaterThanOrEqual(1)
+  })
+})
+
+describe('numbers the export writes with a decimal tail', () => {
+  it('reads heart rate and elevation written as 150.0 instead of marking the row corrupt', () => {
+    const csv = csvOf([
+      {
+        0: '42',
+        1: '22 nov 2026, 7:28:41',
+        3: 'Bicicleta',
+        5: '14389',
+        7: '150.0',
+        16: '11971.0',
+        17: '61730.0',
+        20: '243.0',
+        31: '132.0',
+      },
+    ])
+
+    const { activities, stats } = readActivities(csv)
+
+    expect(stats.corruptRows).toBe(0)
+    expect(activities).toHaveLength(1)
+    expect(activities[0]?.maxHeartRate).toBe(150)
+    expect(activities[0]?.avgHeartRate).toBe(132)
+    expect(activities[0]?.elevationGainM).toBe(243)
+    expect(activities[0]?.distanceM).toBe(61730)
   })
 })
