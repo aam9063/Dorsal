@@ -71,15 +71,81 @@ S6 — The timezone decision stays open (BRIEF §5.4, verbatim):
 
 ## Evidence of verification
 
-(filled at T5)
+Branch `feature/h02-export-reader`, Windows, Node 24.
+
+### `pnpm check` — green
+
+```
+tsc --noEmit (strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes)   no output
+eslint .                                                                      no output
+prettier --check .                                                            clean
+vitest run                                                                    Test Files 7 passed · Tests 51 passed
+depcruise src                                                                 36 modules, 47 dependencies, 0 violations
+check:no-real-exports / check:brand                                           clean
+```
+
+51 tests: 31 from H-00/H-01 plus 20 for `src/core/`. Zero dependency violations confirms `src/core/` imports nothing from `features/`, `app/`, `worker/` or React.
+
+### Behavioural check run by the parent, outside the module's own tests
+
+Every persona read twice (from the generator and from the file on disk), asserting: no returned activity outside 2026, `movingTimeS <= elapsedTimeS`, `stats.inSeason === activities.length`, counters summing to `totalRows`, generator and disk agreeing, empty and header-only input giving zero, and determinism.
+
+```
+runner-es            total  356 | 2026  100 | otros  256 | corruptas 0
+cyclist              total  548 | 2026  100 | otros  448 | corruptas 0
+multisport           total  236 | 2026   90 | otros  146 | corruptas 0
+no-gear              total  180 | 2026   30 | otros  150 | corruptas 0
+few-activities       total    3 | 2026    3 | otros    0 | corruptas 0
+ten-years-history    total  204 | 2026   28 | otros  176 | corruptas 0
+no-2026              total  192 | 2026    0 | otros  192 | corruptas 0
+year-boundaries      total   13 | 2026    6 | otros    7 | corruptas 0
+broken-rows          total   42 | 2026   12 | otros   28 | corruptas 2
+```
+
+### Independent verifier (AGENTS.md §10.2, high risk surface)
+
+A separate agent probed the modules adversarially with its own scripts and found no blocker. Findings and dispositions:
+
+| #   | Finding                                                                                                                              | Severity      | Disposition                                                                                                                                              |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `readOptionalMetres` stripped commas, so `1234,6` read as `12346` and `1.234,6` as `1.2346`: a silent, magnitude-corrupting misread. | should-fix    | Fixed. A comma is only accepted as a thousands separator with valid 3-digit grouping.                                                                    |
+| 2   | Negative elapsed time and elevation were accepted.                                                                                   | nit           | Fixed: both columns are now unsigned, an export never produces negatives.                                                                                |
+| 3   | The first row of a header-less file was eaten.                                                                                       | nit           | Fixed: the first row is only skipped when it looks like a header, detected by a non-numeric id.                                                          |
+| 4   | A malformed other-year row counts as corrupt, not discarded.                                                                         | informational | Accepted; it matches the `ReadStats` contract, and the counters always sum to `totalRows`.                                                               |
+| 5   | The date parser tolerates padded days and minutes.                                                                                   | informational | Accepted; every accepted variant parses to the same value, and no misread was found.                                                                     |
+| 6   | Whether other-year rows are really not retained.                                                                                     | informational | Confirmed: Papa's `step` resets its per-row structures and only in-season activities are pushed; a 50 000-row all-2025 probe discarded every row.        |
+| 7   | Is the season filter exact?                                                                                                          | informational | Confirmed: 2025-12-31 23:59:59 discarded, 2026-01-01 00:00:00 and 2026-12-31 23:59:59 kept, 2027-01-01 discarded, `29 feb 2028` parses but is discarded. |
+| 8   | Column map against `docs/export-format.md`.                                                                                          | informational | No mismatch.                                                                                                                                             |
+| 9   | One test claimed to read the metre column but could not fail if the index were wrong.                                                | nit           | Fixed with a test whose kilometre and metre columns disagree.                                                                                            |
+
+### The three fixes are proven by their tests, not by assertion
+
+The new tests were run against the previous implementation before being accepted:
+
+```
+× rejects a comma-decimal metre value instead of reading it as ten times the distance
+× rejects a negative time or elevation instead of keeping it
+× does not eat the first row of a file without a header
+Tests  3 failed | 9 passed (12)
+```
+
+Then with the fix in place: `Tests 20 passed (20)`. A test that cannot fail is not evidence.
+
+### A repo-level defect found on the way
+
+`pnpm check` failed at `format:check` on 51 untouched files. Cause: `core.autocrlf=true` writes the working tree as CRLF while the repository stores LF, and Prettier expects LF. CI was unaffected because it checks out LF. Fixed with `.gitattributes` (`* text=auto eol=lf`), which makes every OS see what CI sees. Verified with `git ls-files --eol` before and after, and `git diff HEAD` empty after the normalisation.
 
 ## Progress
 
-T1 pending.
+T1 to T5 done. H-03 (metrics and the `YearSummary` schema) is unblocked.
 
 ## Next step
 
-T1.
+H-03: one pure function per metric of BRIEF §6 with TDD, plus the `YearSummary` Zod schema that H-05 will return from the worker. The `PlainDateTime` of this milestone already carries everything the archetype and the monthly profile need.
+
+## Open question carried forward
+
+The timezone assumption is still unverified: `asExportedLocalWallClock` is the single conversion point, and if Albert's comparison against the Strava UI shows the export is UTC, that one function changes and nothing else does.
 
 ## Log
 
