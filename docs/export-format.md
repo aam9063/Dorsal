@@ -115,4 +115,4 @@ The generator emits the ES layout only. Inventing an EN fixture would create fal
 
 ## Fixtures
 
-`fixtures/generator/` reproduces this document and nothing else. Generated files go to `fixtures/generated/`, the only place where `.csv` and `.zip` may live in the repository (`.gitignore`, `pnpm check:no-real-exports`). Personas are listed in `AGENTS.md` §2, and every persona spans several years so the 2026 filter is always exercised.
+`fixtures/generator/` reproduces this document and nothing else. Generated files go to `fixtures/generated/`, which is git-ignored: they are reproducible, so they are rebuilt with `pnpm fixtures` instead of committed. That directory is also the only place where a `.csv` may be written inside the repository (`.gitignore`, `pnpm check:no-real-exports`). Personas are listed in `AGENTS.md` §2, and every persona spans several years so the 2026 filter is always exercised.

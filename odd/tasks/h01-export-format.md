@@ -65,15 +65,56 @@ Consequences written into `docs/export-format.md`: every column is read by index
 
 ## Evidence of verification
 
-(filled at T5)
+All commands on branch `feature/h01-export-format`.
+
+### `pnpm check` — green
+
+```
+tsc --noEmit (strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes)   no output
+eslint .                                                                      no output
+prettier --check .                                                            clean
+vitest run                                                                    Test Files 3 passed (3) · Tests 31 passed (31)
+depcruise src                                                                 32 modules, 43 dependencies, 0 violations
+check:no-real-exports                                                         clean
+check:brand                                                                   clean
+```
+
+31 tests: the 17 from H-00 plus 14 from `tests/fixtures/generator.test.ts`.
+
+### Independent check, outside the generator's own test
+
+The generated files were validated by a separate script that parses `fixtures/generated/*.csv` from disk with Papa Parse, not by importing the generator:
+
+```
+broken-rows.csv:         rows 42 (malformed 1) | 2026  12 | sept dates 0
+cyclist.csv:             rows 548 (malformed 0) | 2026 100 | sept dates 43
+few-activities.csv:      rows 3 (malformed 0)  | 2026   3
+multisport.csv:          rows 236 (malformed 0) | 2026 90 | sports above 10 % of moving time: 3
+no-2026.csv:             rows 192 (malformed 0) | 2026   0
+no-gear.csv:             rows 180 (malformed 0) | 2026 30
+runner-es.csv:           rows 356 (malformed 0) | 2026 100
+ten-years-history.csv:   rows 204 (malformed 0) | 2026 28
+year-boundaries.csv:     rows 13 (malformed 0)  | 2026  6
+ALL CHECKS PASSED
+```
+
+Asserted per file: header is 104 fields with `Fecha de la actividad` at index 1 and `Distancia` at 6 and 17; every date matches the documented `d MMM yyyy, H:mm:ss` shape including `sept`; index 17 equals index 6 × 1000 within 0.05 for every row; moving time never exceeds elapsed time; `no-2026` has zero 2026 rows; `few-activities` has exactly 3; `broken-rows` carries one row with 103 fields; `year-boundaries` contains the 2025-12-31 23:3x exclusion and the 2026-01-01 00:1x and 2026-12-31 23:5x inclusions; `multisport` has three sports above 10 % of moving time.
+
+### Determinism
+
+`pnpm fixtures` twice, with a copy of the output taken in between: `diff -r` reports no difference, so the fixtures are byte-identical across runs.
+
+### Data safety
+
+`fixtures/generated/` is git-ignored, so no generated CSV is committed. `pnpm check:no-real-exports` still passes, and no artifact from the reference export exists in the tree or in git.
 
 ## Progress
 
-T1 pending.
+T1 to T5 done. H-02 (the reader) is unblocked.
 
 ## Next step
 
-T1.
+H-02: `src/core/export-reader/`, `src/core/model/`, `src/core/time/`, reading by index through the map in `docs/export-format.md`, with the BRIEF §5.4 boundary cases pinned against the `year-boundaries` and `ten-years-history` personas.
 
 ## Log
 
@@ -86,5 +127,7 @@ L2 — Albert, this session:
 > solo tengo mi activities.csv de momento.
 
 Decision from L2, recorded as a scope change rather than a silent narrowing: S1 asks for an ES **and** an EN export. Only an ES export exists. `docs/export-format.md` documents the ES layout as verified and marks the EN layout as **unverified assumption** (same 104 columns in the same order, English names). The generator emits the ES layout; an EN persona is not invented, because a guessed fixture would create false confidence. Albert decides whether the residual risk is acceptable for v1 or whether he looks for an EN account before H-12.
+
+L4 — Policy decision, recorded because it changes what CI does: generated fixtures are **not committed**. They are byte-reproducible from `pnpm fixtures`, and committing nine CSVs would add 400 KB of generated data to a public repository. `.gitignore` ignores `fixtures/generated/`, and the end-to-end CI job runs `pnpm fixtures` before `pnpm test:e2e`.
 
 L3 — Scope note: H-01 depends on the toolchain from H-00 (`pnpm`, the generator script and its test runner), so this branch is stacked on `feature/h00-bootstrap` (PR #1) instead of `dev`, following `chained-pr`. When PR #1 merges, this PR retargets to `dev`.
