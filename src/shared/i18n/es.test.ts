@@ -33,4 +33,15 @@ describe('spanish copy', () => {
     expect(es.upload.subtitle).toContain('activities.csv')
     expect(es.landing.cta).toContain('activities.csv')
   })
+
+  it('names activities.csv where the landing explains the input', () => {
+    expect(es.landing.subtitle).toContain('activities.csv')
+    expect(es.landing.steps.items[1].body).toContain('activities.csv')
+  })
+
+  it('explains taking the CSV out of the zip instead of uploading the zip', () => {
+    const unzipAnswer = es.landing.faq.items.find((item) => item.answer.includes('.zip'))
+    expect(unzipAnswer).toBeDefined()
+    expect(unzipAnswer?.answer).toContain('activities.csv')
+  })
 })
