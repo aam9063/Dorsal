@@ -1,6 +1,19 @@
+import Papa from 'papaparse'
 import { describe, expect, it } from 'vitest'
-import { generatePersonaCsv, type PersonaName } from '../../../fixtures/generator'
+import { generatePersonaCsv, HEADER, type PersonaName } from '../../../fixtures/generator'
 import { readActivities } from './index'
+
+/** Turns sparse column overrides into full 104-field rows. */
+function rowsOf(rows: readonly Record<number, string>[]): string[][] {
+  return rows.map((overrides) => HEADER.map((_, index) => overrides[index] ?? ''))
+}
+
+/** Builds a real 104-column csv from sparse column overrides. */
+function csvOf(rows: readonly Record<number, string>[]): string {
+  return Papa.unparse([[...HEADER], ...rowsOf(rows)])
+}
+
+const AUGUST_ROW = '5 nov 2026, 18:32:11'
 
 const PERSONAS_IN_SEASON_ORDER = [
   'runner-es',
@@ -136,5 +149,72 @@ describe('readActivities on fixture personas', () => {
       expect(stats.inSeason).toBe(activities.length)
       expect(stats.totalRows).toBe(stats.inSeason + stats.discardedOtherYear + stats.corruptRows)
     }
+  })
+})
+
+describe('raw csv edge cases the fixtures do not cover', () => {
+  it('rejects a comma-decimal metre value instead of reading it as ten times the distance', () => {
+    const oneActivity = (metres: string): string =>
+      csvOf([{ 0: '1', 1: AUGUST_ROW, 3: 'Carrera', 5: '3600', 16: '3600.0', 17: metres }])
+
+    const commaDecimal = readActivities(oneActivity('1234,6'))
+    expect(commaDecimal.activities).toEqual([])
+    expect(commaDecimal.stats.corruptRows).toBe(1)
+
+    const mixedSeparators = readActivities(oneActivity('1.234,6'))
+    expect(mixedSeparators.activities).toEqual([])
+    expect(mixedSeparators.stats.corruptRows).toBe(1)
+
+    const validThousands = readActivities(oneActivity('1,234.6'))
+    expect(validThousands.stats.corruptRows).toBe(0)
+    expect(validThousands.activities[0]?.distanceM).toBe(1234.6)
+  })
+
+  it('reads the metre column, not the kilometre column, when the two disagree', () => {
+    const result = readActivities(
+      csvOf([
+        { 0: '7', 1: AUGUST_ROW, 3: 'Carrera', 5: '3600', 6: '99,00', 16: '3600.0', 17: '1234.6' },
+      ]),
+    )
+
+    expect(result.activities[0]?.distanceM).toBe(1234.6)
+  })
+
+  it('rejects a negative time or elevation instead of keeping it', () => {
+    const negativeTime = readActivities(
+      csvOf([{ 0: '2', 1: AUGUST_ROW, 3: 'Carrera', 5: '-3600', 16: '3600.0', 17: '5000.0' }]),
+    )
+    expect(negativeTime.activities).toEqual([])
+    expect(negativeTime.stats.corruptRows).toBe(1)
+
+    const negativeElevation = readActivities(
+      csvOf([
+        {
+          0: '3',
+          1: AUGUST_ROW,
+          3: 'Carrera',
+          5: '3600',
+          16: '3600.0',
+          17: '5000.0',
+          20: '-5',
+        },
+      ]),
+    )
+    expect(negativeElevation.activities).toEqual([])
+    expect(negativeElevation.stats.corruptRows).toBe(1)
+  })
+
+  it('does not eat the first row of a file without a header', () => {
+    const headerless = Papa.unparse(
+      rowsOf([
+        { 0: '10', 1: AUGUST_ROW, 3: 'Carrera', 5: '3600', 16: '3600.0', 17: '5000.0' },
+        { 0: '11', 1: AUGUST_ROW, 3: 'Carrera', 5: '3600', 16: '3600.0', 17: '5000.0' },
+      ]),
+    )
+
+    const result = readActivities(headerless)
+
+    expect(result.stats.totalRows).toBe(2)
+    expect(result.activities).toHaveLength(2)
   })
 })
