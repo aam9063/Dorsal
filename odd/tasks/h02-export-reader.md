@@ -153,6 +153,15 @@ Two advisory findings, both non-blocking and both deferred to H-05, where this f
 | R3-001 | suggestion | `elapsedTimeS === null` is dead code, because `readRequiredSeconds` never returns `null`. | Accepted; it is a real dead branch, removed in H-05 rather than re-triggering a review cycle for a cosmetic edit.                                                          |
 | R3-002 | warning    | `FIELD_COUNT` is a magic constant not referenced by any external specification.           | Accepted with a correction: `docs/export-format.md` does state the 104-column contract, so the constant is documented; the reference is added to the code comment in H-05. |
 
+### Second native review, after the merge (lineage `review-875b226977c3f34c`)
+
+A later candidate still carried this milestone's files, so a reliability review ran again and closed approved with two non-blocking findings. Both are about this milestone's code and both matter for H-05:
+
+| Id     | Severity | Claim                                                                                                         | Disposition                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------ | -------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R3-001 | warning  | The `readRequiredSeconds` null branch is dead code.                                                           | Same finding as the first review; still deferred to H-05, where this function is touched again.                                                                                                                                                                                                                                                                                                                                                                               |
+| R3-002 | warning  | Synchronous CSV parsing blocks the event loop, which contradicts the streaming intent of the `step` callback. | **Accepted, with a consequence recorded**: `Papa.parse(text, { step })` over a string runs in a single tick, so memory stays bounded but no progress tick can be emitted until it finishes. Blocking the worker thread is intended; having no progress is not. H-05 must therefore parse a `File` through `chunk` (asynchronous) or feed the parser in slices, so the processing screen can report real progress. This is a requirement on H-05, not a defect of this reader. |
+
 ## Progress
 
 T1 to T5 done. H-03 (metrics and the `YearSummary` schema) is unblocked.
@@ -161,9 +170,9 @@ T1 to T5 done. H-03 (metrics and the `YearSummary` schema) is unblocked.
 
 H-03: one pure function per metric of BRIEF §6 with TDD, plus the `YearSummary` Zod schema that H-05 will return from the worker. The `PlainDateTime` of this milestone already carries everything the archetype and the monthly profile need.
 
-## Open question carried forward
+## Timezone: closed
 
-The timezone assumption is still unverified: `asExportedLocalWallClock` is the single conversion point, and if Albert's comparison against the Strava UI shows the export is UTC, that one function changes and nothing else does.
+Albert compared an activity in the Strava UI with its row in the export and the times match, so the value is local wall-clock time. `asExportedLocalWallClock` stays the identity, permanently, and no conversion is needed. This is settled by observation, not by assumption.
 
 ## Log
 
