@@ -39,10 +39,10 @@ Shared conventions, so each entry does not repeat them:
 - Sub-features: file picker, three-step how-to (including unzipping on iOS and Android), error states, progress hand-off.
 - How to reach it in the UI: `/subir`, or `landing-cta`.
 - Keyboard shortcuts: none yet; the file input must stay reachable by keyboard when H-06 lands.
-- Selectors for programmatic control: `upload-root`, `upload-input` (a provisional picker until H-06 designs the real one).
+- Selectors for programmatic control: `upload-root`, `upload-input`, and one per error state: `upload-error-extension`, `upload-error-size`, `upload-error-zip`, `upload-error-not-strava`, `upload-error-no-2026`, `upload-warning-corrupt`, `upload-error-unsupported`.
 - Code location: `src/features/upload/`.
 - Backend/API involved: none; the `File` is passed to the worker (H-05).
-- Known pitfalls: the picker is **provisional** until H-06 gives it the design and the full error states. The design artboards say `.zip`; the accepted input is `.csv` only, and copying "zip" into a call to action is a regression. `src/shared/i18n/es.test.ts` fails if copy tells the user to upload a zip.
+- Known pitfalls: the extension and the 50 MB size limit are checked on the main thread before the worker is touched; everything that needs bytes (is this a Strava export, is it the zip, how many rows are unreadable) is decided in the worker. A zip is detected by its `PK` signature, so a renamed archive is caught too. A file with rows but **zero 2026 activities is an error state**, never a summary of zeroes: that silent zero already happened once with a real export. The pasted copy must never tell the user to upload the zip; `src/shared/i18n/es.test.ts` fails if it does.
 
 ## Processing and progress
 

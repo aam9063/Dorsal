@@ -317,10 +317,15 @@ async function run(): Promise<number> {
                   fullPage: true,
                 })
                 .catch(() => undefined)
-              await page.waitForSelector('[data-testid="result-total-distance"]', {
-                state: 'visible',
-                timeout: 30_000,
-              })
+              // A refused fixture is a legitimate outcome: `no-2026` renders an
+              // error state instead of season numbers, so either is awaited.
+              await page.waitForSelector(
+                '[data-testid="result-total-distance"], [data-testid^="upload-error-"]',
+                {
+                  state: 'visible',
+                  timeout: 30_000,
+                },
+              )
               const file = path.join(screensDir, `season-${viewport}-${theme}.png`)
               await page.screenshot({ path: file, fullPage: true })
               screenshots.push(file)

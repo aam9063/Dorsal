@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { t } from '../../shared/i18n'
+import { resultCorruptWarning, t } from '../../shared/i18n'
 import { formatDuration, formatKilometres, formatNumber } from '../../shared/format'
 import { handedOffSeasonSummary } from '../processing'
 import { Player } from './player/player'
@@ -18,11 +18,11 @@ function Stat({ testId, label, value }: { testId: string; label: string; value: 
 }
 
 export function ResultScreen() {
-  const summary = handedOffSeasonSummary()
+  const season = handedOffSeasonSummary()
   const [playerOpen, setPlayerOpen] = useState(false)
   const openPlayerRef = useRef<HTMLButtonElement>(null)
 
-  if (summary === null) {
+  if (season === null) {
     return (
       <section
         data-testid="result-root"
@@ -36,6 +36,8 @@ export function ResultScreen() {
       </section>
     )
   }
+
+  const { summary, stats } = season
 
   const { totals } = summary
 
@@ -73,6 +75,11 @@ export function ResultScreen() {
           value={formatNumber(totals.elevationGainM)}
         />
       </dl>
+      {stats.corruptRows > 0 && (
+        <p className="text-base text-fg-muted" role="status" data-testid="upload-warning-corrupt">
+          {resultCorruptWarning(stats.corruptRows)}
+        </p>
+      )}
       <button
         ref={openPlayerRef}
         type="button"
