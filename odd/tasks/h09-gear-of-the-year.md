@@ -62,7 +62,38 @@ Why this and not an odometer or a shelf: the story has to answer "which thing ca
 
 ## Evidence of verification
 
-(filled at T4)
+### `pnpm check` — green
+
+`tsc` · `eslint` · `prettier` · **147 tests** · `depcruise` 72 modules / 147 dependencies · both repo guards.
+
+### `pnpm test:e2e` — 93 passed, zero skipped
+
+Five new tests for this story: the star's name with its hours and kilometres, the retirement badge on the flagged row **only**, the bike wording with the cyclist persona, the story missing from `no-gear` **without leaving a gap in the bars**, and an axe pass scoped to the story.
+
+### `pnpm verify` — the story and its absence
+
+```
+--fixture shoe-retired --viewport mobile --theme both  18 screenshots · 614 requests · 0 console problems · 0.0 ms drift
+--fixture no-gear      --viewport mobile --theme dark   8 screenshots · 307 requests · 0 console problems · 0.0 ms drift
+```
+
+The `shoe-retired` run captured five stories; the `no-gear` run captured four. **The absence is verified by the artefact, not by reading the code**: no `story-4` screenshot exists in the second run, which is what "omitted without leaving a gap" looks like from the outside.
+
+The story screenshot matches the design direction written above: the eyebrow, the athlete's own gear name as the headline in the display face, `81 h 36 min` as the hero number with `816,0 km` beside it, the ranked list with bars at 100 % / 15 % / 10 %, and the badge on the flagged row with its "el export solo cuenta esta temporada" note.
+
+### Two defects found while verifying, and fixed here
+
+1. **The retirement warning had no fixture that could trigger it.** Every existing persona kept its shoes under 800 km in 2026, so that branch of the story would have shipped written but never executed. A `shoe-retired` persona now covers it, and its numbers are asserted by the story's tests.
+2. **`8 h 0 min` read like a machine.** `formatDuration` printed the zero minutes; a whole number of hours now prints `8 h`. The test for it was run against the previous implementation first:
+
+```
+× drops the minutes when they are zero instead of printing "0 min"
+Tests  1 failed | 3 passed      →      Tests 4 passed
+```
+
+### Documentation the writer could not reach
+
+The fixture persona list in `docs/glossary.md` and in `AGENTS.md` §2 still described nine personas, and `AGENTS.md` still said `cyclist-en`, a name retired in H-01. Both are updated here.
 
 ## Progress
 
