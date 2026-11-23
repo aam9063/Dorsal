@@ -183,14 +183,14 @@ Verify slice (`review-e86996a9d8b8be90`), all non-blocking:
 
 ## Not verified here (and why)
 
-| Item                                          | Status                                                                                                                                        |
-| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Netlify project and deploy preview            | Needs Albert's Netlify account. `netlify.toml` is written; the preview is an acceptance criterion only Albert can close.                      |
-| CSP header verified against a deploy preview  | Header written in `netlify.toml`, verification is H-12 by design. `style-src` keeps `'unsafe-inline'` until the animation layer is decided.   |
-| `pnpm verify --fixture/--trace/--perf/--heap` | Refused explicitly: `--fixture` needs the upload flow (H-06), the rest are H-12.                                                              |
-| `export-reader-only-from-worker` rule         | The rule is configured but `src/core/export-reader/` does not exist yet, so it cannot fire. Proven in H-02.                                   |
-| Comment-narration lint rule                   | AGENTS 5.1 asks for a custom rule. Deferred to H-12 rather than shipping a regex with false positives; ESLint and review cover it until then. |
-| CI workflow actually running                  | The YAML is written; it first runs when the branch is pushed.                                                                                 |
+| Item                                          | Status                                                                                                                                                                                                                                                                                           |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Netlify project and deploy preview            | Needs Albert's Netlify account. `netlify.toml` is written; the preview is an acceptance criterion only Albert can close.                                                                                                                                                                         |
+| CSP header verified against a deploy preview  | Header written in `netlify.toml`, verification is H-12 by design. `style-src` keeps `'unsafe-inline'` until the animation layer is decided.                                                                                                                                                      |
+| `pnpm verify --fixture/--trace/--perf/--heap` | Refused explicitly: `--fixture` needs the upload flow (H-06), the rest are H-12.                                                                                                                                                                                                                 |
+| `export-reader-only-from-worker` rule         | The rule is configured but `src/core/export-reader/` does not exist yet, so it cannot fire. Proven in H-02.                                                                                                                                                                                      |
+| Comment-narration lint rule                   | AGENTS 5.1 asks for a custom rule. Deferred to H-12 rather than shipping a regex with false positives; ESLint and review cover it until then.                                                                                                                                                    |
+| CI workflow actually running                  | Ran green on PR #1: `Static checks` in 35 s and `End-to-end`, both success on `ubuntu-latest`. The first run flagged a Node 20 deprecation in `pnpm/action-setup@v4`, so every action moved to its current major (`checkout@v7`, `setup-node@v7`, `pnpm/action-setup@v6`, `upload-artifact@v7`). |
 
 ## Progress
 
