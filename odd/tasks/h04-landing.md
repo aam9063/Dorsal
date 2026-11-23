@@ -57,7 +57,41 @@ Section order of the artboard, top to bottom: header with the brand chip, hero i
 
 ## Evidence of verification
 
-(filled at T4)
+### `pnpm check` — green
+
+`tsc` · `eslint` · `prettier --check` · **99 tests** in 15 files · `depcruise` 46 modules / 68 dependencies · both repo guards.
+
+### `pnpm verify` — the real screenshots
+
+```
+--viewport mobile --theme both    6 screenshots · 248 requests · 0 console problems
+--viewport desktop --theme both   6 screenshots · 248 requests · 0 console problems
+```
+
+Network log of the run: **one origin**, `http://127.0.0.1:5173`, and **zero external entries**. The landing loads no third party, which is the privacy rule of BRIEF §8 holding at the presentation layer too.
+
+Reviewed by eye in all four combinations. What the screenshots confirm:
+
+- The three deltas are visible: the call to action says "Subir mi activities.csv", the hero card is captioned **EJEMPLO**, and every piece of text on an orange surface is ink, not white.
+- Section order matches the artboard: header, hero with the two-column desktop layout, three-step strip, eight story previews, orange privacy strip, six-question FAQ, footer.
+- The only mention of a zip in the whole copy is the FAQ answer explaining how to unzip the download: "…zip. Descomprímelo y sube el archivo acti…".
+
+### `pnpm test:e2e` — 15 passed
+
+The first run failed axe with `aria-required-children` on the story scroll container (`role="list"` wrapping a `<ul>`). Fixed by using native `ul`/`li` semantics with an `aria-label` on the list, with no visual change. **The axe assertion was not weakened**; the second run is green including the three accessibility assertions.
+
+### Known deviations from the artboard, accepted
+
+| Deviation                                                                                                                  | Why                                                                                                              |
+| -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Story preview cards 05 and 06 use new art (archetype text, "842 km") instead of the artboard's signature squiggle and shoe | BRIEF §6.2 replaced "Tu firma" with "Tu material", so the artboard's art describes a story that no longer exists |
+| Story 01 gained a "2026" figure where the artboard starts at 02                                                            | The story's subject is the season itself                                                                         |
+| About two preview cards visible at 390 px                                                                                  | Matches the artboard's card size; the row scrolls horizontally and is reachable by keyboard                      |
+| Dark-theme shadows are token-based rather than the artboard's inline `rgba(0,0,0,0.5)`                                     | Raw shadow values live in the tokens, not in components                                                          |
+
+### Composition note for review
+
+The page shows two stacked footer bands: the landing's own footer (brand, copyright, nav) and the app shell's notices band (the non-affiliation notice required by BRIEF §2). They carry different information and neither is duplicated verbatim, but it reads as two bands on desktop.
 
 ## Progress
 
