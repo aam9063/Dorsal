@@ -51,7 +51,29 @@ S6 — Animation (BRIEF §3): `Motion` for transitions, respecting `prefers-redu
 
 ## Evidence of verification
 
-(filled at T5)
+### `pnpm check` — green
+
+`tsc` · `eslint` · `prettier` · **118 tests** in 20 files · `depcruise` 65 modules / 123 dependencies · both repo guards. 13 of those tests are new: 10 for the input machine and 3 for the registry, both written before their module existed.
+
+### `pnpm test:e2e` — 42 passed, zero skipped
+
+The worker first ran the player tests on chromium only, skipping WebKit with the justification "proven on mobile and desktop chromium (AGENTS.md §2)". That is a misreading of the spec — §2 asks for both viewports, it does not exempt a browser — and it excluded **Safari, the browser this product targets first**. Removing the skip was the whole fix: all seven player tests pass on WebKit as well, so the skip was hiding coverage, not a limitation.
+
+Covered end to end: right zone advances, left zone goes back, `ArrowRight`/`ArrowLeft` do the same, holding pauses and releasing resumes, `Escape` and the close button both return to the season numbers, the bar count equals the number of available stories computed from the summary, and with `prefers-reduced-motion: reduce` the story does not advance on its own within a wait longer than the interval.
+
+### `pnpm verify --fixture runner-es` — the screen itself
+
+```
+4 screenshots · 279 requests · 0 console problems · worst main-thread drift 0.0 ms of a 50 ms budget
+```
+
+The player screenshot shows one progress bar (one available story), the close button, and story 01 with the season year and the total kilometres.
+
+### Limitation this milestone cannot remove, and who removes it
+
+With only story 01 available, a UI assertion like "advancing changes the index" cannot distinguish advance from a no-op, so the end-to-end assertions are written against the computed story count and are **clamped**. The advance logic itself is proven by the 10 machine unit tests, including the bounds at both ends and the no-wrap rule; the end-to-end proves the wiring.
+
+**H-08 must therefore be the milestone that strengthens `e2e/player.spec.ts`**: the moment story 02 lands, the advance, go-back and hold-pause assertions become non-vacuous, and the clamped `Math.min` / `Math.max` wrappers must be removed rather than left in place.
 
 ## Progress
 
