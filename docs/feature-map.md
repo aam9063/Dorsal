@@ -143,15 +143,15 @@ Shared conventions, so each entry does not repeat them:
 - Backend/API involved: none. Worker method(s): none — reads `summary.heartbeats`.
 - Known pitfalls: the beats hero switches between raw beats and two decimals of millions from one million up, so the e2e asserts the same formatting the story applies. The peak block is omitted when `summary.heartbeats.peak` is null while the story still renders (H-10 decision 4); the `long-distance` persona is the fixture proving it, and `no-pulse` is the fixture where the story is omitted. The heartbeat line of the W7 artboard carries no data, so it is drawn fixed and `aria-hidden`.
 
-## Story 08 · Tu dorsal y la tarjeta
+## Story 08 · Tu dorsal y el carnet
 
-- What it is: the card preview plus the one truthful action — `navigator.share` with the PNG file where the API supports files, a download otherwise — and the 1080×1920 PNG generated on demand.
-- How to reach it in the UI: player story 8 (never omitted, registry order last).
-- Keyboard shortcuts: player-wide ones.
-- Selectors for programmatic control: `dorsal-preview`, `dorsal-number`, `share-download` (one button whose label says what will happen); story root `story-08-dorsal`.
-- Code location: `src/features/share/` (renderer `render-bib-card.ts`, browser I/O `bib-card-io.ts`, DOM replica `bib-card-preview.tsx`, all exported through `src/features/share/index.ts`); story in `src/features/wrapped/stories/08-dorsal/`.
-- Backend/API involved: none. Worker method(s): none — reads `summary.bibCard`, `summary.totals`, `summary.consistency`, `summary.archetype`.
-- Known pitfalls: the PNG is painted only on demand — opening the story creates no canvas (h11 decision 6), asserted in e2e. The renderer is pure over a `CardSurface` subset with fixed constants: no DOM measurement, no `Date`, no `Math.random`, numbers from `shared/format.ts`, and `document.fonts.ready` plus the three families are awaited before the first pixel (h11 decisions 1–3), or a cold run paints fallback faces. The card takes its name from the portada memory — never from the file — and falls back to "Tu año"; the plate is always bone/ink (theme-independent tokens) because the PNG is theme-agnostic. The card's stats are activities, ×Everest and the longest streak when consistency exists, active days when it does not (short seasons). The unit test cannot host a real canvas in Vitest's node environment: it pins the serialized command stream (a recording surface) and asserts there; real pixels, fonts and bytes are pinned by `e2e/bib-card.spec.ts`, which downloads the PNG twice and compares byte for byte.
+- What it is: two shareable 1080×1920 cards behind one toggle — the bib card (number, name, archetype, twelve month bars, three stats and the season best marks) and the carnet de temporada (sport split with icons, the week with the most kilometres, consecutive fulfilled weeks, best marks, and the power evolution only when the file carries watts) — plus the one truthful action: `navigator.share` with the PNG file where the API supports files, a download otherwise.
+- How to reach it in the UI: player story 8 (never omitted, registry order last), then the `Dorsal` / `Carnet` toggle.
+- Keyboard shortcuts: player-wide ones, plus ArrowLeft/ArrowRight inside the toggle radiogroup (roving tabindex, focus follows the selection).
+- Selectors for programmatic control: `story-08-dorsal`, `card-toggle-dorsal`, `card-toggle-carnet`, `dorsal-preview`, `dorsal-number`, `dorsal-chart`, `dorsal-marks`, `carnet-preview`, `carnet-sports`, `carnet-weeks`, `carnet-marks`, `carnet-power`, `share-download` (one button whose label says what will happen).
+- Code location: `src/features/share/` (renderers `render-bib-card.ts` and `render-season-card.ts`, sport paths in `sport-icons.ts`, browser I/O in `bib-card-io.ts`, the two DOM replicas, all exported through `index.ts`); the story in `src/features/wrapped/stories/08-dorsal/`, with the pure `card-selection.ts` behind the radiogroup keys.
+- Backend/API involved: none. Worker method(s): none — the cards read `summary.bibCard`, `totals`, `consistency`, `archetype`, `seasonBests`, `sportBreakdown`, `weeklyLoad` and `powerProfile`.
+- Known pitfalls: **any control inside a story must carry `pointer-events-auto`**, because the player's two tap zones cover half the screen each at a higher stacking level and swallow the click otherwise — the carnet toggle was unreachable until it got the class, and the same trap awaits the next interactive story. The PNG is painted only on demand — opening the story creates no canvas (h11 decision 6), asserted in e2e. Both renderers are pure over a canvas subset with fixed constants: no DOM measurement, no `Date`, no `Math.random`, numbers from `shared/format.ts` and `document.fonts.ready` plus the three families awaited before the first pixel (h11 decisions 1–3), or a cold run paints fallback faces. Cards take the name from the portada memory — never from the file — and fall back to "Tu año"; the plate is always bone/ink (theme-independent tokens) because the PNG is theme-agnostic. A mark, a sport or the power panel the file cannot prove is omitted instead of printed as a zero, and the power panel always prints its coverage so a partial year cannot read as a complete one. The unit tests cannot host a real canvas in Vitest's node environment: they pin the serialized command stream (a recording surface) and the layout invariants; real pixels, fonts and bytes are pinned by `e2e/bib-card.spec.ts`, which downloads each card twice and compares byte for byte.
 
 ## Theme
 
@@ -172,6 +172,16 @@ Shared conventions, so each entry does not repeat them:
 - What it is: one pure function per story metric.
 - Code location: `src/core/metrics/` (planned, H-03).
 - Known pitfalls: pure and deterministic — `Math.random` and `Date` are banned there by ESLint; dates come from `src/core/time/`.
+
+## Launch metadata and generated assets
+
+- What it is: the social and device-facing surface — Open Graph and Twitter tags, canonical, robots, sitemap, the icon set and the generated social preview — plus the command that regenerates the images.
+- Sub-features: OG/Twitter metadata, canonical URL, robots.txt, sitemap.xml, PNG icons (icon-192, icon-512, apple-touch-icon), og-image.png.
+- How to reach it in the UI: not reachable; it lives in `index.html` head and in the static files served from `public/`.
+- Selectors for programmatic control: none.
+- Code location: `index.html` (metadata), `public/` (static assets), `scripts/og-image/generate-og-image.ts` (generator).
+- Backend/API involved: none.
+- Known pitfalls: `https://dorsal.app` is a **placeholder** (BRIEF §13 leaves the domain to Albert): every absolute URL lives in one commented block of `index.html` plus one line in each of `robots.txt` and `sitemap.xml`, and all of them must be confirmed before launch. `og-image.png` is 1200×630 and the icons 192/512/180; the generator screenshots self-contained HTML artboards with Playwright using the @fontsource fonts embedded as data URLs, so the images cannot drift from the app's fonts and palette, and it fails loudly if the output size is wrong. Copy comes from `src/shared/i18n/` (brand, tagline, landing eyebrow/CTA, season plate). Regenerate with `pnpm og:image` and `pnpm icons`.
 
 ## Fixture personas
 

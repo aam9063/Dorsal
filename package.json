@@ -25,6 +25,8 @@
     "check:no-real-exports": "node scripts/check-no-real-exports.mjs",
     "check:brand": "node scripts/check-brand.mjs",
     "fixtures": "tsx fixtures/generator/index.ts",
+    "og:image": "tsx scripts/og-image/generate-og-image.ts og",
+    "icons": "tsx scripts/og-image/generate-og-image.ts icons",
     "verify": "tsx scripts/verify/index.ts",
     "test:e2e": "playwright test"
   },

@@ -39,6 +39,8 @@
   --dorsal-line: #d3d1c7;
   --dorsal-accent: #fc5200;
   --dorsal-accent-text: #c23f00;
+  /* Orange that is legible on bone, the surface that never changes with the theme. */
+  --dorsal-accent-on-bone: #c23f00;
   --dorsal-heat-1: #eceae2;
   --dorsal-heat-2: #fdcbb3;
   --dorsal-heat-3: #fd8a55;
@@ -83,6 +85,13 @@
   --dorsal-heat-2: #6b2a0e;
   --dorsal-heat-3: #b83d07;
   --dorsal-heat-4: #fc5200;
+}
+
+/* Bone surfaces keep their colour in both themes, so the accent text on them
+   must not follow the theme either: the bright orange only clears 3:1 on the
+   dark background, and bone is not dark. */
+.bg-bone {
+  --dorsal-accent-text: var(--dorsal-accent-on-bone);
 }
 
 @theme inline {

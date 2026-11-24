@@ -6,7 +6,7 @@ import { buildYearSummary } from '../src/core/metrics/build-year-summary'
 import type { YearSummary } from '../src/core/model/year-summary'
 import { t } from '../src/shared/i18n'
 import { availableStories, STORIES } from '../src/features/wrapped/stories/registry'
-import { BIB_CARD_FILE_NAME } from '../src/features/share/bib-card-io'
+import { BIB_CARD_FILE_NAME, SEASON_CARD_FILE_NAME } from '../src/features/share/bib-card-io'
 
 /** The PNG header members the download is asserted against (BRIEF §2, H-11). */
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a] as const
@@ -113,12 +113,14 @@ test('the download path produces a 1080×1920 PNG, identical between runs', asyn
   const summary = await openPlayerOn(page, 'runner-es')
   await openStory(page, storyPosition(summary, '08-dorsal'))
 
-  const first = await downloadBibCard(page)
-  const second = await downloadBibCard(page)
+  const first = await downloadCard(page)
+  expect(first.fileName).toBe(BIB_CARD_FILE_NAME)
+  const second = await downloadCard(page)
+  expect(second.fileName).toBe(BIB_CARD_FILE_NAME)
 
   // Byte-for-byte determinism is the acceptance criterion (BRIEF §9, H-11).
-  expect(second).toEqual(first)
-  assertPng(first)
+  expect(second.bytes).toEqual(first.bytes)
+  assertPng(first.bytes)
 })
 
 test('the share path hands the PNG file to navigator.share where supported', async ({ page }) => {
@@ -137,13 +139,98 @@ test('the share path hands the PNG file to navigator.share where supported', asy
   expect(shared?.size ?? 0).toBeGreaterThan(10_000)
 })
 
-/** Presses the card's action and returns the downloaded file's bytes. */
-async function downloadBibCard(page: Page): Promise<Buffer> {
+test('story 08 opens on the dorsal, with the carnet toggle present but unselected', async ({
+  page,
+}) => {
+  const summary = await openPlayerOn(page, 'runner-es')
+  await openStory(page, storyPosition(summary, '08-dorsal'))
+
+  const group = page.getByRole('radiogroup', { name: t.stories['08-dorsal'].toggleGroupLabel })
+  await expect(group).toBeVisible()
+  const dorsal = page.getByTestId('card-toggle-dorsal')
+  await expect(dorsal).toHaveRole('radio')
+  await expect(dorsal).toHaveAttribute('aria-checked', 'true')
+  const carnet = page.getByTestId('card-toggle-carnet')
+  await expect(carnet).toHaveRole('radio')
+  await expect(carnet).toHaveAttribute('aria-checked', 'false')
+
+  // The dorsal is the story's default card; the carnet stays unmounted.
+  await expect(page.getByTestId('dorsal-preview')).toBeVisible()
+  await expect(page.getByTestId('carnet-preview')).toHaveCount(0)
+})
+
+test('selecting the carnet swaps the preview, the label and the hint', async ({ page }) => {
+  const summary = await openPlayerOn(page, 'runner-es')
+  await openStory(page, storyPosition(summary, '08-dorsal'))
+  await selectCarnet(page)
+
+  await expect(page.getByTestId('card-toggle-carnet')).toHaveAttribute('aria-checked', 'true')
+  await expect(page.getByTestId('card-toggle-dorsal')).toHaveAttribute('aria-checked', 'false')
+  await expect(page.getByTestId('carnet-preview')).toBeVisible()
+  await expect(page.getByTestId('dorsal-preview')).toHaveCount(0)
+
+  const share = await supportsShareFiles(page)
+  const carnet = t.stories['08-dorsal'].carnet
+  const action = page.getByTestId('share-download')
+  await expect(action).toHaveText(share ? carnet.shareLabel : carnet.downloadLabel)
+  await expect(action.locator('..')).toContainText(carnet.actionHint)
+})
+
+test('the arrow keys move the selection and the focus follows it', async ({ page }) => {
+  const summary = await openPlayerOn(page, 'runner-es')
+  await openStory(page, storyPosition(summary, '08-dorsal'))
+
+  await page.getByTestId('card-toggle-dorsal').focus()
+  await page.keyboard.press('ArrowRight')
+
+  const carnet = page.getByTestId('card-toggle-carnet')
+  await expect(carnet).toBeFocused()
+  await expect(carnet).toHaveAttribute('aria-checked', 'true')
+  await expect(page.getByTestId('carnet-preview')).toBeVisible()
+  await expect(page.getByTestId('dorsal-preview')).toHaveCount(0)
+})
+
+test('the carnet download produces a named, deterministic 1080×1920 PNG', async ({ page }) => {
+  const summary = await openPlayerOn(page, 'runner-es')
+  await openStory(page, storyPosition(summary, '08-dorsal'))
+  await selectCarnet(page)
+
+  const first = await downloadCard(page)
+  expect(first.fileName).toBe(SEASON_CARD_FILE_NAME)
+  const second = await downloadCard(page)
+  expect(second.fileName).toBe(SEASON_CARD_FILE_NAME)
+
+  // The carnet is drawn from summary data only: no weather, no clock, no seed.
+  expect(second.bytes).toEqual(first.bytes)
+  assertPng(first.bytes)
+})
+
+test('the dorsal and the carnet are two different images', async ({ page }) => {
+  const summary = await openPlayerOn(page, 'runner-es')
+  await openStory(page, storyPosition(summary, '08-dorsal'))
+
+  const dorsal = await downloadCard(page)
+  await selectCarnet(page)
+  const carnet = await downloadCard(page)
+
+  assertPng(dorsal.bytes)
+  assertPng(carnet.bytes)
+  expect(carnet.bytes).not.toEqual(dorsal.bytes)
+})
+
+/** Toggles the story over to the carnet card. */
+async function selectCarnet(page: Page): Promise<void> {
+  await page.getByTestId('card-toggle-carnet').click()
+  await expect(page.getByTestId('carnet-preview')).toBeVisible()
+}
+
+/** Presses the selected card's action and returns the downloaded file. */
+async function downloadCard(page: Page): Promise<{ bytes: Buffer; fileName: string }> {
   const download = page.waitForEvent('download')
   await page.getByTestId('share-download').click()
   const event = await download
   const downloadPath = await event.path()
-  return readFile(downloadPath)
+  return { bytes: await readFile(downloadPath), fileName: event.suggestedFilename() }
 }
 
 /** The PNG magic bytes and the IHDR width/height, big-endian at fixed offsets. */

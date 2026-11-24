@@ -1,0 +1,8 @@
+# Dorsal indexa todo su contenido. No hay rutas privadas: el archivo del
+# usuario nunca toca un servidor.
+User-agent: *
+Allow: /
+
+# Placeholder domain: BRIEF.md §13 leaves the definitive domain to Albert.
+# Confirm this line before launch.
+Sitemap: https://dorsal.app/sitemap.xml

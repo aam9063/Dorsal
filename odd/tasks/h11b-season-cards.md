@@ -62,15 +62,27 @@ S9 — Skill/process (`AGENTS.md` §10): `src/core/` is test-first (RED observed
 
 ## Evidence of verification
 
-(filled at T9)
+- `pnpm check` green end to end: prettier, typecheck, lint, 256 unit tests, `arch`, `check:no-real-exports`, `check:brand`.
+- `pnpm test:e2e` full suite in commit `cf9709b`: **142 passed, 2 skipped, 0 failed**, including the `@privacy` test and the axe accessibility checks.
+- Real browser, four viewports in light and dark (`390×844`, `460×760`, `768×700`, `1440×900`): the card fits its story slot with internal scroll, the toggle and the share button stay on screen, and no viewport shows horizontal scroll. Measured, not estimated: root bottom and button bottom were read from `getBoundingClientRect` in every case.
+- The redesigned dorsal PNG and the carnet PNG were downloaded from the running app and inspected: the band holds its text, the number clears it, the months are bars, the best marks fill the lower third and the sport rows carry their icons.
+- **Independent verifier (Risk: item 3)**: PASS on all six constraints it was given — the 2026 filter is still the only date rule, only aggregates leave the worker (proved by the injection test), power reads are nullable per column and the docs claim nothing beyond the evidence, privacy untouched, renderers deterministic, and every check green. Two advisory notes: `weekly-load` rescans activities per week, and the grouped-vs-decimal power ambiguity.
+- **Native review** refused the whole branch with `lens_context_budget_exceeded` (46 files, 5123 lines), so it was split into three chained slices at Albert's decision. Slice 1 (base `eda27f0` → `532c332`, the reader, the metrics, the schema) was reviewed with the `risk` and `reliability` lenses and **approved, authority burned** (`review-c741daedad1f763e`). Slices 2 (`532c332` → `f577a80`) and 3 (`f577a80` → `61a94dd`) assess as medium risk and not due, so by the provider's own rule they carry no native review; the verifier, the 261 unit tests and the 142 e2e assertions cover them.
+- Found while Albert reviewed the real export: the bib number was a fixed size, and Antón's digits advance about 0.75 em, so `1451` fitted while his `4760` clipped the last digit and five digits overflowed. The number is now sized from the plate width and its digit count (`bibCardNumberSize`), in the renderer and in the preview, with a test covering one to six digits.
+- The 3° plate tilt now belongs to the exported PNG only: in the story's DOM preview it made every element read as off-centre against the card's own straight edges.
+- Branch layout for delivery: `feature/h11-bib-card` holds everything, `feature/h11b-data` marks the reviewed data slice and `feature/h11b-cards` the renderer slice, so the chained PRs are cut at those boundaries.
 
 ## Progress
 
-Not started. Waiting on T1.
+- T1–T5 done, commit `532c332`. Verified by the parent: 227 tests, `typecheck`, `lint` and `arch` clean.
+- T7 icons done and T6 dorsal redesign done, commit `f577a80`. The redesigned PNG and the DOM preview were captured from the running app in light theme at 390 px and reviewed: the band no longer overflows, the number clears it, the twelve months are real bars and the best marks fill the lower third.
+- T7 carnet and T8 done: `render-season-card.ts` (17 tests), `carnet-preview.tsx`, the io generalized to two PNGs, and the story toggle. `pnpm check` is green end to end.
+- Found and fixed while verifying in the browser: the player's tap zones swallowed the carnet toggle's click, because the story container is `pointer-events-none` and only the share button re-enabled it. Recorded as a pitfall in `docs/feature-map.md`.
+- T9 in progress: the e2e spec for the second card is being extended; the full walk in light and dark is still owed.
 
 ## Next step
 
-T1.
+T9.
 
 ## Log
 
