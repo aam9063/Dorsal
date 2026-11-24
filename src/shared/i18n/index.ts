@@ -9,6 +9,9 @@ export const defaultLocale: Locale = 'es'
 export const t = messages[defaultLocale]
 
 export {
+  archetypePeakSentence,
+  heartbeatCoverageSentence,
+  heartbeatPeakDate,
   joinAnd,
   resultCorruptWarning,
   uploadNoSeasonMessage,
