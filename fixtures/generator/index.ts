@@ -160,6 +160,12 @@ export type PersonaName =
   | 'year-boundaries'
   | 'broken-rows'
   | 'shoe-retired'
+  | 'early-bird'
+  | 'night-owl'
+  | 'weekend-warrior'
+  | 'methodical'
+  | 'long-distance'
+  | 'no-pulse'
 
 export const PERSONAS: readonly PersonaName[] = [
   'runner-es',
@@ -172,6 +178,12 @@ export const PERSONAS: readonly PersonaName[] = [
   'year-boundaries',
   'broken-rows',
   'shoe-retired',
+  'early-bird',
+  'night-owl',
+  'weekend-warrior',
+  'methodical',
+  'long-distance',
+  'no-pulse',
 ]
 
 interface SportProfile {
@@ -907,6 +919,358 @@ const SHOE_RETIREMENT: PersonaConfig = {
   ],
 }
 
+/**
+ * Calendar slots (0-based month, day of month) of every 2026 weekday used to
+ * drive the archetype rules: they were derived once from the 2026 calendar
+ * (2026-01-01 was a Thursday) and are literals, so every persona stays
+ * deterministic and reproducible without reading the clock.
+ */
+const WEDNESDAYS_2026 = [
+  { month0: 0, day: 7 },
+  { month0: 0, day: 14 },
+  { month0: 0, day: 21 },
+  { month0: 0, day: 28 },
+  { month0: 1, day: 4 },
+  { month0: 1, day: 11 },
+  { month0: 1, day: 18 },
+  { month0: 1, day: 25 },
+  { month0: 2, day: 4 },
+  { month0: 2, day: 11 },
+  { month0: 2, day: 18 },
+  { month0: 2, day: 25 },
+  { month0: 3, day: 1 },
+  { month0: 3, day: 8 },
+  { month0: 3, day: 15 },
+  { month0: 3, day: 22 },
+  { month0: 3, day: 29 },
+  { month0: 4, day: 6 },
+  { month0: 4, day: 13 },
+  { month0: 4, day: 20 },
+  { month0: 4, day: 27 },
+  { month0: 5, day: 3 },
+  { month0: 5, day: 10 },
+  { month0: 5, day: 17 },
+  { month0: 5, day: 24 },
+  { month0: 6, day: 1 },
+  { month0: 6, day: 8 },
+  { month0: 6, day: 15 },
+  { month0: 6, day: 22 },
+  { month0: 6, day: 29 },
+] as const
+
+const FRIDAYS_2026 = [
+  { month0: 0, day: 2 },
+  { month0: 0, day: 9 },
+  { month0: 0, day: 16 },
+  { month0: 0, day: 23 },
+  { month0: 0, day: 30 },
+  { month0: 1, day: 6 },
+  { month0: 1, day: 13 },
+  { month0: 1, day: 20 },
+  { month0: 1, day: 27 },
+  { month0: 2, day: 6 },
+  { month0: 2, day: 13 },
+  { month0: 2, day: 20 },
+  { month0: 2, day: 27 },
+  { month0: 3, day: 3 },
+  { month0: 3, day: 10 },
+  { month0: 3, day: 17 },
+  { month0: 3, day: 24 },
+  { month0: 4, day: 1 },
+  { month0: 4, day: 8 },
+  { month0: 4, day: 15 },
+  { month0: 4, day: 22 },
+  { month0: 4, day: 29 },
+  { month0: 5, day: 5 },
+  { month0: 5, day: 12 },
+  { month0: 5, day: 19 },
+  { month0: 5, day: 26 },
+  { month0: 6, day: 3 },
+  { month0: 6, day: 10 },
+  { month0: 6, day: 17 },
+  { month0: 6, day: 24 },
+] as const
+
+const SATURDAYS_2026 = [
+  { month0: 0, day: 3 },
+  { month0: 0, day: 10 },
+  { month0: 0, day: 17 },
+  { month0: 0, day: 24 },
+  { month0: 0, day: 31 },
+  { month0: 1, day: 7 },
+  { month0: 1, day: 14 },
+  { month0: 1, day: 21 },
+  { month0: 1, day: 28 },
+  { month0: 2, day: 7 },
+  { month0: 2, day: 14 },
+  { month0: 2, day: 21 },
+  { month0: 2, day: 28 },
+  { month0: 3, day: 4 },
+  { month0: 3, day: 11 },
+  { month0: 3, day: 18 },
+  { month0: 3, day: 25 },
+  { month0: 4, day: 2 },
+  { month0: 4, day: 9 },
+  { month0: 4, day: 16 },
+  { month0: 4, day: 23 },
+  { month0: 4, day: 30 },
+  { month0: 5, day: 6 },
+  { month0: 5, day: 13 },
+  { month0: 5, day: 20 },
+  { month0: 5, day: 27 },
+] as const
+
+const SUNDAYS_2026 = [
+  { month0: 0, day: 4 },
+  { month0: 0, day: 11 },
+  { month0: 0, day: 18 },
+  { month0: 0, day: 25 },
+  { month0: 1, day: 1 },
+  { month0: 1, day: 8 },
+  { month0: 1, day: 15 },
+  { month0: 1, day: 22 },
+  { month0: 2, day: 1 },
+  { month0: 2, day: 8 },
+  { month0: 2, day: 15 },
+  { month0: 2, day: 22 },
+  { month0: 2, day: 29 },
+  { month0: 3, day: 5 },
+  { month0: 3, day: 12 },
+  { month0: 3, day: 19 },
+  { month0: 3, day: 26 },
+  { month0: 4, day: 3 },
+  { month0: 4, day: 10 },
+  { month0: 4, day: 17 },
+  { month0: 4, day: 24 },
+  { month0: 4, day: 31 },
+  { month0: 5, day: 7 },
+  { month0: 5, day: 14 },
+  { month0: 5, day: 21 },
+  { month0: 5, day: 28 },
+] as const
+
+/** The first Monday of 2026 is 5 January; one activity per selected Monday week. */
+const MONDAYS_2026 = [
+  { month0: 0, day: 5 },
+  { month0: 0, day: 12 },
+  { month0: 0, day: 19 },
+  { month0: 0, day: 26 },
+  { month0: 1, day: 2 },
+  { month0: 1, day: 9 },
+  { month0: 1, day: 16 },
+  { month0: 1, day: 23 },
+  { month0: 2, day: 2 },
+  { month0: 2, day: 9 },
+  { month0: 2, day: 16 },
+  { month0: 2, day: 23 },
+  { month0: 2, day: 30 },
+  { month0: 3, day: 6 },
+  { month0: 3, day: 13 },
+  { month0: 3, day: 20 },
+  { month0: 3, day: 27 },
+  { month0: 4, day: 4 },
+  { month0: 4, day: 11 },
+  { month0: 4, day: 18 },
+  { month0: 4, day: 25 },
+  { month0: 5, day: 1 },
+  { month0: 5, day: 8 },
+  { month0: 5, day: 15 },
+  { month0: 5, day: 22 },
+  { month0: 5, day: 29 },
+  { month0: 6, day: 6 },
+  { month0: 6, day: 13 },
+  { month0: 6, day: 20 },
+  { month0: 6, day: 27 },
+  { month0: 7, day: 3 },
+  { month0: 7, day: 10 },
+  { month0: 7, day: 17 },
+  { month0: 7, day: 24 },
+  { month0: 7, day: 31 },
+  { month0: 8, day: 7 },
+  { month0: 8, day: 14 },
+  { month0: 8, day: 21 },
+  { month0: 8, day: 28 },
+  { month0: 9, day: 5 },
+  { month0: 9, day: 12 },
+  { month0: 9, day: 19 },
+  { month0: 9, day: 26 },
+  { month0: 10, day: 2 },
+  { month0: 10, day: 9 },
+  { month0: 10, day: 16 },
+  { month0: 10, day: 23 },
+  { month0: 10, day: 30 },
+  { month0: 11, day: 7 },
+  { month0: 11, day: 14 },
+] as const
+
+/** Month lengths of 2026 (a common year), to place the Mon–Thu weeks of the methodical persona. */
+const DAYS_IN_MONTH_2026 = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const
+
+function dayAfterMonday(
+  month0: number,
+  day: number,
+  offset: number,
+): { month0: number; day: number } {
+  let value = day + offset
+  let month = month0
+  let monthLength = DAYS_IN_MONTH_2026[month] ?? 31
+  while (value > monthLength) {
+    value -= monthLength
+    month += 1
+    monthLength = DAYS_IN_MONTH_2026[month] ?? 31
+  }
+  return { month0: month, day: value }
+}
+
+/** Four runs per selected Monday week, so every week has exactly four active days. */
+function methodicalWeekSlots(weeks: number): { month0: number; day: number }[] {
+  return MONDAYS_2026.slice(0, weeks).flatMap(({ month0, day }) =>
+    [0, 1, 2, 3].map((offset) => dayAfterMonday(month0, day, offset)),
+  )
+}
+
+function archetypeRuns(values: {
+  slots: readonly { month0: number; day: number }[]
+  hour: number
+  minute: number
+  movingSec: number
+  kmHundredths: number
+  avgHeartRate: number | null
+  maxHeartRate: number | null
+}): ActivitySpec[] {
+  return values.slots.map(({ month0, day }, index) =>
+    forcedActivity({
+      year: 2026,
+      month0,
+      day,
+      hour: values.hour,
+      minute: values.minute,
+      second: 0,
+      label: 'Carrera',
+      name: poolItem(sportProfile('Carrera').namePool, index),
+      elapsedSec: values.movingSec + 120,
+      movingSec: values.movingSec,
+      distanceHundredths: values.kmHundredths,
+      maxHeartRate: values.maxHeartRate,
+      avgHeartRate: values.avgHeartRate,
+      relativeEffort: null,
+      elevationGainM: null,
+      gear: null,
+    }),
+  )
+}
+
+const PAST_YEARS_FOR_ARCHETYPES: readonly YearPlan[] = [
+  { year: 2024, sports: [{ label: 'Carrera', count: 6 }] },
+  { year: 2025, sports: [{ label: 'Carrera', count: 8 }] },
+]
+
+const ARCHETYPE_RUNNER: { movingSec: number; kmHundredths: number } = {
+  movingSec: 3600,
+  kmHundredths: 1050,
+}
+
+function noHeartRate(): { avgHeartRate: null; maxHeartRate: null } {
+  return { avgHeartRate: null, maxHeartRate: null }
+}
+
+/**
+ * One persona per archetype rule of BRIEF §6.1: its 2026 slots are chosen so a
+ * specific rule wins in evaluation order. They are all forced activities on
+ * fixed weekdays and hours, so the winner is provable from the calendar slots
+ * and not a property of a random draw, and every persona spans several past
+ * years so the 2026 filter is still exercised. `long-distance` also carries an
+ * average heart rate on every activity but never a maximum, so story 07
+ * renders with its peak block omitted; `no-pulse` carries no heart rate at
+ * all, so story 07 is omitted, and its plain schedule makes it the fixture
+ * where the fallback archetypes `steady` wins.
+ */
+const EARLY_BIRD: PersonaConfig = {
+  seed: 20260525,
+  years: PAST_YEARS_FOR_ARCHETYPES,
+  gearPool: [],
+  gearChanceByLabel: {},
+  forced: archetypeRuns({
+    slots: WEDNESDAYS_2026,
+    hour: 6,
+    minute: 30,
+    ...ARCHETYPE_RUNNER,
+    ...noHeartRate(),
+  }),
+}
+
+const NIGHT_OWL: PersonaConfig = {
+  seed: 20260526,
+  years: PAST_YEARS_FOR_ARCHETYPES,
+  gearPool: [],
+  gearChanceByLabel: {},
+  forced: archetypeRuns({
+    slots: FRIDAYS_2026,
+    hour: 22,
+    minute: 30,
+    ...ARCHETYPE_RUNNER,
+    ...noHeartRate(),
+  }),
+}
+
+const WEEKEND_WARRIOR: PersonaConfig = {
+  seed: 20260527,
+  years: PAST_YEARS_FOR_ARCHETYPES,
+  gearPool: [],
+  gearChanceByLabel: {},
+  forced: archetypeRuns({
+    slots: [...SATURDAYS_2026, ...SUNDAYS_2026],
+    hour: 9,
+    minute: 30,
+    ...ARCHETYPE_RUNNER,
+    ...noHeartRate(),
+  }),
+}
+
+const METHODICAL: PersonaConfig = {
+  seed: 20260528,
+  years: PAST_YEARS_FOR_ARCHETYPES,
+  gearPool: [],
+  gearChanceByLabel: {},
+  forced: archetypeRuns({
+    slots: methodicalWeekSlots(13),
+    hour: 10,
+    minute: 0,
+    ...ARCHETYPE_RUNNER,
+    ...noHeartRate(),
+  }),
+}
+
+const LONG_DISTANCE: PersonaConfig = {
+  seed: 20260529,
+  years: PAST_YEARS_FOR_ARCHETYPES,
+  gearPool: [],
+  gearChanceByLabel: {},
+  forced: archetypeRuns({
+    slots: MONDAYS_2026.slice(0, 20),
+    hour: 11,
+    minute: 0,
+    movingSec: 6000,
+    kmHundredths: 1750,
+    avgHeartRate: 155,
+    maxHeartRate: null,
+  }),
+}
+
+const NO_PULSE: PersonaConfig = {
+  seed: 20260530,
+  years: PAST_YEARS_FOR_ARCHETYPES,
+  gearPool: [],
+  gearChanceByLabel: {},
+  forced: archetypeRuns({
+    slots: WEDNESDAYS_2026.slice(0, 20),
+    hour: 11,
+    minute: 0,
+    ...ARCHETYPE_RUNNER,
+    ...noHeartRate(),
+  }),
+}
+
 const PERSONA_CONFIGS: Readonly<Record<PersonaName, PersonaConfig>> = {
   'runner-es': RUNNER_ES,
   cyclist: CYCLIST,
@@ -918,6 +1282,12 @@ const PERSONA_CONFIGS: Readonly<Record<PersonaName, PersonaConfig>> = {
   'year-boundaries': YEAR_BOUNDARIES,
   'broken-rows': BROKEN_ROWS,
   'shoe-retired': SHOE_RETIREMENT,
+  'early-bird': EARLY_BIRD,
+  'night-owl': NIGHT_OWL,
+  'weekend-warrior': WEEKEND_WARRIOR,
+  methodical: METHODICAL,
+  'long-distance': LONG_DISTANCE,
+  'no-pulse': NO_PULSE,
 }
 
 function formatDate(spec: ActivitySpec): string {

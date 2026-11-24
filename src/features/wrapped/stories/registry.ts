@@ -23,8 +23,8 @@ export function availableStories(
 
 export const STORIES: readonly StoryDefinition[] = [
   { id: '01-portada', titleKey: '01-portada', isAvailable: () => true },
-  // 02 and 04 are never omitted; 03 and 06 follow their BRIEF §6 thresholds.
-  // 05 and 07–08 plug in here, one line each (odd/tasks/h07-story-player.md, decision 1).
+  // 02 and 04 are never omitted; 03, 05, 06 and 07 follow their BRIEF §6 thresholds.
+  // 08 plugs in here, one line (odd/tasks/h07-story-player.md, decision 1).
   { id: '02-numeros', titleKey: '02-numeros', isAvailable: () => true },
   {
     id: '03-perfil',
@@ -33,8 +33,18 @@ export const STORIES: readonly StoryDefinition[] = [
   },
   { id: '04-constancia', titleKey: '04-constancia', isAvailable: () => true },
   {
+    id: '05-arquetipo',
+    titleKey: '05-arquetipo',
+    isAvailable: (summary) => summary.availability.archetype,
+  },
+  {
     id: '06-material',
     titleKey: '06-material',
     isAvailable: (summary) => summary.availability.gear,
+  },
+  {
+    id: '07-latidos',
+    titleKey: '07-latidos',
+    isAvailable: (summary) => summary.availability.heartbeats,
   },
 ]

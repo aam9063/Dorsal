@@ -54,13 +54,40 @@ describe('story registry', () => {
     expect(available.length).toBeLessThan(stories.length)
   })
 
+  it('omits story 06 exactly when the gear is unavailable', () => {
+    const withoutGear = availableStories(STORIES, summaryWith({ gear: false }))
+    expect(withoutGear.map((story) => story.id)).toEqual([
+      '01-portada',
+      '02-numeros',
+      '04-constancia',
+    ])
+    const withGear = availableStories(STORIES, summaryWith({ gear: true }))
+    expect(withGear.map((story) => story.id)).toContain('06-material')
+  })
+
+  it('omits story 05 exactly when the archetype is unavailable', () => {
+    const withoutArchetype = availableStories(STORIES, summaryWith({ archetype: false }))
+    expect(withoutArchetype.map((story) => story.id)).not.toContain('05-arquetipo')
+    const withArchetype = availableStories(STORIES, summaryWith({ archetype: true }))
+    expect(withArchetype.map((story) => story.id)).toContain('05-arquetipo')
+  })
+
+  it('omits story 07 exactly when the heartbeats are unavailable', () => {
+    const withoutHeartbeats = availableStories(STORIES, summaryWith({ heartbeats: false }))
+    expect(withoutHeartbeats.map((story) => story.id)).not.toContain('07-latidos')
+    const withHeartbeats = availableStories(STORIES, summaryWith({ heartbeats: true }))
+    expect(withHeartbeats.map((story) => story.id)).toContain('07-latidos')
+  })
+
   it('keeps the registry in story order', () => {
     expect(STORIES.map((story) => story.id)).toEqual([
       '01-portada',
       '02-numeros',
       '03-perfil',
       '04-constancia',
+      '05-arquetipo',
       '06-material',
+      '07-latidos',
     ])
   })
 })
