@@ -10,9 +10,11 @@ export const t = messages[defaultLocale]
 
 export {
   archetypePeakSentence,
+  fulfilledWeeksSentence,
   heartbeatCoverageSentence,
   heartbeatPeakDate,
   joinAnd,
+  powerCoverageSentence,
   resultCorruptWarning,
   uploadNoSeasonMessage,
   uploadUnsupportedMessage,

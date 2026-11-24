@@ -17,6 +17,16 @@ export interface Activity {
   elevationGainM: number | null
   avgHeartRate: number | null
   maxHeartRate: number | null
+  /**
+   * Weighted average watts of `Potencia promedio ponderada` (index 46), the
+   * only power column confirmed present in a real export, so it is the
+   * primary intensity value. `null` when the cell is absent or unreadable.
+   */
+  weightedAvgPowerW: number | null
+  /** Average watts of `Vatios promedio`; `null` when absent or unreadable. */
+  avgPowerW: number | null
+  /** Max watts of `Vatios máx.`; `null` when absent or unreadable. */
+  maxPowerW: number | null
   gear: string | null
 }
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { YearSummary } from '../model/year-summary'
 import type { Activity, PlainDateTime } from '../model'
 import { buildYearSummary } from './build-year-summary'
+import { MIN_SESSIONS_PER_WEEK } from './weekly-load'
 
 function at(month: number, day: number, hour: number): PlainDateTime {
   return { year: 2026, month, day, hour, minute: 0, second: 0 }
@@ -36,6 +37,9 @@ function richActivities(): Activity[] {
     elevationGainM: 0,
     avgHeartRate: index < 4 ? 150 : null,
     maxHeartRate: index < 4 ? 190 : null,
+    avgPowerW: null,
+    maxPowerW: null,
+    weightedAvgPowerW: null,
     gear: index < 4 ? 'Zapatillas asfalto' : null,
   }))
 }
@@ -52,6 +56,15 @@ function withoutHeartRate(activities: Activity[], keepAt: number[]): Activity[] 
   )
 }
 
+/** Ride with a full power reading, so the conditional power panel has data. */
+function withPower(activities: Activity[]): Activity[] {
+  return activities.map((activity, index) =>
+    index % 2 === 0
+      ? { ...activity, avgPowerW: 200, maxPowerW: 900, weightedAvgPowerW: 220.5 }
+      : activity,
+  )
+}
+
 function withMonths(activities: Activity[], monthFor: (index: number) => number): Activity[] {
   return activities.map((activity, index) => ({
     ...activity,
@@ -61,7 +74,7 @@ function withMonths(activities: Activity[], monthFor: (index: number) => number)
 
 describe('buildYearSummary and the YearSummary schema', () => {
   it('assembles every section with all thresholds met and marks nothing short', () => {
-    const summary = buildYearSummary(richActivities())
+    const summary = buildYearSummary(withPower(richActivities()))
 
     expect(summary.availability).toEqual({
       monthlyProfile: true,
@@ -69,6 +82,8 @@ describe('buildYearSummary and the YearSummary schema', () => {
       gear: true,
       heartbeats: true,
       shortVersion: false,
+      seasonCards: true,
+      powerProfile: true,
     })
     expect(summary.totals.activityCount).toBe(10)
     expect(summary.monthlyProfile).not.toBeNull()
@@ -119,6 +134,69 @@ describe('buildYearSummary and the YearSummary schema', () => {
     expect(fiveActivities.availability.shortVersion).toBe(false)
   })
 
+  it('builds the four new season-card sections and flags the two new panels', () => {
+    const summary = buildYearSummary(withPower(richActivities()))
+
+    expect(summary.sportBreakdown?.sports[0]).toEqual({
+      sport: 'run',
+      activityCount: 10,
+      distanceM: 1_000_000,
+      movingTimeS: 36_000,
+      elevationGainM: 0,
+      share: 1,
+    })
+    expect(summary.weeklyLoad).not.toBeNull()
+    expect(summary.seasonBests?.bestWeek).not.toBeNull()
+    expect(summary.powerProfile?.totals.bestWeightedAvgPowerW).toBe(220.5)
+    expect(summary.availability.seasonCards).toBe(true)
+    expect(summary.availability.powerProfile).toBe(true)
+  })
+
+  it('drops the new sections for an empty season and degrades the power panel without watts', () => {
+    const empty = buildYearSummary([])
+
+    expect(empty.sportBreakdown).toBeNull()
+    expect(empty.weeklyLoad).toBeNull()
+    expect(empty.seasonBests).toBeNull()
+    expect(empty.powerProfile).toBeNull()
+    expect(empty.availability.seasonCards).toBe(false)
+    expect(empty.availability.powerProfile).toBe(false)
+
+    const withoutWatts = buildYearSummary(richActivities())
+    expect(withoutWatts.powerProfile).toBeNull()
+    expect(withoutWatts.availability.powerProfile).toBe(false)
+    expect(withoutWatts.availability.seasonCards).toBe(true)
+  })
+
+  it('keeps the fulfilled-week threshold of the card in one exported constant', () => {
+    expect(MIN_SESSIONS_PER_WEEK).toBe(3)
+  })
+
+  it('the schema validates the new sections and still rejects a per-activity array under any key', () => {
+    const summary = buildYearSummary(withPower(richActivities()))
+    expect(YearSummary.parse(summary)).toEqual(summary)
+
+    const injected = (key: keyof YearSummary, value: unknown): unknown => ({
+      ...summary,
+      [key]: { ...(summary[key] as object), rows: value },
+    })
+
+    const sportRows = injected('sportBreakdown', [richActivities()[0]])
+    expect(() => YearSummary.parse(sportRows)).toThrow()
+
+    const weeklyRows = injected('weeklyLoad', [richActivities()[0]])
+    expect(() => YearSummary.parse(weeklyRows)).toThrow()
+
+    const powerRows = injected('powerProfile', [richActivities()[0]])
+    expect(() => YearSummary.parse(powerRows)).toThrow()
+
+    const bestsRows = injected('seasonBests', [richActivities()[0]])
+    expect(() => YearSummary.parse(bestsRows)).toThrow()
+
+    const summaryRows = injected('totals', [richActivities()[0]])
+    expect(() => YearSummary.parse(summaryRows)).toThrow()
+  })
+
   it('the schema validates its own output and rejects objects carrying a per-activity array', () => {
     const summary = buildYearSummary(richActivities())
     expect(YearSummary.parse(summary)).toEqual(summary)
@@ -146,6 +224,9 @@ describe('YearSummary bounds', () => {
     elevationGainM: 0,
     avgHeartRate: null,
     maxHeartRate: null,
+    avgPowerW: null,
+    maxPowerW: null,
+    weightedAvgPowerW: null,
     gear: null,
   })
 

@@ -1,6 +1,6 @@
 import Papa from 'papaparse'
 import { describe, expect, it } from 'vitest'
-import { generatePersonaCsv, HEADER, type PersonaName } from '../../../fixtures/generator'
+import { generatePersonaCsv, HEADER, PERSONAS, type PersonaName } from '../../../fixtures/generator'
 import { createSeasonAccumulator, readActivities } from './index'
 
 /** Turns sparse column overrides into full 104-field rows. */
@@ -58,6 +58,9 @@ describe('readActivities on fixture personas', () => {
       elevationGainM: 58,
       avgHeartRate: 151,
       maxHeartRate: 172,
+      avgPowerW: null,
+      maxPowerW: null,
+      weightedAvgPowerW: null,
       gear: 'Zapatillas asfalto',
     })
 
@@ -281,5 +284,155 @@ describe('numbers the export writes with a decimal tail', () => {
     expect(activities[0]?.avgHeartRate).toBe(132)
     expect(activities[0]?.elevationGainM).toBe(243)
     expect(activities[0]?.distanceM).toBe(61730)
+  })
+})
+
+describe('power columns 32, 33 and 46', () => {
+  const rideWithPower = (overrides: Record<number, string>): string =>
+    csvOf([
+      {
+        0: '9',
+        1: NOVEMBER_ROW,
+        3: 'Bicicleta',
+        5: '7200',
+        16: '6900.0',
+        17: '40200.0',
+        ...overrides,
+      },
+    ])
+
+  it('keeps the maximum and average watts of a powered ride', () => {
+    const result = readActivities(rideWithPower({ 32: '876', 33: '243' }))
+
+    expect(result.stats.corruptRows).toBe(0)
+    expect(result.activities[0]?.maxPowerW).toBe(876)
+    expect(result.activities[0]?.avgPowerW).toBe(243)
+  })
+
+  it('reads Spanish-locale watts: the dot groups thousands and the comma is the decimal point', () => {
+    const result = readActivities(rideWithPower({ 32: '1.234,5', 33: '245,75' }))
+
+    expect(result.activities[0]?.maxPowerW).toBe(1234.5)
+    expect(result.activities[0]?.avgPowerW).toBe(245.75)
+  })
+
+  it('reads a comma-decimal watt value without grouping and an English-locale grouped value', () => {
+    const commaDecimal = readActivities(rideWithPower({ 32: '1234,5' }))
+    expect(commaDecimal.activities[0]?.maxPowerW).toBe(1234.5)
+
+    const englishGrouped = readActivities(rideWithPower({ 33: '1,234.5' }))
+    expect(englishGrouped.activities[0]?.avgPowerW).toBe(1234.5)
+  })
+
+  it('degrades to null for an absent or empty cell, never zero', () => {
+    const result = readActivities(rideWithPower({}))
+
+    expect(result.activities[0]?.avgPowerW).toBeNull()
+    expect(result.activities[0]?.maxPowerW).toBeNull()
+  })
+
+  it('degrades to null for a garbage value and keeps the row itself valid', () => {
+    const garbageInBoth = readActivities(rideWithPower({ 32: 'n/a', 33: 'potencia' }))
+    expect(garbageInBoth.stats.corruptRows).toBe(0)
+    expect(garbageInBoth.activities).toHaveLength(1)
+    expect(garbageInBoth.activities[0]?.avgPowerW).toBeNull()
+    expect(garbageInBoth.activities[0]?.maxPowerW).toBeNull()
+
+    const garbageAfterGoodRows = readActivities(
+      csvOf([
+        {
+          0: '9',
+          1: NOVEMBER_ROW,
+          3: 'Bicicleta',
+          5: '7200',
+          16: '6900.0',
+          17: '40200.0',
+          32: '900',
+          33: '250',
+        },
+        {
+          0: '10',
+          1: NOVEMBER_ROW,
+          3: 'Bicicleta',
+          5: '7200',
+          16: '6900.0',
+          17: '40200.0',
+          32: 'x',
+          33: '',
+        },
+      ]),
+    )
+    expect(garbageAfterGoodRows.stats.corruptRows).toBe(0)
+    expect(garbageAfterGoodRows.activities).toHaveLength(2)
+    expect(garbageAfterGoodRows.activities[1]?.avgPowerW).toBeNull()
+    expect(garbageAfterGoodRows.activities[1]?.maxPowerW).toBeNull()
+  })
+
+  it('reads the two columns independently when only one of them is filled', () => {
+    const avgOnly = readActivities(rideWithPower({ 33: '250' }))
+    expect(avgOnly.activities[0]?.avgPowerW).toBe(250)
+    expect(avgOnly.activities[0]?.maxPowerW).toBeNull()
+
+    const maxOnly = readActivities(rideWithPower({ 32: '900' }))
+    expect(maxOnly.activities[0]?.maxPowerW).toBe(900)
+    expect(maxOnly.activities[0]?.avgPowerW).toBeNull()
+  })
+
+  it('reads the weighted average power of column 46, the one column confirmed in a real export', () => {
+    const weighted = readActivities(rideWithPower({ 46: '218.6' }))
+
+    expect(weighted.stats.corruptRows).toBe(0)
+    expect(weighted.activities[0]?.weightedAvgPowerW).toBe(218.6)
+    expect(weighted.activities[0]?.avgPowerW).toBeNull()
+    expect(weighted.activities[0]?.maxPowerW).toBeNull()
+  })
+
+  it('reads all three power columns independently, so a file with only column 46 still proves its intensity', () => {
+    const onlyWeighted = readActivities(rideWithPower({ 46: '1.234,5' }))
+    expect(onlyWeighted.activities[0]?.weightedAvgPowerW).toBe(1234.5)
+    expect(onlyWeighted.activities[0]?.avgPowerW).toBeNull()
+    expect(onlyWeighted.activities[0]?.maxPowerW).toBeNull()
+
+    const allThree = readActivities(rideWithPower({ 32: '876', 33: '243', 46: '218.6' }))
+    expect(allThree.activities[0]?.maxPowerW).toBe(876)
+    expect(allThree.activities[0]?.avgPowerW).toBe(243)
+    expect(allThree.activities[0]?.weightedAvgPowerW).toBe(218.6)
+
+    const garbageWeighted = readActivities(rideWithPower({ 32: '900', 33: '250', 46: 'no' }))
+    expect(garbageWeighted.activities[0]?.maxPowerW).toBe(900)
+    expect(garbageWeighted.activities[0]?.avgPowerW).toBe(250)
+    expect(garbageWeighted.activities[0]?.weightedAvgPowerW).toBeNull()
+  })
+
+  it('keeps each persona without watts watt-free', () => {
+    for (const persona of PERSONAS_IN_SEASON_ORDER) {
+      const { activities } = readActivities(generatePersonaCsv(persona))
+      for (const activity of activities) {
+        expect(activity.avgPowerW).toBeNull()
+        expect(activity.maxPowerW).toBeNull()
+        expect(activity.weightedAvgPowerW).toBeNull()
+      }
+    }
+  })
+
+  it('gives the cyclist-power persona watts on almost every ride and nobody else any watt', () => {
+    for (const persona of PERSONAS) {
+      const { activities } = readActivities(generatePersonaCsv(persona))
+      const carryingPower = activities.filter(
+        (activity) =>
+          activity.avgPowerW !== null ||
+          activity.maxPowerW !== null ||
+          activity.weightedAvgPowerW !== null,
+      )
+      if (persona === 'cyclist-power') {
+        expect(carryingPower.length).toBe(activities.length - 2)
+        expect(carryingPower.length).toBeGreaterThan(20)
+        for (const activity of carryingPower) {
+          expect(activity.avgPowerW === null && activity.maxPowerW === null).toBe(false)
+        }
+      } else {
+        expect(carryingPower).toEqual([])
+      }
+    }
   })
 })

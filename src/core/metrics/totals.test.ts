@@ -19,6 +19,9 @@ function activity(
     elevationGainM: 0,
     avgHeartRate: null,
     maxHeartRate: null,
+    avgPowerW: null,
+    maxPowerW: null,
+    weightedAvgPowerW: null,
     gear: null,
     ...values,
   }

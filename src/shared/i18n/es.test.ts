@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   es,
+  fulfilledWeeksSentence,
   joinAnd,
+  powerCoverageSentence,
   resultCorruptWarning,
   uploadNoSeasonMessage,
   uploadUnsupportedMessage,
@@ -49,6 +51,36 @@ describe('spanish copy', () => {
     const unzipAnswer = es.landing.faq.items.find((item) => item.answer.includes('.zip'))
     expect(unzipAnswer).toBeDefined()
     expect(unzipAnswer?.answer).toContain('activities.csv')
+  })
+})
+
+describe('season card copy', () => {
+  it('prints the fulfilled week threshold so the rule is visible on the card', () => {
+    expect(fulfilledWeeksSentence(3)).toBe('3 o más entrenos por semana')
+  })
+
+  it('states the power coverage so a partial year cannot read as a complete one', () => {
+    expect(powerCoverageSentence(34, 60)).toBe('potencia en 34 de 60 salidas')
+  })
+
+  it('keeps the closed carnet blocks with their panels in order', () => {
+    expect(Object.keys(es.stories['08-dorsal'].carnet)).toEqual([
+      'title',
+      'sportsTitle',
+      'mostPracticedLabel',
+      'bestWeekLabel',
+      'consecutiveLead',
+      'weeksUnit',
+      'weeksUnitSingular',
+      'marksTitle',
+      'longestSessionLabel',
+      'biggestElevationDayLabel',
+      'bestWeekMarkLabel',
+      'powerTitle',
+      'weightedAvgPowerLabel',
+      'maxPowerLabel',
+      'powerEvolutionLabel',
+    ])
   })
 })
 
