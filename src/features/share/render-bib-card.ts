@@ -1,5 +1,5 @@
 import type { YearSummary } from '../../core/model/year-summary'
-import { formatNumber } from '../../shared/format'
+import { formatKilometres, formatNumber } from '../../shared/format'
 import { t } from '../../shared/i18n'
 
 /**
@@ -11,12 +11,12 @@ import { t } from '../../shared/i18n'
  * `Math.random`, no runtime locale: two draws from the same inputs produce the
  * same command stream, which `e2e/bib-card.spec.ts` pins at the byte level.
  *
- * The composition follows the `W8-Dorsal.dc.html` artboard: an orange field,
- * a rotated bone plate with four punched holes, a dark plate holding the
- * season label, the enormous bib number, the name, the archetype line, the
- * mini monthly profile as a filled silhouette, a dashed tear-off edge and the
- * three closing stats. The card carries no third-party brand (S4): the only
- * name on it is the app's own in "Hecho con Dorsal".
+ * H-11b redrew the composition (odd/tasks/h11b-season-cards.md, decision 2):
+ * the season band is measured to hold its own text, the number never reaches
+ * it, the monthly series is drawn as the twelve bars it really is instead of a
+ * filled silhouette pretending to be a mountain, and the lower third carries
+ * the season's best marks instead of empty bone. The card carries no
+ * third-party brand (S4): the only name on it is the app's own.
  */
 
 export const CARD_WIDTH = 1080
@@ -28,7 +28,7 @@ export const CardColours = {
   ink: '#0f100d',
   /** `--dorsal-surface` light: the bone plate the card paints on. */
   bone: '#f2f0e9',
-  /** `--dorsal-accent`: the field behind the card and the punched holes. */
+  /** `--dorsal-accent`: the field behind the card, the punched holes and the peak bar. */
   accent: '#fc5200',
   /** `--dorsal-fg-subtle` light: secondary lettering on bone (5.6:1, AA). */
   labelInk: '#5e5f58',
@@ -87,43 +87,80 @@ const HOLE_RADIUS = 17
 const HOLE_SHADOW_RADIUS = HOLE_RADIUS - 1.5
 const HOLE_SHADOW_OFFSET = 2.5
 
-const PLATE_HEIGHT = 64
-const PLATE_INSET_X = 106
-const PLATE_INNER_X = 24
-const PLATE_TEXT_SIZE = 30
-const PLATE_LETTER_SPACING = '4px'
-
-const NUMBER_SIZE = 340
-const NAME_SIZE = 46
-const NAME_LETTER_SPACING = '11px'
-const ARCHETYPE_SIZE = 30
-const ARCHETYPE_LETTER_SPACING = '3px'
+/**
+ * The dark season band. Its padding is explicit and the band is wider than the
+ * text column, so neither the label nor the unit can reach the rounded corner:
+ * the pre-H-11b draw let the text run under the corner and the number overlap
+ * the band.
+ */
+const BAND_INSET_X = 62
+const BAND_Y = 48
+const BAND_H = 84
+const BAND_RADIUS = 16
+const BAND_TEXT_SIZE = 26
+const BAND_LETTER_SPACING = '3px'
+const BAND_INNER_X = 28
 
 const CONTENT_X = 106
 const CONTENT_W = CARD_W - 2 * CONTENT_X
+const CENTER_X = CARD_W / 2
 
-const PROFILE_HEIGHT = 122
-const PROFILE_BASE = 684
+const NUMBER_BASELINE = 448
+const NUMBER_SIZE = 290
+/**
+ * Anton's digits advance about 0.75em: they are far wider than the face's
+ * condensed look suggests, and `1451` and `4760` differ enough that any smaller
+ * figure clips the last digit.
+ */
+const DIGIT_ADVANCE_EM = 0.78
+/**
+ * The number bleeds over the plate's own margin — the artboard gives it the
+ * plate's width, not the text column's — so it may fill this share of it.
+ */
+const NUMBER_MAX_WIDTH_RATIO = 0.94
+
+const NAME_BASELINE = 528
+const NAME_SIZE = 46
+const NAME_SIZE_LONG = 38
+const NAME_LETTER_SPACING = '11px'
+const LONG_NAME_LENGTH = 12
+
+const ARCHETYPE_BASELINE = 574
+const ARCHETYPE_SIZE = 26
+const ARCHETYPE_LETTER_SPACING = '3px'
+
+const CHART_CAPTION_BASELINE = 616
+const CHART_CAPTION_SIZE = 22
+const CHART_TOP = 626
+const CHART_BASE = 800
+const CHART_BAR_GAP = 16
+const CHART_BAR_RADIUS = 6
+const MONTH_LABEL_BASELINE = 838
+const MONTH_LABEL_SIZE = 20
 
 const DASH_LENGTH = 18
 const DASH_GAP = 12
 const DASH_THICKNESS = 6
-const DIVIDER_Y = 740
+const DIVIDER_Y = 880
 
 const STAT_VALUE_SIZE = 60
 const STAT_LABEL_SIZE = 27
 const STAT_LABEL_LETTER_SPACING = '2px'
-const STAT_VALUE_BASELINE = 804
-const STAT_LABEL_BASELINE = 848
+const STAT_VALUE_BASELINE = 946
+const STAT_LABEL_BASELINE = 990
+
+const MARKS_TITLE_BASELINE = 1052
+const MARKS_TITLE_SIZE = 22
+const MARKS_FIRST_BASELINE = 1108
+const MARKS_ROW_H = 72
+const MARKS_TEXT_SIZE = 22
+const MARKS_LABEL_LETTER_SPACING = '2px'
+const MARKS_RULE_SIZE = 2
+const MARKS_RULE_OFFSET = 26
 
 const FOOTER_SIZE = 27
 const FOOTER_LETTER_SPACING = '3px'
-const FOOTER_BASELINE = CARD_H - 60
-
-const PLATE_Y = 50
-const NUMBER_BASELINE = PLATE_Y + PLATE_HEIGHT + 260
-const NAME_BASELINE = NUMBER_BASELINE + 74
-const ARCHETYPE_BASELINE = NAME_BASELINE + 74
+const FOOTER_BASELINE = CARD_H - 62
 
 /** Quarter of a turn, for the rounded-corner arcs. */
 const QUARTER = Math.PI / 2
@@ -131,6 +168,37 @@ const QUARTER = Math.PI / 2
 const FONT_DISPLAY = '"Anton"'
 const FONT_SANS = '"Inter"'
 const FONT_MONO = '"JetBrains Mono"'
+
+/**
+ * The vertical skeleton of the plate, exported so a layout regression is a test
+ * failure instead of a card nobody notices: the number must clear the season
+ * band, the marks must stay above the footer, and the footer must sit near the
+ * bottom edge instead of leaving the lower third empty.
+ */
+export const bibCardGeometry = {
+  plateHeight: CARD_H,
+  bandTop: BAND_Y,
+  bandHeight: BAND_H,
+  numberBaseline: NUMBER_BASELINE,
+  numberSize: NUMBER_SIZE,
+  contentWidth: CONTENT_W,
+  plateWidth: CARD_W,
+  digitAdvanceEm: DIGIT_ADVANCE_EM,
+  numberMaxWidthRatio: NUMBER_MAX_WIDTH_RATIO,
+  marksFirstBaseline: MARKS_FIRST_BASELINE,
+  marksRowHeight: MARKS_ROW_H,
+  marksRuleOffset: MARKS_RULE_OFFSET,
+  footerBaseline: FOOTER_BASELINE,
+} as const
+
+/**
+ * A stored calendar date as the card prints it: `12 mar`. The month table lives
+ * in `src/shared/i18n/`, so the card never formats a date through a runtime
+ * locale and two draws keep identical bytes.
+ */
+export function monthDayText(month: number, day: number): string {
+  return `${day} ${(t.monthsShort[month - 1] ?? '').toLowerCase()}`
+}
 
 /**
  * The three rows of numbers under the tear-off edge — the same strings the
@@ -151,6 +219,53 @@ export function bibCardStatRows(summary: YearSummary): { value: string; label: s
       ? { value: formatNumber(summary.totals.activeDays), label: copy.statActiveDays }
       : { value: `${formatNumber(streak)} D`, label: copy.statStreak },
   ]
+}
+
+/**
+ * The season's best marks as label/value rows, the block that fills the lower
+ * third of the plate. A mark the season cannot prove is left out entirely, so
+ * the card never prints a zero it did not measure.
+ */
+export function bibCardMarkRows(summary: YearSummary): { label: string; value: string }[] {
+  const bests = summary.seasonBests
+  if (bests === null) {
+    return []
+  }
+  const copy = t.stories['08-dorsal'].carnet
+  const rows: { label: string; value: string }[] = []
+  const longest = bests.longestSessionByDistance
+  if (longest !== null) {
+    rows.push({
+      label: copy.longestSessionLabel,
+      value: `${formatKilometres(longest.distanceM)} km · ${monthDayText(longest.month, longest.day)}`,
+    })
+  }
+  const climb = bests.biggestElevationDay
+  if (climb !== null) {
+    rows.push({
+      label: copy.biggestElevationDayLabel,
+      value: `${formatNumber(climb.elevationGainM)} m · ${monthDayText(climb.month, climb.day)}`,
+    })
+  }
+  const week = bests.bestWeek
+  if (week !== null) {
+    rows.push({
+      label: copy.bestWeekMarkLabel,
+      value: `${formatKilometres(week.distanceM)} km · ${monthDayText(week.monday.month, week.monday.day)}`,
+    })
+  }
+  return rows
+}
+
+/**
+ * The bib number's font size: the design size, reduced until the widest possible
+ * digits still fit the content column. Anton has proportional digits, so sizing
+ * by count is the only rule that holds for `1451` (narrow ones) and `4760`
+ * (wide ones) alike, and it keeps five and six digits on the card.
+ */
+export function bibCardNumberSize(digits: number): number {
+  const widest = CARD_W * NUMBER_MAX_WIDTH_RATIO
+  return Math.min(NUMBER_SIZE, Math.floor(widest / (DIGIT_ADVANCE_EM * Math.max(digits, 1))))
 }
 
 /**
@@ -180,28 +295,47 @@ function roundRectPath(
   height: number,
   radius: number,
 ): void {
+  const safeRadius = Math.min(radius, width / 2, height / 2)
   surface.beginPath()
-  surface.moveTo(x + radius, y)
-  surface.arc(x + width - radius, y + radius, radius, 2 * -QUARTER, 0)
-  surface.arc(x + width - radius, y + height - radius, radius, 0, QUARTER)
-  surface.arc(x + radius, y + height - radius, radius, QUARTER, 2 * QUARTER)
-  surface.arc(x + radius, y + radius, radius, 2 * QUARTER, 3 * QUARTER)
+  surface.moveTo(x + safeRadius, y)
+  surface.arc(x + width - safeRadius, y + safeRadius, safeRadius, 2 * -QUARTER, 0)
+  surface.arc(x + width - safeRadius, y + height - safeRadius, safeRadius, 0, QUARTER)
+  surface.arc(x + safeRadius, y + height - safeRadius, safeRadius, QUARTER, 2 * QUARTER)
+  surface.arc(x + safeRadius, y + safeRadius, safeRadius, 2 * QUARTER, 3 * QUARTER)
   surface.closePath()
 }
 
-/** The mini monthly profile as one filled silhouette, the W3 idea in miniature. */
-function profilePath(surface: CardSurface, monthlyDistanceM: readonly number[]): void {
-  const max = Math.max(...monthlyDistanceM)
-  surface.beginPath()
-  surface.moveTo(CONTENT_X, PROFILE_BASE)
-  for (let month = 1; month <= 12; month += 1) {
-    const distanceM = monthlyDistanceM[month - 1] ?? 0
-    const y = PROFILE_BASE - (max > 0 ? (distanceM / max) * PROFILE_HEIGHT : 0)
-    surface.lineTo(CONTENT_X + ((month - 1) * CONTENT_W) / 11, y)
+/** One month bar, so the card shows the twelve real months instead of a silhouette. */
+function barPath(
+  surface: CardSurface,
+  x: number,
+  width: number,
+  height: number,
+  baseline: number,
+): void {
+  if (height <= 0) {
+    return
   }
-  surface.lineTo(CONTENT_X + CONTENT_W, PROFILE_BASE)
-  surface.closePath()
-  surface.fill()
+  roundRectPath(surface, x, baseline - height, width, height, CHART_BAR_RADIUS)
+}
+
+/** The twelve monthly bars, with the peak month in accent. */
+function drawMonthlyBars(surface: CardSurface, monthlyDistanceM: readonly number[]): void {
+  const max = Math.max(...monthlyDistanceM, 0)
+  const barWidth = (CONTENT_W - CHART_BAR_GAP * 11) / 12
+  const peak = monthlyDistanceM.indexOf(max)
+  const height = CHART_BASE - CHART_TOP
+  for (let month = 0; month < 12; month += 1) {
+    const distanceM = monthlyDistanceM[month] ?? 0
+    const barHeight = max > 0 ? (distanceM / max) * height : 0
+    if (barHeight <= 0) {
+      continue
+    }
+    const x = CONTENT_X + month * (barWidth + CHART_BAR_GAP)
+    surface.fillStyle = month === peak ? CardColours.accent : CardColours.ink
+    barPath(surface, x, barWidth, barHeight, CHART_BASE)
+    surface.fill()
+  }
 }
 
 /** Dashed tear-off edge, drawn as filled dashes because the subset has no stroke. */
@@ -252,7 +386,7 @@ function setFont(
 
 /**
  * Paints the whole card. Order matters: the field, then the rotated plate and
- * its holes, then the lettering, one band per artboard block.
+ * its holes, then the lettering, then the data blocks from the top down.
  */
 export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
   const copy = t.stories['08-dorsal']
@@ -279,66 +413,134 @@ export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
   surface.fill()
   drawHoles(surface)
 
-  // The dark season plate.
-  const plateWidth = CARD_W - 2 * PLATE_INSET_X
-  roundRectPath(surface, PLATE_INSET_X, PLATE_Y, plateWidth, PLATE_HEIGHT, 12)
+  // The dark season band, padded so its own text cannot reach the corners.
+  roundRectPath(surface, BAND_INSET_X, BAND_Y, CARD_W - 2 * BAND_INSET_X, BAND_H, BAND_RADIUS)
   surface.fillStyle = CardColours.ink
   surface.fill()
-  setFont(surface, '600', PLATE_TEXT_SIZE, FONT_MONO, PLATE_LETTER_SPACING)
+  setFont(surface, '600', BAND_TEXT_SIZE, FONT_MONO, BAND_LETTER_SPACING)
   surface.fillStyle = CardColours.orange
   surface.textBaseline = 'middle'
   surface.textAlign = 'left'
-  surface.fillText(
-    copy.plate.toUpperCase(),
-    PLATE_INSET_X + PLATE_INNER_X,
-    PLATE_Y + PLATE_HEIGHT / 2,
-  )
+  surface.fillText(copy.plate.toUpperCase(), BAND_INSET_X + BAND_INNER_X, BAND_Y + BAND_H / 2)
   surface.textAlign = 'right'
-  surface.fillText(
-    copy.plateKm,
-    PLATE_INSET_X + plateWidth - PLATE_INNER_X,
-    PLATE_Y + PLATE_HEIGHT / 2,
-  )
+  surface.fillText(copy.plateKm, CARD_W - BAND_INSET_X - BAND_INNER_X, BAND_Y + BAND_H / 2)
   surface.textBaseline = 'alphabetic'
 
-  // The bib number, the name and the archetype.
-  const centerX = CARD_W / 2
-  setFont(surface, '400', NUMBER_SIZE, FONT_DISPLAY, '0px')
+  // The bib number, sized so five digits still fit the content column.
+  const numberText = String(summary.bibCard.number)
+  const numberSize = bibCardNumberSize(numberText.length)
+  // The plate is tilted, so a number centred on the plate reads as shifted left
+  // against the card's straight edges: offset it back by `tan(3°)` times the
+  // distance from the plate's middle to the number's optical centre.
+  const opticalCenter =
+    Math.tan(Math.abs(CARD_ROTATION)) * (CARD_H / 2 - (NUMBER_BASELINE - 0.35 * numberSize))
+  setFont(surface, '400', numberSize, FONT_DISPLAY, '0px')
   surface.fillStyle = CardColours.ink
   surface.textAlign = 'center'
-  surface.fillText(String(summary.bibCard.number), centerX, NUMBER_BASELINE)
+  surface.fillText(numberText, CENTER_X + opticalCenter, NUMBER_BASELINE)
 
-  setFont(surface, '700', NAME_SIZE, FONT_SANS, NAME_LETTER_SPACING)
+  const nameText = bibCardNameText(name)
+  setFont(
+    surface,
+    '700',
+    nameText.length > LONG_NAME_LENGTH ? NAME_SIZE_LONG : NAME_SIZE,
+    FONT_SANS,
+    NAME_LETTER_SPACING,
+  )
   surface.fillStyle = CardColours.ink
-  surface.fillText(bibCardNameText(name), centerX, NAME_BASELINE)
+  surface.fillText(nameText, CENTER_X, NAME_BASELINE)
 
   const archetype = bibCardArchetypeText(summary)
   if (archetype !== null) {
     setFont(surface, '400', ARCHETYPE_SIZE, FONT_MONO, ARCHETYPE_LETTER_SPACING)
     surface.fillStyle = CardColours.labelInk
-    surface.fillText(archetype, centerX, ARCHETYPE_BASELINE)
+    surface.fillText(archetype, CENTER_X, ARCHETYPE_BASELINE)
   }
 
-  profilePath(surface, summary.bibCard.monthlyDistanceM)
+  // The twelve months as bars, with the caption and the peak month's distance.
+  const monthly = summary.bibCard.monthlyDistanceM
+  const peakDistanceM = Math.max(...monthly, 0)
+  const peakMonth = monthly.indexOf(peakDistanceM)
+  setFont(surface, '400', CHART_CAPTION_SIZE, FONT_MONO, '2px')
+  surface.fillStyle = CardColours.labelInk
+  surface.textAlign = 'left'
+  surface.fillText(copy.chartCaption.toUpperCase(), CONTENT_X, CHART_CAPTION_BASELINE)
+  if (peakDistanceM > 0) {
+    surface.textAlign = 'right'
+    surface.fillText(
+      `${t.monthsShort[peakMonth] ?? ''} · ${formatKilometres(peakDistanceM)}`.toUpperCase(),
+      CONTENT_X + CONTENT_W,
+      CHART_CAPTION_BASELINE,
+    )
+  }
+  drawMonthlyBars(surface, monthly)
+  setFont(surface, '400', MONTH_LABEL_SIZE, FONT_MONO, '0px')
+  surface.fillStyle = CardColours.labelInk
+  surface.textAlign = 'center'
+  const barWidth = (CONTENT_W - CHART_BAR_GAP * 11) / 12
+  for (let month = 0; month < 12; month += 1) {
+    surface.fillText(
+      t.monthsAbbr[month] ?? '',
+      CONTENT_X + month * (barWidth + CHART_BAR_GAP) + barWidth / 2,
+      MONTH_LABEL_BASELINE,
+    )
+  }
+
   dashedDivider(surface)
 
   // The three closing stats.
+  const rows = bibCardStatRows(summary)
   const statWidth = CONTENT_W / 3
   setFont(surface, '400', STAT_VALUE_SIZE, FONT_DISPLAY, '0px')
   surface.fillStyle = CardColours.ink
-  for (const [index, row] of bibCardStatRows(summary).entries()) {
-    const statX = CONTENT_X + statWidth * index + statWidth / 2
-    surface.fillText(row.value, statX, STAT_VALUE_BASELINE)
+  surface.textAlign = 'center'
+  for (const [index, row] of rows.entries()) {
+    surface.fillText(row.value, CONTENT_X + statWidth * index + statWidth / 2, STAT_VALUE_BASELINE)
   }
   setFont(surface, '400', STAT_LABEL_SIZE, FONT_MONO, STAT_LABEL_LETTER_SPACING)
-  for (const [index, row] of bibCardStatRows(summary).entries()) {
-    const statX = CONTENT_X + statWidth * index + statWidth / 2
-    surface.fillText(row.label.toUpperCase(), statX, STAT_LABEL_BASELINE)
+  for (const [index, row] of rows.entries()) {
+    surface.fillText(
+      row.label.toUpperCase(),
+      CONTENT_X + statWidth * index + statWidth / 2,
+      STAT_LABEL_BASELINE,
+    )
+  }
+
+  // The season's best marks, the block that used to be empty bone.
+  const marks = bibCardMarkRows(summary)
+  if (marks.length > 0) {
+    setFont(surface, '700', MARKS_TITLE_SIZE, FONT_MONO, MARKS_LABEL_LETTER_SPACING)
+    surface.fillStyle = CardColours.labelInk
+    surface.textAlign = 'left'
+    surface.fillText(
+      t.stories['08-dorsal'].carnet.marksTitle.toUpperCase(),
+      CONTENT_X,
+      MARKS_TITLE_BASELINE,
+    )
+    setFont(surface, '400', MARKS_TEXT_SIZE, FONT_MONO, MARKS_LABEL_LETTER_SPACING)
+    for (const [index, mark] of marks.entries()) {
+      const baseline = MARKS_FIRST_BASELINE + index * MARKS_ROW_H
+      surface.fillStyle = CardColours.labelInk
+      surface.textAlign = 'left'
+      surface.fillText(mark.label.toUpperCase(), CONTENT_X, baseline)
+      surface.fillStyle = CardColours.ink
+      surface.textAlign = 'right'
+      surface.fillText(mark.value, CONTENT_X + CONTENT_W, baseline)
+      surface.fillStyle = CardColours.labelInk
+      surface.beginPath()
+      surface.moveTo(CONTENT_X, baseline + MARKS_RULE_OFFSET)
+      surface.lineTo(CONTENT_X + CONTENT_W, baseline + MARKS_RULE_OFFSET)
+      surface.lineTo(CONTENT_X + CONTENT_W, baseline + MARKS_RULE_OFFSET + MARKS_RULE_SIZE)
+      surface.lineTo(CONTENT_X, baseline + MARKS_RULE_OFFSET + MARKS_RULE_SIZE)
+      surface.closePath()
+      surface.fill()
+    }
   }
 
   setFont(surface, '400', FOOTER_SIZE, FONT_MONO, FOOTER_LETTER_SPACING)
   surface.fillStyle = CardColours.labelInk
-  surface.fillText(copy.madeWith.toUpperCase(), centerX, FOOTER_BASELINE)
+  surface.textAlign = 'center'
+  surface.fillText(copy.madeWith.toUpperCase(), CENTER_X, FOOTER_BASELINE)
 
   surface.restore()
 }
