@@ -3,8 +3,10 @@ import { formatKilometres } from '../../shared/format'
 import { t } from '../../shared/i18n'
 import {
   bibCardArchetypeText,
+  bibCardGeometry,
   bibCardMarkRows,
   bibCardNameText,
+  bibCardNumberSize,
   bibCardStatRows,
 } from './render-bib-card'
 
@@ -17,7 +19,16 @@ import {
  * every string from the same helpers the canvas draw uses, so the two can never
  * drift apart on copy or numbers.
  */
-export function BibCardPreview({ summary, name }: { summary: YearSummary; name: string | null }) {
+export function BibCardPreview({
+  summary,
+  name,
+  cardWidth = 0,
+}: {
+  summary: YearSummary
+  name: string | null
+  /** The card's own width in layout pixels; 0 until the story measures it. */
+  cardWidth?: number
+}) {
   const copy = t.stories['08-dorsal']
   const numberText = String(summary.bibCard.number)
   const archetype = bibCardArchetypeText(summary)
@@ -25,6 +36,17 @@ export function BibCardPreview({ summary, name }: { summary: YearSummary; name: 
   const maxMonthly = Math.max(...monthly, 0)
   const peakMonth = monthly.indexOf(maxMonthly)
   const marks = bibCardMarkRows(summary)
+  // The preview card *is* the plate, so the number uses the renderer's own fit
+  // rule scaled to this width: what fits here fits on the exported PNG.
+  const numberSize =
+    cardWidth > 0
+      ? Math.max(
+          20,
+          Math.round(
+            bibCardNumberSize(numberText.length) * (cardWidth / bibCardGeometry.plateWidth),
+          ),
+        )
+      : 0
 
   return (
     <div
@@ -43,7 +65,8 @@ export function BibCardPreview({ summary, name }: { summary: YearSummary; name: 
 
       <div
         data-testid="dorsal-number"
-        className={`text-center font-display leading-none ${numberText.length >= 5 ? 'text-[64px]' : 'text-[80px]'}`}
+        className="-mx-5 text-center font-display leading-none whitespace-nowrap"
+        style={{ fontSize: numberSize > 0 ? `${numberSize}px` : undefined }}
       >
         {numberText}
       </div>

@@ -30,7 +30,7 @@ export function DorsalStory({ summary }: { summary: YearSummary }) {
   const cardName = trimmedName === '' ? null : trimmedName
   const [selection, setSelection] = useState<CardSelection>('dorsal')
   const [busy, setBusy] = useState(false)
-  const { slotRef, designRef, scale } = useFitScale()
+  const { slotRef, designRef, scale, width: cardWidth } = useFitScale()
   const radioRefs = useRef(new Map<CardSelection, HTMLButtonElement>())
   const isDorsal = selection === 'dorsal'
   const label = isDorsal ? bibCardActionLabel() : seasonCardActionLabel()
@@ -74,7 +74,7 @@ export function DorsalStory({ summary }: { summary: YearSummary }) {
       >
         <div ref={designRef} className="origin-top" style={{ transform: `scale(${scale})` }}>
           {isDorsal ? (
-            <BibCardPreview summary={summary} name={cardName} />
+            <BibCardPreview summary={summary} name={cardName} cardWidth={cardWidth} />
           ) : (
             <CarnetPreview summary={summary} name={cardName} />
           )}

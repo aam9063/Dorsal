@@ -15,6 +15,7 @@ export function useFitScale(min = 0.45, max = 1) {
   const slotRef = useRef<HTMLDivElement | null>(null)
   const designRef = useRef<HTMLDivElement | null>(null)
   const [scale, setScale] = useState(max)
+  const [width, setWidth] = useState(0)
 
   useEffect(() => {
     const slot = slotRef.current
@@ -30,6 +31,7 @@ export function useFitScale(min = 0.45, max = 1) {
       }
       const next = Math.min(max, Math.max(min, available / natural))
       setScale((previous) => (Math.abs(previous - next) < 0.005 ? previous : next))
+      setWidth((previous) => (previous === design.clientWidth ? previous : design.clientWidth))
     }
     measure()
     if (typeof ResizeObserver === 'undefined') {
@@ -43,5 +45,5 @@ export function useFitScale(min = 0.45, max = 1) {
     }
   }, [min, max])
 
-  return { slotRef, designRef, scale }
+  return { slotRef, designRef, scale, width }
 }
