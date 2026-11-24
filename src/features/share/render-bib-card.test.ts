@@ -6,6 +6,7 @@ import {
   CARD_WIDTH,
   CardColours,
   bibCardGeometry,
+  bibCardNumberSize,
   drawBibCard,
   type CardSurface,
 } from './render-bib-card'
@@ -279,12 +280,23 @@ describe('bib card renderer', () => {
     expect(accentFills.length).toBeGreaterThanOrEqual(1)
   })
 
-  it('keeps the number clear of the season band at both sizes', () => {
-    for (const size of [bibCardGeometry.numberSize, bibCardGeometry.numberSizeLong]) {
+  it('keeps the number clear of the band and inside the column at any digit count', () => {
+    const widest = bibCardGeometry.plateWidth * bibCardGeometry.numberMaxWidthRatio
+    for (const digits of [1, 2, 3, 4, 5, 6]) {
+      const size = bibCardNumberSize(digits)
+      expect(size).toBeLessThanOrEqual(bibCardGeometry.numberSize)
+      // Clears the dark band, whatever the size.
       expect(bibCardGeometry.numberBaseline - size).toBeGreaterThanOrEqual(
         bibCardGeometry.bandTop + bibCardGeometry.bandHeight + 16,
       )
+      // The widest possible digits still fit inside the plate.
+      expect(size * bibCardGeometry.digitAdvanceEm * digits).toBeLessThanOrEqual(widest + 1)
     }
+  })
+
+  it('sizes the number by its digits, not by a fixed pair of sizes', () => {
+    expect(bibCardNumberSize(4)).toBeLessThanOrEqual(bibCardGeometry.numberSize)
+    expect(bibCardNumberSize(6)).toBeLessThan(bibCardNumberSize(4))
   })
 
   it('keeps the marks above the footer and the footer near the bottom edge', () => {

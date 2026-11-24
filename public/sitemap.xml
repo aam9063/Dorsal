@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Placeholder domain: BRIEF.md §13 leaves the definitive domain to Albert.
+  Confirm both loc values before launch.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://dorsal.app/</loc>
+  </url>
+  <url>
+    <loc>https://dorsal.app/subir</loc>
+  </url>
+</urlset>

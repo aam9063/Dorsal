@@ -106,10 +106,18 @@ const CONTENT_W = CARD_W - 2 * CONTENT_X
 const CENTER_X = CARD_W / 2
 
 const NUMBER_BASELINE = 448
-/** Anton advance is ~0.47em, so five digits need a smaller face to stay in the column. */
-const NUMBER_SIZE_LONG = 236
 const NUMBER_SIZE = 290
-const LONG_NUMBER_DIGITS = 5
+/**
+ * Anton's digits advance about 0.75em: they are far wider than the face's
+ * condensed look suggests, and `1451` and `4760` differ enough that any smaller
+ * figure clips the last digit.
+ */
+const DIGIT_ADVANCE_EM = 0.78
+/**
+ * The number bleeds over the plate's own margin — the artboard gives it the
+ * plate's width, not the text column's — so it may fill this share of it.
+ */
+const NUMBER_MAX_WIDTH_RATIO = 0.94
 
 const NAME_BASELINE = 528
 const NAME_SIZE = 46
@@ -173,7 +181,10 @@ export const bibCardGeometry = {
   bandHeight: BAND_H,
   numberBaseline: NUMBER_BASELINE,
   numberSize: NUMBER_SIZE,
-  numberSizeLong: NUMBER_SIZE_LONG,
+  contentWidth: CONTENT_W,
+  plateWidth: CARD_W,
+  digitAdvanceEm: DIGIT_ADVANCE_EM,
+  numberMaxWidthRatio: NUMBER_MAX_WIDTH_RATIO,
   marksFirstBaseline: MARKS_FIRST_BASELINE,
   marksRowHeight: MARKS_ROW_H,
   marksRuleOffset: MARKS_RULE_OFFSET,
@@ -244,6 +255,17 @@ export function bibCardMarkRows(summary: YearSummary): { label: string; value: s
     })
   }
   return rows
+}
+
+/**
+ * The bib number's font size: the design size, reduced until the widest possible
+ * digits still fit the content column. Anton has proportional digits, so sizing
+ * by count is the only rule that holds for `1451` (narrow ones) and `4760`
+ * (wide ones) alike, and it keeps five and six digits on the card.
+ */
+export function bibCardNumberSize(digits: number): number {
+  const widest = CARD_W * NUMBER_MAX_WIDTH_RATIO
+  return Math.min(NUMBER_SIZE, Math.floor(widest / (DIGIT_ADVANCE_EM * Math.max(digits, 1))))
 }
 
 /**
@@ -406,11 +428,16 @@ export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
 
   // The bib number, sized so five digits still fit the content column.
   const numberText = String(summary.bibCard.number)
-  const numberSize = numberText.length >= LONG_NUMBER_DIGITS ? NUMBER_SIZE_LONG : NUMBER_SIZE
+  const numberSize = bibCardNumberSize(numberText.length)
+  // The plate is tilted, so a number centred on the plate reads as shifted left
+  // against the card's straight edges: offset it back by `tan(3°)` times the
+  // distance from the plate's middle to the number's optical centre.
+  const opticalCenter =
+    Math.tan(Math.abs(CARD_ROTATION)) * (CARD_H / 2 - (NUMBER_BASELINE - 0.35 * numberSize))
   setFont(surface, '400', numberSize, FONT_DISPLAY, '0px')
   surface.fillStyle = CardColours.ink
   surface.textAlign = 'center'
-  surface.fillText(numberText, CENTER_X, NUMBER_BASELINE)
+  surface.fillText(numberText, CENTER_X + opticalCenter, NUMBER_BASELINE)
 
   const nameText = bibCardNameText(name)
   setFont(

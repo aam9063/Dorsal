@@ -16,14 +16,28 @@
   to = "/index.html"
   status = 200
 
-# H-12 owns the CSP test against the deploy preview. Until then this header is
-# the draft: no third-party origin, no inline script, no eval. style-src keeps
-# 'unsafe-inline' because the story animations set inline styles; H-12 tightens
-# it once the animation layer is decided.
+# The shipped CSP, measured against the production build (H-12 decision 3).
+# Every claim below was observed by serving `dist` with these exact headers and
+# running the full flow (upload, eight stories, both card exports):
+# - `script-src 'self'` holds: the build inlines no script — `dist/index.html`
+#   carries one module tag with `src` and one stylesheet link. Zod carries an
+#   eval-capability probe (`Function('')` inside a try/catch): depending on the
+#   engine it is blocked or it succeeds, and either answer only chooses which
+#   validator implementation Zod uses, never a feature. It was observed blocked
+#   in one run and succeeding in another, with no functional difference.
+# - `style-src` keeps `'unsafe-inline'` because the animation layer injects
+#   seven `<style>` elements during the story transitions. That is measured, not
+#   assumed: with `style-src 'self'` those seven are blocked and the transitions
+#   lose their styles, while `style-src-attr` alone does not cover elements.
+# - `worker-src 'self'` is enough: Vite emits the worker as an asset file
+#   (`new Worker(new URL('/assets/worker…'))`), so no blob: worker is created.
+# - `connect-src 'self'` is the promise of the product: the file never leaves
+#   the browser, so no other origin may be contacted.
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "DENY"
     Referrer-Policy = "no-referrer"

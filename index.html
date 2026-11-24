@@ -11,7 +11,44 @@
     <meta name="theme-color" content="#0F100D" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!--
+      Open Graph and Twitter card. og:title mirrors <title> and og:description
+      mirrors the meta description above, so crawlers and the page never
+      disagree.
+    -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Dorsal" />
+    <meta property="og:title" content="Dorsal · Tu temporada 2026 en un dorsal" />
+    <meta
+      property="og:description"
+      content="Sube el activities.csv de tu exportación de Strava y recibe tu resumen deportivo de 2026 en ocho historias y un dorsal para compartir. Gratis, sin registro y sin que tu archivo salga de tu dispositivo."
+    />
+    <meta property="og:locale" content="es_ES" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Dorsal · Tu temporada 2026 en un dorsal" />
+    <meta
+      name="twitter:description"
+      content="Sube el activities.csv de tu exportación de Strava y recibe tu resumen deportivo de 2026 en ocho historias y un dorsal para compartir. Gratis, sin registro y sin que tu archivo salga de tu dispositivo."
+    />
+
+    <!--
+      The only place absolute URLs exist. https://dorsal.app is a placeholder:
+      BRIEF.md §13 leaves the definitive name and domain to Albert, so every
+      URL in this block must be confirmed before launch.
+    -->
+    <link rel="canonical" href="https://dorsal.app/" />
+    <meta property="og:url" content="https://dorsal.app/" />
+    <meta property="og:image" content="https://dorsal.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Dorsal: Tu temporada 2026 en un dorsal, con la tarjeta del dorsal al lado."
+    />
+    <meta name="twitter:image" content="https://dorsal.app/og-image.png" />
   </head>
   <body>
     <div id="root"></div>

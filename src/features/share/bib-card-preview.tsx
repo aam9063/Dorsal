@@ -3,8 +3,10 @@ import { formatKilometres } from '../../shared/format'
 import { t } from '../../shared/i18n'
 import {
   bibCardArchetypeText,
+  bibCardGeometry,
   bibCardMarkRows,
   bibCardNameText,
+  bibCardNumberSize,
   bibCardStatRows,
 } from './render-bib-card'
 
@@ -17,7 +19,16 @@ import {
  * every string from the same helpers the canvas draw uses, so the two can never
  * drift apart on copy or numbers.
  */
-export function BibCardPreview({ summary, name }: { summary: YearSummary; name: string | null }) {
+export function BibCardPreview({
+  summary,
+  name,
+  cardWidth = 0,
+}: {
+  summary: YearSummary
+  name: string | null
+  /** The card's own width in layout pixels; 0 until the story measures it. */
+  cardWidth?: number
+}) {
   const copy = t.stories['08-dorsal']
   const numberText = String(summary.bibCard.number)
   const archetype = bibCardArchetypeText(summary)
@@ -25,25 +36,37 @@ export function BibCardPreview({ summary, name }: { summary: YearSummary; name: 
   const maxMonthly = Math.max(...monthly, 0)
   const peakMonth = monthly.indexOf(maxMonthly)
   const marks = bibCardMarkRows(summary)
+  // The preview card *is* the plate, so the number uses the renderer's own fit
+  // rule scaled to this width: what fits here fits on the exported PNG.
+  const numberSize =
+    cardWidth > 0
+      ? Math.max(
+          20,
+          Math.round(
+            bibCardNumberSize(numberText.length) * (cardWidth / bibCardGeometry.plateWidth),
+          ),
+        )
+      : 0
 
   return (
     <div
       data-testid="dorsal-preview"
-      className="relative flex w-[86%] max-w-sm rotate-[-3deg] flex-col gap-3 rounded-card bg-bone p-5 text-ink shadow-xl"
+      className="relative flex w-[86%] max-w-sm flex-col gap-3 rounded-card bg-bone p-5 text-ink shadow-xl"
     >
       <span className="absolute left-3 top-3 h-2.5 w-2.5 rounded-pill bg-accent" />
       <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-pill bg-accent" />
       <span className="absolute bottom-3 left-3 h-2.5 w-2.5 rounded-pill bg-accent" />
       <span className="absolute bottom-3 right-3 h-2.5 w-2.5 rounded-pill bg-accent" />
 
-      <div className="flex items-center justify-between gap-2 rounded-chip bg-ink px-3 py-1.5 font-mono text-[7px] tracking-[0.1em] text-accent">
-        <span className="min-w-0 truncate">{copy.plate.toUpperCase()}</span>
+      <div className="flex items-center justify-between gap-2 rounded-chip bg-ink px-3 py-1.5 font-mono text-[7px] tracking-[0.04em] text-accent">
+        <span className="whitespace-nowrap">{copy.plateShort.toUpperCase()}</span>
         <span className="shrink-0">{copy.plateKm}</span>
       </div>
 
       <div
         data-testid="dorsal-number"
-        className={`font-display leading-none ${numberText.length >= 5 ? 'text-[64px]' : 'text-[80px]'}`}
+        className="-mx-5 text-center font-display leading-none whitespace-nowrap"
+        style={{ fontSize: numberSize > 0 ? `${numberSize}px` : undefined }}
       >
         {numberText}
       </div>
@@ -59,10 +82,10 @@ export function BibCardPreview({ summary, name }: { summary: YearSummary; name: 
       )}
 
       <div>
-        <div className="mb-1 flex items-baseline justify-between font-mono text-[9px] uppercase tracking-[0.14em] text-label-ink">
-          <span>{copy.chartCaption}</span>
+        <div className="mb-1 flex items-baseline justify-between gap-1 font-mono text-[8px] uppercase tracking-[0.08em] text-label-ink">
+          <span className="whitespace-nowrap">{copy.chartCaption}</span>
           {maxMonthly > 0 ? (
-            <span>
+            <span className="whitespace-nowrap tabular-nums">
               {t.monthsShort[peakMonth] ?? ''} · {formatKilometres(maxMonthly)}
             </span>
           ) : null}
