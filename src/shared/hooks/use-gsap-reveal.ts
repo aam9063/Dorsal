@@ -107,7 +107,14 @@ export function useGsapReveal(target: RefObject<HTMLElement | null>): void {
 
       gsap.utils.toArray<HTMLElement>('[data-anim-button]', root).forEach((button) => {
         const lift = gsap.quickTo(button, 'y', { duration: 0.18, ease: 'power2.out' })
-        const press = gsap.quickTo(button, 'scale', { duration: 0.12, ease: 'power2.out' })
+        // `quickTo` cannot reset the `scale` shorthand (GSAP warns about it at
+        // runtime), so the two axes are tweened individually.
+        const pressX = gsap.quickTo(button, 'scaleX', { duration: 0.12, ease: 'power2.out' })
+        const pressY = gsap.quickTo(button, 'scaleY', { duration: 0.12, ease: 'power2.out' })
+        const press = (value: number): void => {
+          pressX(value)
+          pressY(value)
+        }
         addListener(button, 'pointerenter', () => {
           lift(-2)
         })
