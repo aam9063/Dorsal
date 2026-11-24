@@ -37,24 +37,25 @@ The eval playbook in `AGENTS.md` section 7 wants a run per model configured in g
 
 ## Build and quality stack
 
-| Layer        | Package                                          | Pinned  | Note                                          |
-| ------------ | ------------------------------------------------ | ------- | --------------------------------------------- |
-| Bundler      | `vite`                                           | 8.3.8   | Targets `es2022`, ES workers                  |
-| UI           | `react`, `react-dom`                             | 19.3.1  | TSX, StrictMode                               |
-| Routing      | `react-router`                                   | 8.5.2   | Library mode, three routes                    |
-| Styles       | `tailwindcss`, `@tailwindcss/vite`               | 4.3.5   | Tokens in `src/shared/tokens/tokens.css`      |
-| Types        | `typescript`                                     | 6.0.3   | See the pin note below                        |
-| Unit tests   | `vitest`                                         | 5.1.1   | `environment: node`                           |
-| E2E          | `@playwright/test`                               | 1.65.1  | Chromium, mobile 390×844 and desktop 1440×900 |
-| A11y         | `@axe-core/playwright`                           | 4.14.0  | Serious and critical violations fail the run  |
-| Lint         | `eslint`                                         | 10.15.0 | Flat config, `typescript-eslint` 8.73.0       |
-| Architecture | `dependency-cruiser`                             | 18.8.0  | Boundaries of BRIEF 4.3                       |
-| Format       | `prettier`                                       | 3.10.1  | `semi: false`, single quotes, 100 columns     |
-| Domain       | `zod`                                            | 4.6.7   | `YearSummary` contract                        |
-| CSV          | `papaparse`                                      | 5.7.1   | Columns read by index                         |
-| Worker RPC   | `comlink`                                        | 4.4.2   | Typed worker API                              |
-| Animation    | `motion`                                         | 14.14.0 | Respects `prefers-reduced-motion`             |
-| Fonts        | `@fontsource/anton`, `/inter`, `/jetbrains-mono` | 5.3.0   | Self-hosted, no Google Fonts request          |
+| Layer        | Package                                          | Pinned  | Note                                                                                                                                                 |
+| ------------ | ------------------------------------------------ | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bundler      | `vite`                                           | 8.3.8   | Targets `es2022`, ES workers                                                                                                                         |
+| UI           | `react`, `react-dom`                             | 19.3.1  | TSX, StrictMode                                                                                                                                      |
+| Routing      | `react-router`                                   | 8.5.2   | Library mode, three routes                                                                                                                           |
+| Styles       | `tailwindcss`, `@tailwindcss/vite`               | 4.3.5   | Tokens in `src/shared/tokens/tokens.css`                                                                                                             |
+| Types        | `typescript`                                     | 6.0.3   | See the pin note below                                                                                                                               |
+| Unit tests   | `vitest`                                         | 5.1.1   | `environment: node`                                                                                                                                  |
+| E2E          | `@playwright/test`                               | 1.65.1  | Chromium, mobile 390×844 and desktop 1440×900                                                                                                        |
+| A11y         | `@axe-core/playwright`                           | 4.14.0  | Serious and critical violations fail the run                                                                                                         |
+| Lint         | `eslint`                                         | 10.15.0 | Flat config, `typescript-eslint` 8.73.0                                                                                                              |
+| Architecture | `dependency-cruiser`                             | 18.8.0  | Boundaries of BRIEF 4.3                                                                                                                              |
+| Format       | `prettier`                                       | 3.10.1  | `semi: false`, single quotes, 100 columns                                                                                                            |
+| Domain       | `zod`                                            | 4.6.7   | `YearSummary` contract                                                                                                                               |
+| CSV          | `papaparse`                                      | 5.7.1   | Columns read by index                                                                                                                                |
+| Worker RPC   | `comlink`                                        | 4.4.2   | Typed worker API                                                                                                                                     |
+| Animation    | `motion`                                         | 14.14.0 | Respects `prefers-reduced-motion`                                                                                                                    |
+| Animation    | `gsap` (with `gsap/ScrollTrigger`)               | 3.15.1  | Landing reveals, button hover/press and counters, behind `useGsapReveal` with `prefers-reduced-motion` honoured; `motion` stays for the story player |
+| Fonts        | `@fontsource/anton`, `/inter`, `/jetbrains-mono` | 5.3.0   | Self-hosted, no Google Fonts request                                                                                                                 |
 
 ### Why TypeScript is pinned to 6.0.3 and not 7.x
 

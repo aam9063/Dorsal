@@ -10,7 +10,10 @@ function Stat({ testId, label, value }: { testId: string; label: string; value: 
   return (
     <div className="rounded-panel border border-line bg-surface p-4">
       <dt className="font-mono text-xs uppercase tracking-[0.14em] text-fg-subtle">{label}</dt>
-      <dd data-testid={testId} className="mt-1 text-2xl tabular-nums whitespace-nowrap sm:text-3xl">
+      <dd
+        data-testid={testId}
+        className="mt-1 text-xl leading-tight tabular-nums whitespace-nowrap sm:text-2xl"
+      >
         {value}
       </dd>
     </div>

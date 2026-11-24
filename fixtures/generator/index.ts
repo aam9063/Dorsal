@@ -159,6 +159,7 @@ export type PersonaName =
   | 'no-2026'
   | 'year-boundaries'
   | 'broken-rows'
+  | 'shoe-retired'
 
 export const PERSONAS: readonly PersonaName[] = [
   'runner-es',
@@ -170,6 +171,7 @@ export const PERSONAS: readonly PersonaName[] = [
   'no-2026',
   'year-boundaries',
   'broken-rows',
+  'shoe-retired',
 ]
 
 interface SportProfile {
@@ -799,6 +801,112 @@ const BROKEN_ROWS: PersonaConfig = {
   forced: [],
 }
 
+const SHOE_RETIREMENT_GEAR = 'Zapatillas Neón'
+const SHOE_RETIREMENT_TRAIL_GEAR = 'Zapatillas de montaña'
+
+function forcedRuns(values: {
+  gear: string
+  count: number
+  kmHundredths: number
+  movingSec: number
+  elapsedSec: number
+  hour: number
+  minute: number
+  month0: (index: number) => number
+  day: (index: number) => number
+}): ActivitySpec[] {
+  return Array.from({ length: values.count }, (_, index) =>
+    forcedActivity({
+      year: 2026,
+      month0: values.month0(index),
+      day: values.day(index),
+      hour: values.hour,
+      minute: values.minute,
+      second: 30,
+      label: values.gear.includes('Bici') ? 'Bicicleta' : 'Carrera',
+      name: 'Serie de material',
+      elapsedSec: values.elapsedSec,
+      movingSec: values.movingSec,
+      distanceHundredths: values.kmHundredths,
+      maxHeartRate: null,
+      avgHeartRate: null,
+      relativeEffort: null,
+      elevationGainM: null,
+      gear: values.gear,
+    }),
+  )
+}
+
+/**
+ * Every 2026 run wears the same shoes and they cover well over 800 km in the
+ * season, so the retirement warning of story 06 has a fixture that proves it
+ * end to end; a trail pair and a gravel bike stay below the 800 km line so a
+ * badge is never expected on them. Earlier years keep activities so the 2026
+ * filter is still exercised.
+ */
+const SHOE_RETIREMENT: PersonaConfig = {
+  seed: 20260524,
+  years: [
+    { year: 2024, sports: [{ label: 'Carrera', count: 14 }] },
+    {
+      year: 2025,
+      sports: [
+        { label: 'Carrera', count: 16 },
+        { label: 'Caminata', count: 6 },
+      ],
+    },
+    { year: 2026, sports: [{ label: 'Caminata', count: 5 }] },
+  ],
+  gearPool: [SHOE_RETIREMENT_GEAR],
+  gearChanceByLabel: { Carrera: 0.6 },
+  forced: [
+    ...forcedRuns({
+      gear: SHOE_RETIREMENT_GEAR,
+      count: 24,
+      kmHundredths: 1000,
+      movingSec: 3600,
+      elapsedSec: 3720,
+      hour: 8,
+      minute: 15,
+      month0: (index) => index % 12,
+      day: (index) => 3 + (index >= 12 ? 9 : 0),
+    }),
+    ...forcedRuns({
+      gear: SHOE_RETIREMENT_GEAR,
+      count: 16,
+      kmHundredths: 3600,
+      movingSec: 12960,
+      elapsedSec: 13320,
+      hour: 7,
+      minute: 5,
+      month0: (index) => index % 12,
+      day: (index) => 9 + (index >= 12 ? 11 : 0),
+    }),
+    ...forcedRuns({
+      gear: SHOE_RETIREMENT_TRAIL_GEAR,
+      count: 8,
+      kmHundredths: 1000,
+      movingSec: 3600,
+      elapsedSec: 3660,
+      hour: 9,
+      minute: 40,
+      month0: (index) => index % 8,
+      day: () => 21,
+    }),
+    ...forcedRuns({
+      gear: 'Bici de gravel',
+      count: 6,
+      kmHundredths: 3600,
+      movingSec: 7200,
+      elapsedSec: 7500,
+      hour: 11,
+      minute: 20,
+      month0: (index) => (index * 2) % 12,
+      day: (index) => 16 + (index % 3),
+    }),
+  ],
+}
+
 const PERSONA_CONFIGS: Readonly<Record<PersonaName, PersonaConfig>> = {
   'runner-es': RUNNER_ES,
   cyclist: CYCLIST,
@@ -809,6 +917,7 @@ const PERSONA_CONFIGS: Readonly<Record<PersonaName, PersonaConfig>> = {
   'no-2026': NO_2026,
   'year-boundaries': YEAR_BOUNDARIES,
   'broken-rows': BROKEN_ROWS,
+  'shoe-retired': SHOE_RETIREMENT,
 }
 
 function formatDate(spec: ActivitySpec): string {

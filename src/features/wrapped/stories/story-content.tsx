@@ -5,6 +5,7 @@ import { PortadaStory } from './01-portada/portada-story'
 import { NumerosStory } from './02-numeros/numeros-story'
 import { PerfilStory } from './03-perfil/perfil-story'
 import { ConstanciaStory } from './04-constancia/constancia-story'
+import { MaterialStory } from './06-material/material-story'
 
 /**
  * Maps a story id to its component. It lives here, not in the player, so the
@@ -16,6 +17,7 @@ const CONTENT: Record<string, (summary: YearSummary) => ReactElement> = {
   '02-numeros': (summary) => <NumerosStory summary={summary} />,
   '03-perfil': (summary) => <PerfilStory summary={summary} />,
   '04-constancia': (summary) => <ConstanciaStory summary={summary} />,
+  '06-material': (summary) => <MaterialStory summary={summary} />,
 }
 
 export function StoryContent({ story, summary }: { story: StoryDefinition; summary: YearSummary }) {

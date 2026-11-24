@@ -62,7 +62,7 @@ Versiones: la última estable de cada herramienta en el momento de H-00. El agen
 | Worker RPC | Comlink | API tipada entre hilo principal y worker. |
 | CSV | Papa Parse | Campos con comas y comillas; lectura por posición de columna (ver 5.2). |
 | Validación de contrato | Zod | Valida el `YearSummary` que devuelve el worker. |
-| Animación | Motion | Transiciones de historias, respetando `prefers-reduced-motion`. |
+| Animación | Motion (historias) + GSAP (landing) | Transiciones de historias con Motion, como fija H-07; la landing usa GSAP por decisión de Albert. Ambas respetan `prefers-reduced-motion`. Nota: son dos librerías en el bundle; consolidar en GSAP es una decisión aparte (ver `odd/tasks/landing-animations.md`). |
 | Tarjeta compartible | Canvas 2D propio (1080×1920 PNG) | Determinista; evita los fallos de fuentes de html-to-image. |
 | Fuentes | Anton, Inter y JetBrains Mono, autoalojadas con Fontsource | Sin peticiones a Google Fonts. |
 | Tests unitarios | Vitest | TDD en `core/`. |

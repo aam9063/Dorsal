@@ -73,7 +73,7 @@ The agent must be able to operate the application exactly like a user and inspec
 | Network inspection | `artifacts/verify/<ts>/network.json` lists every request. After the file is selected, the only allowed entries are same-origin static assets already cached. |
 | API / backend checks | There is no backend. The equivalent contract is the worker API: `pnpm test src/core src/worker` and the Zod schema of `YearSummary`. |
 | Test data / seed | `pnpm fixtures` generates synthetic `activities.csv` files in `fixtures/generated/` from `fixtures/generator/`, following `docs/export-format.md`. Every persona spans several years so the 2026 filter is always exercised. |
-| Test credentials | No accounts exist. Use the fixture personas: `runner-es`, `cyclist-en`, `multisport`, `no-gear`, `few-activities`, `ten-years-history`, `no-2026`, `year-boundaries`, `broken-rows`. **Never** use or commit a real person's CSV. |
+| Test credentials | No accounts exist. Use the fixture personas: `runner-es`, `cyclist`, `multisport`, `no-gear`, `few-activities`, `ten-years-history`, `no-2026`, `year-boundaries`, `broken-rows`, `shoe-retired`. **Never** use or commit a real person's CSV. |
 
 Rules:
 - Verification is done against the **real running app**, not by reading code and assuming.
