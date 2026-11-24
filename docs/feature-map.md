@@ -143,6 +143,16 @@ Shared conventions, so each entry does not repeat them:
 - Backend/API involved: none. Worker method(s): none — reads `summary.heartbeats`.
 - Known pitfalls: the beats hero switches between raw beats and two decimals of millions from one million up, so the e2e asserts the same formatting the story applies. The peak block is omitted when `summary.heartbeats.peak` is null while the story still renders (H-10 decision 4); the `long-distance` persona is the fixture proving it, and `no-pulse` is the fixture where the story is omitted. The heartbeat line of the W7 artboard carries no data, so it is drawn fixed and `aria-hidden`.
 
+## Story 08 · Tu dorsal y la tarjeta
+
+- What it is: the card preview plus the one truthful action — `navigator.share` with the PNG file where the API supports files, a download otherwise — and the 1080×1920 PNG generated on demand.
+- How to reach it in the UI: player story 8 (never omitted, registry order last).
+- Keyboard shortcuts: player-wide ones.
+- Selectors for programmatic control: `dorsal-preview`, `dorsal-number`, `share-download` (one button whose label says what will happen); story root `story-08-dorsal`.
+- Code location: `src/features/share/` (renderer `render-bib-card.ts`, browser I/O `bib-card-io.ts`, DOM replica `bib-card-preview.tsx`, all exported through `src/features/share/index.ts`); story in `src/features/wrapped/stories/08-dorsal/`.
+- Backend/API involved: none. Worker method(s): none — reads `summary.bibCard`, `summary.totals`, `summary.consistency`, `summary.archetype`.
+- Known pitfalls: the PNG is painted only on demand — opening the story creates no canvas (h11 decision 6), asserted in e2e. The renderer is pure over a `CardSurface` subset with fixed constants: no DOM measurement, no `Date`, no `Math.random`, numbers from `shared/format.ts`, and `document.fonts.ready` plus the three families are awaited before the first pixel (h11 decisions 1–3), or a cold run paints fallback faces. The card takes its name from the portada memory — never from the file — and falls back to "Tu año"; the plate is always bone/ink (theme-independent tokens) because the PNG is theme-agnostic. The card's stats are activities, ×Everest and the longest streak when consistency exists, active days when it does not (short seasons). The unit test cannot host a real canvas in Vitest's node environment: it pins the serialized command stream (a recording surface) and asserts there; real pixels, fonts and bytes are pinned by `e2e/bib-card.spec.ts`, which downloads the PNG twice and compares byte for byte.
+
 ## Theme
 
 - What it is: light and dark appearance, following the system unless the user overrides it.

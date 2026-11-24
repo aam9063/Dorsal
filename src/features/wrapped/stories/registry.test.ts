@@ -9,18 +9,19 @@ function summaryWith(overrides: Partial<YearSummary['availability']>): YearSumma
 }
 
 describe('story registry', () => {
-  it('offers stories 01, 02 and 04 for every summary, including an empty season', () => {
+  it('offers stories 01, 02, 04 and 08 for every summary, including an empty season', () => {
     const summary = buildYearSummary([])
     expect(availableStories(STORIES, summary).map((story) => story.id)).toEqual([
       '01-portada',
       '02-numeros',
       '04-constancia',
+      '08-dorsal',
     ])
     expect(
       availableStories(STORIES, summaryWith({ archetype: false, gear: false })).map(
         (story) => story.id,
       ),
-    ).toEqual(['01-portada', '02-numeros', '04-constancia'])
+    ).toEqual(['01-portada', '02-numeros', '04-constancia', '08-dorsal'])
   })
 
   it('omits story 03 exactly when the monthly profile is unavailable', () => {
@@ -29,6 +30,7 @@ describe('story registry', () => {
       '01-portada',
       '02-numeros',
       '04-constancia',
+      '08-dorsal',
     ])
     const withProfile = availableStories(STORIES, summaryWith({ monthlyProfile: true }))
     expect(withProfile.map((story) => story.id)).toEqual([
@@ -36,6 +38,7 @@ describe('story registry', () => {
       '02-numeros',
       '03-perfil',
       '04-constancia',
+      '08-dorsal',
     ])
   })
 
@@ -60,6 +63,7 @@ describe('story registry', () => {
       '01-portada',
       '02-numeros',
       '04-constancia',
+      '08-dorsal',
     ])
     const withGear = availableStories(STORIES, summaryWith({ gear: true }))
     expect(withGear.map((story) => story.id)).toContain('06-material')
@@ -88,6 +92,7 @@ describe('story registry', () => {
       '05-arquetipo',
       '06-material',
       '07-latidos',
+      '08-dorsal',
     ])
   })
 })

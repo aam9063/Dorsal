@@ -94,7 +94,7 @@ export function ThemeToggle() {
           onClick={() => {
             setThemePreference(option.value)
           }}
-          className="flex min-h-11 min-w-11 items-center justify-center rounded-pill text-fg-muted aria-pressed:bg-accent aria-pressed:text-ink"
+          className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-pill text-fg-muted aria-pressed:bg-accent aria-pressed:text-ink"
         >
           <span className="h-5 w-5">{option.icon}</span>
         </button>
