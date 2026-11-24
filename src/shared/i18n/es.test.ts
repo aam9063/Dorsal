@@ -80,7 +80,46 @@ describe('season card copy', () => {
       'weightedAvgPowerLabel',
       'maxPowerLabel',
       'powerEvolutionLabel',
+      'previewLabel',
+      'shareLabel',
+      'downloadLabel',
+      'actionHint',
     ])
+  })
+
+  it('keeps the closed story 08 keys with the card toggle in order', () => {
+    expect(Object.keys(es.stories['08-dorsal'])).toEqual([
+      'title',
+      'eyebrow',
+      'plate',
+      'plateKm',
+      'fallbackName',
+      'statActivities',
+      'statEverest',
+      'statStreak',
+      'statActiveDays',
+      'chartCaption',
+      'madeWith',
+      'previewLabel',
+      'shareLabel',
+      'downloadLabel',
+      'actionHint',
+      'carnet',
+      'toggleGroupLabel',
+      'toggleDorsal',
+      'toggleCarnet',
+    ])
+  })
+
+  it('names both cards and keeps the carnet wording parallel to the dorsal', () => {
+    const story = es.stories['08-dorsal']
+    expect(story.toggleGroupLabel).toBe('Tu tarjeta de temporada')
+    expect(story.toggleDorsal).toBe('Dorsal')
+    expect(story.toggleCarnet).toBe('Carnet')
+    expect(story.carnet.previewLabel).toContain('carnet')
+    expect(story.carnet.shareLabel).toBe('Compartir el carnet')
+    expect(story.carnet.downloadLabel).toBe('Descargar el carnet')
+    expect(story.carnet.actionHint).toContain('1080')
   })
 })
 

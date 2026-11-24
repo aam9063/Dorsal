@@ -66,11 +66,15 @@ S9 — Skill/process (`AGENTS.md` §10): `src/core/` is test-first (RED observed
 
 ## Progress
 
-Not started. Waiting on T1.
+- T1–T5 done, commit `532c332`. Verified by the parent: 227 tests, `typecheck`, `lint` and `arch` clean.
+- T7 icons done and T6 dorsal redesign done, commit `f577a80`. The redesigned PNG and the DOM preview were captured from the running app in light theme at 390 px and reviewed: the band no longer overflows, the number clears it, the twelve months are real bars and the best marks fill the lower third.
+- T7 carnet and T8 done: `render-season-card.ts` (17 tests), `carnet-preview.tsx`, the io generalized to two PNGs, and the story toggle. `pnpm check` is green end to end.
+- Found and fixed while verifying in the browser: the player's tap zones swallowed the carnet toggle's click, because the story container is `pointer-events-none` and only the share button re-enabled it. Recorded as a pitfall in `docs/feature-map.md`.
+- T9 in progress: the e2e spec for the second card is being extended; the full walk in light and dark is still owed.
 
 ## Next step
 
-T1.
+T9.
 
 ## Log
 
