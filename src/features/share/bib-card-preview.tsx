@@ -1,83 +1,122 @@
 import type { YearSummary } from '../../core/model/year-summary'
+import { formatKilometres } from '../../shared/format'
 import { t } from '../../shared/i18n'
-import { bibCardArchetypeText, bibCardNameText, bibCardStatRows } from './render-bib-card'
+import {
+  bibCardArchetypeText,
+  bibCardMarkRows,
+  bibCardNameText,
+  bibCardStatRows,
+} from './render-bib-card'
 
 /**
- * The DOM replica of the bib card, following the `W8-Dorsal.dc.html`
- * artboard. It is a *preview*: no canvas is created here and the story never
- * draws the card on open (h11 decision 6). The card is a fixed-colour
- * artefact — bone plate, ink lettering — exactly like the PNG, so it does not
- * follow the theme: `bg-bone`, `text-ink` and `text-label-ink` are
- * theme-independent tokens, and the story's own surface is the accent field.
+ * The card as the story shows it: a DOM replica of `drawBibCard`, so opening
+ * story 08 costs no canvas work (odd/tasks/h11-bib-card.md decision 6) and the
+ * player has something to render before the PNG is requested. It mirrors the
+ * H-11b composition block for block — season band, number, name, archetype,
+ * twelve month bars, tear-off edge, three stats and the best marks — and reads
+ * every string from the same helpers the canvas draw uses, so the two can never
+ * drift apart on copy or numbers.
  */
 export function BibCardPreview({ summary, name }: { summary: YearSummary; name: string | null }) {
   const copy = t.stories['08-dorsal']
-  const stats = bibCardStatRows(summary)
+  const numberText = String(summary.bibCard.number)
   const archetype = bibCardArchetypeText(summary)
-  const profile = summary.bibCard.monthlyDistanceM
-  const max = Math.max(...profile)
-  const silhouette = `0,54 0,54 ${profile
-    .map((distanceM, index) => {
-      const x = ((index * 350) / 11).toFixed(1)
-      const y = (54 - (max > 0 ? (distanceM / max) * 44 : 0)).toFixed(1)
-      return `${x},${y}`
-    })
-    .join(' ')} 350,54`
+  const monthly = summary.bibCard.monthlyDistanceM
+  const maxMonthly = Math.max(...monthly, 0)
+  const peakMonth = monthly.indexOf(maxMonthly)
+  const marks = bibCardMarkRows(summary)
 
   return (
     <div
       data-testid="dorsal-preview"
-      className="relative flex w-[86%] max-w-sm rotate-[-3deg] flex-col gap-2 rounded-card bg-bone p-5 text-ink shadow-xl"
+      className="relative flex w-[86%] max-w-sm rotate-[-3deg] flex-col gap-3 rounded-card bg-bone p-5 text-ink shadow-xl"
     >
-      {(
-        [['left-3 top-3'], ['right-3 top-3'], ['left-3 bottom-3'], ['right-3 bottom-3']] as const
-      ).map(([position]) => (
-        <span
-          key={position}
-          aria-hidden="true"
-          className={`absolute ${position} h-2.5 w-2.5 rounded-pill bg-accent`}
-        />
-      ))}
+      <span className="absolute left-3 top-3 h-2.5 w-2.5 rounded-pill bg-accent" />
+      <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-pill bg-accent" />
+      <span className="absolute bottom-3 left-3 h-2.5 w-2.5 rounded-pill bg-accent" />
+      <span className="absolute bottom-3 right-3 h-2.5 w-2.5 rounded-pill bg-accent" />
 
-      <div className="mx-2 flex items-center justify-between whitespace-nowrap rounded-chip bg-ink px-2 py-1.5 font-mono text-[8px] font-semibold tracking-[0.08em] text-accent">
-        <span>{copy.plate}</span>
-        <span>{copy.plateKm}</span>
+      <div className="flex items-center justify-between gap-2 rounded-chip bg-ink px-3 py-1.5 font-mono text-[7px] tracking-[0.1em] text-accent">
+        <span className="min-w-0 truncate">{copy.plate.toUpperCase()}</span>
+        <span className="shrink-0">{copy.plateKm}</span>
       </div>
 
       <div
         data-testid="dorsal-number"
-        className="text-center font-display text-[88px] leading-[0.95]"
+        className={`font-display leading-none ${numberText.length >= 5 ? 'text-[64px]' : 'text-[80px]'}`}
       >
-        {summary.bibCard.number}
+        {numberText}
       </div>
-      <div className="break-words text-center text-[15px] font-bold tracking-[0.24em]">
+
+      <div className="text-center text-sm font-bold uppercase tracking-[0.24em]">
         {bibCardNameText(name)}
       </div>
-      {archetype !== null && (
-        <div className="break-words text-center font-mono text-[10px] tracking-[0.1em] text-label-ink">
+
+      {archetype === null ? null : (
+        <div className="-mt-2 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-label-ink">
           {archetype}
         </div>
       )}
 
-      <svg
-        viewBox="0 0 350 54"
-        aria-hidden="true"
-        preserveAspectRatio="none"
-        className="mx-auto mt-2 h-10 w-full"
-      >
-        <polygon points={silhouette} className="fill-ink" />
-      </svg>
+      <div>
+        <div className="mb-1 flex items-baseline justify-between font-mono text-[9px] uppercase tracking-[0.14em] text-label-ink">
+          <span>{copy.chartCaption}</span>
+          {maxMonthly > 0 ? (
+            <span>
+              {t.monthsShort[peakMonth] ?? ''} · {formatKilometres(maxMonthly)}
+            </span>
+          ) : null}
+        </div>
+        <div data-testid="dorsal-chart" className="flex h-14 items-end gap-1">
+          {monthly.map((distanceM, index) => {
+            const height = maxMonthly > 0 ? (distanceM / maxMonthly) * 100 : 0
+            return (
+              <div
+                key={t.monthsAbbr[index] ?? String(index)}
+                className={`flex-1 rounded-t ${index === peakMonth && height > 0 ? 'bg-accent' : 'bg-ink'}`}
+                style={{ height: `${height}%`, minHeight: height > 0 ? 2 : 0 }}
+              />
+            )
+          })}
+        </div>
+        <div className="mt-1 flex gap-1 font-mono text-[8px] text-label-ink">
+          {t.monthsAbbr.map((month, index) => (
+            <span key={`${month}-${String(index)}`} className="flex-1 text-center">
+              {month}
+            </span>
+          ))}
+        </div>
+      </div>
 
-      <div className="mt-1 grid grid-cols-3 gap-1.5 border-t-2 border-dashed border-ink pt-2.5 text-center">
-        {stats.map((row) => (
-          <div key={row.label} className="flex flex-col gap-0.5">
-            <span className="font-display text-[19px] leading-tight">{row.value}</span>
-            <span className="font-mono text-[9px] tracking-[0.08em]">{row.label}</span>
+      <div className="grid grid-cols-3 border-t-2 border-dashed border-ink pt-2 text-center">
+        {bibCardStatRows(summary).map((row) => (
+          <div key={row.label}>
+            <div className="font-display text-2xl leading-none">{row.value}</div>
+            <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.14em] text-label-ink">
+              {row.label}
+            </div>
           </div>
         ))}
       </div>
 
-      <div className="mt-2 text-center font-mono text-[9px] tracking-[0.1em] text-label-ink">
+      {marks.length === 0 ? null : (
+        <div
+          data-testid="dorsal-marks"
+          className="font-mono text-[9px] uppercase tracking-[0.12em]"
+        >
+          <div className="mb-1 text-label-ink">{copy.carnet.marksTitle}</div>
+          <ul className="divide-y divide-dashed divide-ink/25">
+            {marks.map((mark) => (
+              <li key={mark.label} className="py-1">
+                <span className="block text-label-ink">{mark.label}</span>
+                <span className="block text-right whitespace-nowrap">{mark.value}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div className="text-center font-mono text-[8px] uppercase tracking-[0.2em] text-label-ink">
         {copy.madeWith}
       </div>
     </div>

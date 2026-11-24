@@ -5,9 +5,11 @@ import {
   CARD_HEIGHT,
   CARD_WIDTH,
   CardColours,
+  bibCardGeometry,
   drawBibCard,
   type CardSurface,
 } from './render-bib-card'
+import { t } from '../../shared/i18n'
 
 /**
  * The unit test runs in Vitest's node environment, which cannot host a real
@@ -151,6 +153,11 @@ function fullSeason(): YearSummary {
       secondary: 'methodical' as const,
       startHours: new Array<number>(24).fill(1),
     },
+    seasonBests: {
+      longestSessionByDistance: { distanceM: 62_400, month: 3, day: 12 },
+      biggestElevationDay: { elevationGainM: 1240, month: 8, day: 4 },
+      bestWeek: { distanceM: 187_300, isoWeek: 20, monday: { month: 5, day: 11 } },
+    },
   }
 }
 
@@ -214,5 +221,81 @@ describe('bib card renderer', () => {
   it('keeps the declared surface at 1080×1920', () => {
     expect(CARD_WIDTH).toBe(1080)
     expect(CARD_HEIGHT).toBe(1920)
+  })
+
+  it('prints the season best marks in the lower third of the plate', () => {
+    const surface = new RecordingSurface()
+    drawBibCard(surface, { summary: fullSeason(), name: 'Lucía M.' })
+
+    const texts = surface.texts().map((text) => text.text)
+    expect(texts).toContain('MEJORES MARCAS')
+    expect(texts).toContain('LA SALIDA MÁS LARGA')
+    expect(texts).toContain('62,4 km · 12 mar')
+    expect(texts).toContain('EL DÍA CON MÁS DESNIVEL')
+    expect(texts).toContain('1240 m · 4 ago')
+    expect(texts).toContain('LA MEJOR SEMANA')
+    expect(texts).toContain('187,3 km · 11 may')
+  })
+
+  it('leaves out a mark the season cannot prove', () => {
+    const surface = new RecordingSurface()
+    const summary: YearSummary = {
+      ...fullSeason(),
+      seasonBests: {
+        longestSessionByDistance: null,
+        biggestElevationDay: null,
+        bestWeek: { distanceM: 12_000, isoWeek: 3, monday: { month: 1, day: 12 } },
+      },
+    }
+    drawBibCard(surface, { summary, name: null })
+
+    const texts = surface.texts().map((text) => text.text)
+    expect(texts).toContain('LA MEJOR SEMANA')
+    expect(texts).not.toContain('LA SALIDA MÁS LARGA')
+    expect(texts).not.toContain('EL DÍA CON MÁS DESNIVEL')
+  })
+
+  it('draws a season with no marks at all without a block', () => {
+    const surface = new RecordingSurface()
+    drawBibCard(surface, { summary: { ...fullSeason(), seasonBests: null }, name: null })
+
+    expect(surface.texts().map((text) => text.text)).not.toContain('MEJORES MARCAS')
+    expect(surface.texts().length).toBeGreaterThanOrEqual(11)
+  })
+
+  it('draws the twelve month bars instead of a filled silhouette', () => {
+    const surface = new RecordingSurface()
+    drawBibCard(surface, { summary: fullSeason(), name: 'Lucía M.' })
+
+    const texts = surface.texts().map((text) => text.text)
+    expect(texts).toContain('KM POR MES')
+    for (const month of t.monthsAbbr) {
+      expect(texts).toContain(month)
+    }
+    // One accent bar for the peak month, ink bars for the other eleven months.
+    const accentFills = surface.ops.filter(
+      (recorded) => recorded.op === 'fill' && recorded.fillStyle === CardColours.accent,
+    )
+    expect(accentFills.length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('keeps the number clear of the season band at both sizes', () => {
+    for (const size of [bibCardGeometry.numberSize, bibCardGeometry.numberSizeLong]) {
+      expect(bibCardGeometry.numberBaseline - size).toBeGreaterThanOrEqual(
+        bibCardGeometry.bandTop + bibCardGeometry.bandHeight + 16,
+      )
+    }
+  })
+
+  it('keeps the marks above the footer and the footer near the bottom edge', () => {
+    const lastRule =
+      bibCardGeometry.marksFirstBaseline +
+      2 * bibCardGeometry.marksRowHeight +
+      bibCardGeometry.marksRuleOffset
+    expect(lastRule).toBeLessThan(bibCardGeometry.footerBaseline - 24)
+
+    const bottomPadding = bibCardGeometry.plateHeight - bibCardGeometry.footerBaseline
+    expect(bottomPadding).toBeGreaterThan(40)
+    expect(bottomPadding).toBeLessThanOrEqual(100)
   })
 })

@@ -382,6 +382,7 @@ export const es = {
       statEverest: 'Everest',
       statStreak: 'Racha',
       statActiveDays: 'Días',
+      chartCaption: 'Km por mes',
       madeWith: 'Hecho con Dorsal',
       previewLabel: 'Tu dorsal: número, nombre y temporada 2026.',
       shareLabel: 'Compartir el dorsal',
