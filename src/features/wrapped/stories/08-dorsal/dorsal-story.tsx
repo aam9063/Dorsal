@@ -57,22 +57,29 @@ export function DorsalStory({ summary }: { summary: YearSummary }) {
   return (
     <div
       data-testid="story-08-dorsal"
-      className="flex w-full flex-col gap-2 rounded-panel bg-accent p-5 text-ink"
+      className="flex min-h-0 w-full flex-col gap-2 self-stretch rounded-panel bg-accent p-5 text-ink"
     >
-      <p className="font-mono text-xs uppercase tracking-[0.14em]">{copy.eyebrow}</p>
+      <p className="shrink-0 font-mono text-xs uppercase tracking-[0.14em]">{copy.eyebrow}</p>
 
-      <div className="flex flex-1 items-center justify-center overflow-hidden rounded-chip py-2">
-        {isDorsal ? (
-          <BibCardPreview summary={summary} name={cardName} />
-        ) : (
-          <CarnetPreview summary={summary} name={cardName} />
-        )}
+      {/* The player clips anything taller than the screen, so the card scrolls
+          inside its own slot instead of disappearing behind the chrome. It opts
+          back into pointer events so the scroll reaches it. */}
+      <div className="relative flex min-h-0 flex-1">
+        <div className="pointer-events-auto flex min-h-0 max-h-[60dvh] w-full touch-pan-y items-start justify-center overflow-y-auto overscroll-contain rounded-chip py-2">
+          {isDorsal ? (
+            <BibCardPreview summary={summary} name={cardName} />
+          ) : (
+            <CarnetPreview summary={summary} name={cardName} />
+          )}
+        </div>
+        {/* A short fade marks that the card continues below the fold. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-accent to-transparent" />
       </div>
 
       <div
         role="radiogroup"
         aria-label={copy.toggleGroupLabel}
-        className="pointer-events-auto flex gap-1 self-center rounded-pill bg-ink/15 p-1"
+        className="pointer-events-auto flex shrink-0 gap-1 self-center rounded-pill bg-ink/15 p-1"
         onKeyDown={handleKeyDown}
       >
         {CARDS.map((card) => (
@@ -100,7 +107,7 @@ export function DorsalStory({ summary }: { summary: YearSummary }) {
         ))}
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex shrink-0 flex-col gap-2">
         <button
           type="button"
           data-testid="share-download"
