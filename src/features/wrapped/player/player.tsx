@@ -203,6 +203,15 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
             {renderStory(story, summary)}
           </motion.div>
         </AnimatePresence>
+        {(state.index === 0 || reducedMotion) && (
+          <p
+            data-testid="player-hint"
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-6 z-30 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-fg-subtle"
+          >
+            {t.player.tapHint}
+          </p>
+        )}
         <button
           type="button"
           data-testid="player-zone-previous"
