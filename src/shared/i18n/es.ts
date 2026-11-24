@@ -387,6 +387,23 @@ export const es = {
       shareLabel: 'Compartir el dorsal',
       downloadLabel: 'Descargar el dorsal',
       actionHint: 'PNG de 1080 × 1920, listo para historias.',
+      carnet: {
+        title: 'Carnet de temporada',
+        sportsTitle: 'Tu reparto por deporte',
+        mostPracticedLabel: 'El deporte que más tiempo te llevó',
+        bestWeekLabel: 'La semana con más km',
+        consecutiveLead: 'Semanas consecutivas cumpliendo entrenos',
+        weeksUnit: 'semanas',
+        weeksUnitSingular: 'semana',
+        marksTitle: 'Mejores marcas',
+        longestSessionLabel: 'La salida más larga',
+        biggestElevationDayLabel: 'El día con más desnivel',
+        bestWeekMarkLabel: 'La mejor semana',
+        powerTitle: 'Potencia',
+        weightedAvgPowerLabel: 'Mejor media ponderada',
+        maxPowerLabel: 'Mejor pico',
+        powerEvolutionLabel: 'Evolución por mes',
+      },
     },
   },
   notFound: {
@@ -437,4 +454,20 @@ export function uploadUnsupportedMessage(missing: readonly string[]): string {
 /** Copy for the warning about rows that could not be read and were ignored. */
 export function resultCorruptWarning(corruptRows: number): string {
   return `Ignoramos ${formatNumber(corruptRows)} filas que no pudimos leer. Los números cuentan solo las actividades válidas.`
+}
+
+/**
+ * Copy for the fulfilled week rule of the season card, printing the threshold
+ * so the rule is visible on the artifact, e.g. `(3)` → "3 o más entrenos por semana".
+ */
+export function fulfilledWeeksSentence(sessionsPerWeek: number): string {
+  return `${formatNumber(sessionsPerWeek)} o más entrenos por semana`
+}
+
+/**
+ * Copy for the power coverage of the season card, so a partial year cannot
+ * read as a complete one: `(34, 60)` → "potencia en 34 de 60 salidas".
+ */
+export function powerCoverageSentence(sessionsWithPower: number, totalSessions: number): string {
+  return `potencia en ${formatNumber(sessionsWithPower)} de ${formatNumber(totalSessions)} salidas`
 }

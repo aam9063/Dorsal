@@ -15,6 +15,16 @@ const monthSchema = z.number().int().min(1).max(12)
 const daySchema = z.number().int().min(1).max(31)
 const monthDaySchema = z.strictObject({ month: monthSchema, day: daySchema })
 const monthDistanceSchema = z.strictObject({ month: monthSchema, distanceM: z.number().min(0) })
+const weekNumberSchema = z.number().int().min(1).max(53)
+const shareSchema = z.number().min(0).max(1)
+const monthlyPowerWindowSchema = z.strictObject({
+  month: monthSchema,
+  bestWeightedAvgPowerW: z.number().min(0).nullable(),
+  bestMaxPowerW: z.number().min(0).nullable(),
+  activityCount: z.number().int().min(1),
+  sessionsWithPower: z.number().int().min(0),
+  coverage: shareSchema,
+})
 
 /**
  * The worker-to-UI contract of the whole season: **only 2026 aggregates**
@@ -110,11 +120,85 @@ export const YearSummary = z.strictObject({
     distanceKm: z.number().min(0),
     monthlyDistanceM: z.array(z.number().min(0)).length(12),
   }),
+  /** Season-card sections of H-11b; each is `null` exactly when the season shows nothing for it. */
+  sportBreakdown: z
+    .strictObject({
+      /** One entry per sport present, ordered by `movingTimeS` descending (S8). */
+      sports: z.array(
+        z.strictObject({
+          sport: z.enum(SPORT_KINDS),
+          activityCount: z.number().int().min(1),
+          distanceM: z.number().min(0),
+          movingTimeS: z.number().min(0),
+          elevationGainM: z.number().min(0),
+          share: shareSchema,
+        }),
+      ),
+    })
+    .nullable(),
+  weeklyLoad: z
+    .strictObject({
+      /** ISO weeks with at least one activity, ordered ascending by `(isoYear, isoWeek)`. */
+      weeks: z.array(
+        z.strictObject({
+          isoYear: z.number().int(),
+          isoWeek: weekNumberSchema,
+          monday: monthDaySchema,
+          activityCount: z.number().int().min(1),
+          distanceM: z.number().min(0),
+        }),
+      ),
+      best: z
+        .strictObject({
+          isoYear: z.number().int(),
+          isoWeek: weekNumberSchema,
+          monday: monthDaySchema,
+          activityCount: z.number().int().min(1),
+          distanceM: z.number().min(0),
+        })
+        .nullable(),
+      longestFulfilledStreak: z.number().int().min(0),
+    })
+    .nullable(),
+  seasonBests: z
+    .strictObject({
+      longestSessionByDistance: z
+        .strictObject({ distanceM: z.number().min(0), month: monthSchema, day: daySchema })
+        .nullable(),
+      biggestElevationDay: z
+        .strictObject({ elevationGainM: z.number().min(0), month: monthSchema, day: daySchema })
+        .nullable(),
+      bestWeek: z
+        .strictObject({
+          distanceM: z.number().min(0),
+          isoWeek: weekNumberSchema,
+          monday: monthDaySchema,
+        })
+        .nullable(),
+    })
+    .nullable(),
+  powerProfile: z
+    .strictObject({
+      /** Months with at least one activity, ordered ascending. */
+      months: z.array(monthlyPowerWindowSchema).min(1),
+      totals: z.strictObject({
+        bestWeightedAvgPowerW: z.number().min(0).nullable(),
+        bestMaxPowerW: z.number().min(0).nullable(),
+        activityCount: z.number().int().min(1),
+        sessionsWithPower: z.number().int().min(0),
+        coverage: shareSchema,
+      }),
+    })
+    .nullable(),
   availability: z.strictObject({
     monthlyProfile: z.boolean(),
     archetype: z.boolean(),
     gear: z.boolean(),
     heartbeats: z.boolean(),
+    /** The season card (carnet de temporada) can show its panels. */
+    seasonCards: z.boolean(),
+    /** At least one 2026 activity carries any watt, so the power panel exists. */
+    powerProfile: z.boolean(),
     shortVersion: z.boolean(),
   }),
 })
