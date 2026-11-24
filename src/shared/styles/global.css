@@ -45,3 +45,18 @@
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * The landing's story row hides the browser's own bar: on most systems it is an
+ * overlay that appears mid-scroll in system colours, and on Windows a grey bar
+ * with arrows. The visible indicator is drawn by `ScrollRow` instead.
+ */
+@layer components {
+  .scroll-hidden {
+    scrollbar-width: none;
+  }
+
+  .scroll-hidden::-webkit-scrollbar {
+    display: none;
+  }
+}

@@ -72,28 +72,67 @@ function problemBody(problem: UploadProblem): string {
   }
 }
 
+/**
+ * The whole area is the control: a dashed drop zone that opens the file explorer
+ * when clicked and reacts while a file is dragged over it. The input stays
+ * `sr-only` inside the label, so the keyboard finds it, the pointer lands
+ * anywhere in the zone, and there is only one focusable thing.
+ */
 function FilePicker({ onChoose }: { onChoose: (file: File) => void }) {
+  const [isDragging, setIsDragging] = useState(false)
+
+  const choose = (file: File | null | undefined): void => {
+    if (file !== null && file !== undefined) {
+      onChoose(file)
+    }
+  }
+
   return (
-    <div
+    <label
+      htmlFor="upload-file"
       data-testid="upload-dropzone"
+      data-dragging={isDragging}
       onDragOver={(event) => {
         event.preventDefault()
+        setIsDragging(true)
+      }}
+      onDragLeave={(event) => {
+        // Moving over a child fires dragleave on the label; only a drag that
+        // really left the zone should drop the highlight.
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setIsDragging(false)
+        }
       }}
       onDrop={(event) => {
         event.preventDefault()
-        const file = event.dataTransfer.files.item(0)
-        if (file !== null) {
-          onChoose(file)
-        }
+        setIsDragging(false)
+        choose(event.dataTransfer.files.item(0))
       }}
-      className="rounded-panel border border-line bg-surface p-6"
+      className={`flex min-h-[240px] cursor-pointer flex-col items-center justify-center gap-4 rounded-card border-2 border-dashed p-8 text-center transition-colors focus-within:border-accent focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent ${
+        isDragging ? 'border-accent bg-surface' : 'border-line bg-surface hover:border-accent'
+      }`}
     >
-      <label
-        htmlFor="upload-file"
-        className="inline-flex min-h-11 cursor-pointer items-center rounded-pill bg-accent px-8 font-semibold text-ink"
+      <span
+        aria-hidden="true"
+        className={`flex h-14 w-14 items-center justify-center rounded-pill border-2 border-dashed transition-colors ${
+          isDragging ? 'border-accent text-accent-text' : 'border-line text-fg-muted'
+        }`}
       >
-        {t.upload.pickFile}
-      </label>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-6 w-6"
+        >
+          <path d="M12 16V4m0 0L7 9m5-5 5 5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" strokeLinecap="round" />
+        </svg>
+      </span>
+      <span className="text-base font-semibold text-fg">{t.upload.pickFile}</span>
+      <span className="font-mono text-xs uppercase tracking-[0.14em] text-fg-subtle">
+        {t.upload.dropHere}
+      </span>
       <input
         id="upload-file"
         data-testid="upload-input"
@@ -103,13 +142,10 @@ function FilePicker({ onChoose }: { onChoose: (file: File) => void }) {
         onChange={(event) => {
           const file = event.target.files?.[0]
           event.target.value = ''
-          if (file !== undefined) {
-            onChoose(file)
-          }
+          choose(file)
         }}
       />
-      <p className="mt-3 text-sm text-fg-subtle">{t.upload.dropHere}</p>
-    </div>
+    </label>
   )
 }
 

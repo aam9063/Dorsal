@@ -62,12 +62,12 @@ Shared conventions, so each entry does not repeat them:
 - How to reach it in the UI: `/subir` → choose a file → `/resultado` → "Ver mi wrapped".
 - Selectors for programmatic control: `player-story-01-portada`, `player-story-02-numeros`, `player-story-03-perfil`, `player-story-04-constancia`, `portada-name-input`.
 - Code location: `src/features/wrapped/stories/`.
-- Known pitfalls: a story reads its section of the `YearSummary` and never recomputes a metric; story 03 disappears when there are fewer than three active months, and the player's bars shrink with it. The cover's name field needs `pointer-events-auto` because the player hands the pointer to its own zones. The profile's SVG path is built from the real monthly series, so a malformed join is a console error rather than a silent blank.
+- Known pitfalls: a story reads its section of the `YearSummary` and never recomputes a metric; story 03 disappears when there are fewer than three active months (story 06 does the same without gear, see below), and the player's bars shrink with it. The cover's name field needs `pointer-events-auto` because the player hands the pointer to its own zones. The profile's SVG path is built from the real monthly series, so a malformed join is a console error rather than a silent blank.
 
 ## Result and story player
 
 - What it is: the eight stories plus the shareable bib card, played as a vertical feed.
-- Sub-features: story player (gestures, keyboard, progress bars, skip rules), stories 01–04 (H-08), stories 05–08 (H-09/H-10/H-11), share card.
+- Sub-features: story player (gestures, keyboard, progress bars, skip rules), stories 01–04 (H-08), story 06 (H-09), stories 05, 07–08 (H-10/H-11), share card.
 - How to reach it in the UI: `/resultado` → `result-open-player`.
 - Keyboard shortcuts: ArrowRight next story, ArrowLeft previous, Space pause/resume, Escape close; holding the pointer pauses and releasing resumes; automatic advance every 7 s (suppressed under `prefers-reduced-motion`).
 - Selectors for programmatic control: `result-root`, `result-open-player`, `result-totals`, `player-root` (`data-index`, `data-paused`), `player-progress-bar-<story-id>`, `player-story-<story-id>`, `player-zone-next`, `player-zone-previous`, `player-close`.
@@ -112,6 +112,16 @@ Shared conventions, so each entry does not repeat them:
 - Code location: `src/features/wrapped/stories/04-constancia/`.
 - Backend/API involved: none. Worker method(s): none — reads `summary.consistency`.
 - Known pitfalls: cells are presentational (`aria-hidden`), so there are never 365 focusable elements (H-08 decision 3); the legend carries the level names so colour never encodes alone. The heatmap only renders days with activity, one cell each.
+
+## Story 06 · Tu material
+
+- What it is: the ranked gear of the season — the star item's own name as the headline, its hours as the hero number with the kilometres beside it, then every item with a bar proportional to its hours against the star and a retirement badge on items over 800 km this season.
+- How to reach it in the UI: player story 5 (after 04); omitted below the 30 % moving-time threshold with assigned gear (the player shrinks the bars, no gap).
+- Keyboard shortcuts: player-wide ones.
+- Selectors for programmatic control: `material-star-lead`, `material-star-name`, `material-star-hours`, `material-star-km`, `material-ranking`, `material-row-<index>`, `material-hours-<index>`, `material-km-<index>`, `material-retired-badge` (only on flagged rows); story root `story-06-material`.
+- Code location: `src/features/wrapped/stories/06-material/`.
+- Backend/API involved: none. Worker method(s): none — reads `summary.gear`.
+- Known pitfalls: the story renders the metric verbatim — the star is looked up by name and the list is used as returned, already sorted by hours (H-09 decision 1 and 2). Bars are relative to the star, so the first row is always full width; they are `aria-hidden` and the numbers beside them carry the information (H-09 decision 3). The copy speaks of bikes when `showsBikes` is true and of shoes otherwise; the retirement warning says "en 2026" because the export cannot see the shoe's whole life (H-09 decision 5). The `shoe-retired` fixture persona is the only one whose star passes 800 km in 2026.
 
 ## Theme
 

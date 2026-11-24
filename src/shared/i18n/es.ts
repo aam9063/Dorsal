@@ -5,8 +5,9 @@ const EMPTY = ''
 export const es = {
   brand: {
     name: 'Dorsal',
-    tagline: 'Tu temporada 2026',
     chip: '26',
+    home: 'Volver al inicio',
+    tagline: 'Tu temporada 2026',
   },
   theme: {
     label: 'Tema',
@@ -66,7 +67,7 @@ export const es = {
       seasonLabel: 'Temporada 2026',
       kmLabel: 'km',
       km: '3214',
-      name: 'Lucía M.',
+      name: 'Javier A.',
       stats: [
         { value: '412', label: 'Activ.' },
         { value: '287 h', label: 'En movimiento' },
@@ -327,6 +328,20 @@ export const es = {
       weekdayLead: 'es tu día favorito: presente en',
       weekSingular: 'semana',
       weekPlural: 'semanas',
+    },
+    '06-material': {
+      title: 'Tu material',
+      eyebrow: 'Etapa 6 · Tu material',
+      starLead: {
+        shoes: 'La zapatilla que más te llevó.',
+        bikes: 'La bici que más te llevó.',
+      },
+      hoursLabel: 'En movimiento',
+      rankingLabel: 'Todo tu material, de más a menos horas.',
+      retirementBadge: 'Toca jubilarlas',
+      retirementNote: 'Más de 800 km en 2026: el export solo cuenta esta temporada.',
+      rowActivitySingular: 'actividad',
+      rowActivityPlural: 'actividades',
     },
   },
   notFound: {
