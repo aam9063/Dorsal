@@ -4,19 +4,22 @@ import { defineConfig, type Plugin } from 'vitest/config'
 
 /**
  * The landing imports the `src/shared/hooks/` barrel, which re-exports
- * `useAnalysis`. The hook is unused there, but the worker bridge it pulls
+ * `useAnalysis`. That hook is unused there, but the worker bridge it pulls
  * (Comlink plus the Zod schema) was counted as side-effectful and shipped in
- * the entry bundle the landing paints with. Local `src/` modules carry no
- * import-time side effects (their top-level code only defines values; GSAP
- * registration happens inside a hook that is used wherever it is loaded), so
- * the tree shaker may drop them wherever they are unused. Modules from
- * dependencies and CSS (font-face declarations, Tailwind) keep their default
- * side-effect status.
- */
-/**
- * Local `src/` modules carry no import-time side effects, so the tree shaker
- * may drop them wherever they are unused. Modules from dependencies and CSS
- * (font-face declarations, Tailwind) keep their default side-effect status.
+ * the entry bundle the landing paints with.
+ *
+ * Declaring local `src/` modules side-effect free is what lets the tree shaker
+ * drop them where they are unused. It is a deliberate trade-off, and it holds
+ * only because of a property that has to stay true: of the two modules in
+ * `src/` with real top-level work — `shared/hooks/use-gsap-reveal.ts` registers
+ * the ScrollTrigger plugin, `shared/theme/theme-preference.ts` reads the media
+ * query, the stored preference and applies the theme — each one is imported
+ * only by the code that uses it, so it is never dropped while still needed.
+ * A new module that mutates globals at import time and is imported only for
+ * that effect would be silently dropped by this setting.
+ *
+ * Modules from dependencies and CSS (font-face declarations, Tailwind) keep
+ * their default side-effect status.
  */
 function hasModuleSideEffects(id: string) {
   const normalized = id.replace(/\\/g, '/')

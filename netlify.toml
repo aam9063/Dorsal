@@ -20,10 +20,11 @@
 # Every claim below was observed by serving `dist` with these exact headers and
 # running the full flow (upload, eight stories, both card exports):
 # - `script-src 'self'` holds: the build inlines no script — `dist/index.html`
-#   carries one module tag with `src` and one stylesheet link. The single
-#   `script-src` violation in the console is Zod's `isEvalSupported()` probe
-#   (`Function('')` inside a try/catch); it is blocked, returns false, and Zod
-#   falls back to its interpreted validator, so nothing breaks.
+#   carries one module tag with `src` and one stylesheet link. Zod carries an
+#   eval-capability probe (`Function('')` inside a try/catch): depending on the
+#   engine it is blocked or it succeeds, and either answer only chooses which
+#   validator implementation Zod uses, never a feature. It was observed blocked
+#   in one run and succeeding in another, with no functional difference.
 # - `style-src` keeps `'unsafe-inline'` because the animation layer injects
 #   seven `<style>` elements during the story transitions. That is measured, not
 #   assumed: with `style-src 'self'` those seven are blocked and the transitions
