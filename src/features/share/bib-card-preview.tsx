@@ -43,7 +43,7 @@ export function BibCardPreview({ summary, name }: { summary: YearSummary; name: 
 
       <div
         data-testid="dorsal-number"
-        className={`text-center font-display leading-none ${numberText.length >= 5 ? 'text-[64px]' : 'text-[80px]'}`}
+        className={`translate-x-[2.5%] text-center font-display leading-none ${numberText.length >= 5 ? 'text-[64px]' : 'text-[80px]'}`}
       >
         {numberText}
       </div>

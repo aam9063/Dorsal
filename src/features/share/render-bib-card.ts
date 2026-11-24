@@ -407,10 +407,15 @@ export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
   // The bib number, sized so five digits still fit the content column.
   const numberText = String(summary.bibCard.number)
   const numberSize = numberText.length >= LONG_NUMBER_DIGITS ? NUMBER_SIZE_LONG : NUMBER_SIZE
+  // The plate is tilted, so a number centred on the plate reads as shifted left
+  // against the card's straight edges: offset it back by `tan(3°)` times the
+  // distance from the plate's middle to the number's optical centre.
+  const opticalCenter =
+    Math.tan(Math.abs(CARD_ROTATION)) * (CARD_H / 2 - (NUMBER_BASELINE - 0.35 * numberSize))
   setFont(surface, '400', numberSize, FONT_DISPLAY, '0px')
   surface.fillStyle = CardColours.ink
   surface.textAlign = 'center'
-  surface.fillText(numberText, CENTER_X, NUMBER_BASELINE)
+  surface.fillText(numberText, CENTER_X + opticalCenter, NUMBER_BASELINE)
 
   const nameText = bibCardNameText(name)
   setFont(
