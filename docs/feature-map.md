@@ -113,15 +113,35 @@ Shared conventions, so each entry does not repeat them:
 - Backend/API involved: none. Worker method(s): none — reads `summary.consistency`.
 - Known pitfalls: cells are presentational (`aria-hidden`), so there are never 365 focusable elements (H-08 decision 3); the legend carries the level names so colour never encodes alone. The heatmap only renders days with activity, one cell each.
 
+## Story 05 · Tu arquetipo
+
+- What it is: the archetype's own name as the headline (never the rule id), the secondary trait as a supporting line, and the 24-hour start distribution as a radial clock with the peak hour in its centre, named in text under the chart.
+- How to reach it in the UI: player story 5; omitted below ten activities (the player shrinks the bars, no gap).
+- Keyboard shortcuts: player-wide ones.
+- Selectors for programmatic control: `arquetipo-name`, `arquetipo-secondary`, `arquetipo-clock` (`role="img"` summary), `arquetipo-peak-hour`, `arquetipo-primary-chip`; story root `story-05-arquetipo`.
+- Code location: `src/features/wrapped/stories/05-arquetipo/`.
+- Backend/API involved: none. Worker method(s): none — reads `summary.archetype`.
+- Known pitfalls: the headline is the archetype's own name from `es.ts` (`t.stories['05-arquetipo'].archetypeNames`), never the rule id (H-10 decision 1); the clock is decorative-adjacent but carries the distribution, so the sentence below it names the peak hour and its share and the spokes are the encoding — no colour-only information. The persona fixtures `early-bird`, `night-owl`, `weekend-warrior`, `methodical`, `long-distance` and `multisport` each make a different rule win (H-10 acceptance); `multisport` also produces it for e2e.
+
 ## Story 06 · Tu material
 
 - What it is: the ranked gear of the season — the star item's own name as the headline, its hours as the hero number with the kilometres beside it, then every item with a bar proportional to its hours against the star and a retirement badge on items over 800 km this season.
-- How to reach it in the UI: player story 5 (after 04); omitted below the 30 % moving-time threshold with assigned gear (the player shrinks the bars, no gap).
+- How to reach it in the UI: player story 6 (after 05); omitted below the 30 % moving-time threshold with assigned gear (the player shrinks the bars, no gap).
 - Keyboard shortcuts: player-wide ones.
 - Selectors for programmatic control: `material-star-lead`, `material-star-name`, `material-star-hours`, `material-star-km`, `material-ranking`, `material-row-<index>`, `material-hours-<index>`, `material-km-<index>`, `material-retired-badge` (only on flagged rows); story root `story-06-material`.
 - Code location: `src/features/wrapped/stories/06-material/`.
 - Backend/API involved: none. Worker method(s): none — reads `summary.gear`.
 - Known pitfalls: the story renders the metric verbatim — the star is looked up by name and the list is used as returned, already sorted by hours (H-09 decision 1 and 2). Bars are relative to the star, so the first row is always full width; they are `aria-hidden` and the numbers beside them carry the information (H-09 decision 3). The copy speaks of bikes when `showsBikes` is true and of shoes otherwise; the retirement warning says "en 2026" because the export cannot see the shoe's whole life (H-09 decision 5). The `shoe-retired` fixture persona is the only one whose star passes 800 km in 2026.
+
+## Story 07 · El año en latidos
+
+- What it is: the season beats as the hero number, the resting-days equivalence beside it, the peak heart rate with its date, and the coverage in words.
+- How to reach it in the UI: player story 7; omitted below the 30 % moving-time-with-pulse threshold (the player shrinks the bars, no gap).
+- Keyboard shortcuts: player-wide ones.
+- Selectors for programmatic control: `latidos-beats`, `latidos-resting-days`, `latidos-peak` (absent when `peak` is null), `latidos-coverage`; story root `story-07-latidos`.
+- Code location: `src/features/wrapped/stories/07-latidos/`.
+- Backend/API involved: none. Worker method(s): none — reads `summary.heartbeats`.
+- Known pitfalls: the beats hero switches between raw beats and two decimals of millions from one million up, so the e2e asserts the same formatting the story applies. The peak block is omitted when `summary.heartbeats.peak` is null while the story still renders (H-10 decision 4); the `long-distance` persona is the fixture proving it, and `no-pulse` is the fixture where the story is omitted. The heartbeat line of the W7 artboard carries no data, so it is drawn fixed and `aria-hidden`.
 
 ## Theme
 
@@ -146,4 +166,5 @@ Shared conventions, so each entry does not repeat them:
 ## Fixture personas
 
 - What it is: synthetic exports used for verification instead of real data.
-- Code location: `fixtures/generator/` and `fixtures/generated/` (planned, H-01). No real export is ever committed.
+- Code location: `fixtures/generator/` and `fixtures/generated/` (H-01, extended in H-10). No real export is ever committed.
+- Known pitfalls: every persona is generated from a fixed seed or from forced activities on calendar literals, so two runs are byte-identical. The H-10 personas (`early-bird`, `night-owl`, `weekend-warrior`, `methodical`, `long-distance`, `no-pulse`) use forced 2026 weekday slots so each archetype rule of BRIEF §6.1 is provably won by data, not by a random draw; the weekday tables are literals derived once from the 2026 calendar. Each persona spans several past years so the 2026 filter stays exercised.
