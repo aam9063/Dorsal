@@ -130,6 +130,9 @@ const COL = {
   distanceMetres: 17,
   elevationGain: 20,
   heartRateAvg: 31,
+  maxPower: 32,
+  avgPower: 33,
+  weightedAvgPower: 46,
 } as const
 
 const MONTHS = [
@@ -152,6 +155,7 @@ const ID_BASE = 823_456_000
 export type PersonaName =
   | 'runner-es'
   | 'cyclist'
+  | 'cyclist-power'
   | 'multisport'
   | 'no-gear'
   | 'few-activities'
@@ -170,6 +174,7 @@ export type PersonaName =
 export const PERSONAS: readonly PersonaName[] = [
   'runner-es',
   'cyclist',
+  'cyclist-power',
   'multisport',
   'no-gear',
   'few-activities',
@@ -211,6 +216,21 @@ interface PersonaConfig {
   gearPool: readonly string[]
   gearChanceByLabel: Readonly<Record<string, number>>
   forced: readonly ActivitySpec[]
+  /**
+   * Watts written for every activity of the persona; `undefined` leaves the
+   * three power columns empty, which is every other persona, so the
+   * power-present and the power-absent paths both have fixtures.
+   */
+  power?: PowerRange
+}
+
+/** Deterministic watt draws for a persona with a power meter. */
+interface PowerRange {
+  avgWRange: readonly [number, number]
+  /** Added to the average to draw the per-activity maximum. */
+  maxAboveAvg: readonly [number, number]
+  /** Multiplies the average to draw the weighted average power. */
+  weightedFactorRange: readonly [number, number]
 }
 
 interface ActivitySpec {
@@ -231,6 +251,9 @@ interface ActivitySpec {
   avgHeartRate: number | null
   relativeEffort: number | null
   elevationGainM: number | null
+  avgPowerW: number | null
+  maxPowerW: number | null
+  weightedAvgPowerW: number | null
   gear: string | null
 }
 
@@ -421,9 +444,18 @@ function forcedActivity(values: {
   avgHeartRate: number | null
   relativeEffort: number | null
   elevationGainM: number | null
+  avgPowerW?: number | null
+  maxPowerW?: number | null
+  weightedAvgPowerW?: number | null
   gear: string | null
 }): ActivitySpec {
-  return { id: 0, ...values }
+  return {
+    id: 0,
+    avgPowerW: null,
+    maxPowerW: null,
+    weightedAvgPowerW: null,
+    ...values,
+  }
 }
 
 const RUNNER_ES: PersonaConfig = {
@@ -533,6 +565,71 @@ const CYCLIST: PersonaConfig = {
   gearPool: ['BTT azul', 'Carretera negra', 'Grava naranja'],
   gearChanceByLabel: { Bicicleta: 0.9, 'Bicicleta virtual': 0.7 },
   forced: [],
+}
+
+const CYCLIST_POWER: PersonaConfig = {
+  seed: 20260531,
+  years: [
+    {
+      year: 2025,
+      sports: [
+        { label: 'Bicicleta', count: 30 },
+        { label: 'Bicicleta virtual', count: 10 },
+      ],
+    },
+    {
+      year: 2026,
+      sports: [
+        { label: 'Bicicleta', count: 58 },
+        { label: 'Bicicleta virtual', count: 26 },
+      ],
+    },
+  ],
+  gearPool: ['BTT azul', 'Carretera negra'],
+  gearChanceByLabel: { Bicicleta: 0.9, 'Bicicleta virtual': 0.7 },
+  power: {
+    avgWRange: [170, 260],
+    maxAboveAvg: [250, 900],
+    weightedFactorRange: [0.92, 1.0],
+  },
+  forced: [
+    forcedActivity({
+      year: 2026,
+      month0: 10,
+      day: 12,
+      hour: 10,
+      minute: 5,
+      second: 0,
+      label: 'Bicicleta',
+      name: 'Rodada con el medidor sin pilas',
+      elapsedSec: 5400,
+      movingSec: 5100,
+      distanceHundredths: 4200,
+      maxHeartRate: 178,
+      avgHeartRate: 154,
+      relativeEffort: 88,
+      elevationGainM: 610,
+      gear: 'Carretera negra',
+    }),
+    forcedActivity({
+      year: 2026,
+      month0: 10,
+      day: 19,
+      hour: 10,
+      minute: 5,
+      second: 0,
+      label: 'Bicicleta',
+      name: 'Rodillo sin medidor',
+      elapsedSec: 4500,
+      movingSec: 4200,
+      distanceHundredths: 3100,
+      maxHeartRate: 170,
+      avgHeartRate: 148,
+      relativeEffort: 71,
+      elevationGainM: 0,
+      gear: null,
+    }),
+  ],
 }
 
 const MULTISPORT: PersonaConfig = {
@@ -1274,6 +1371,7 @@ const NO_PULSE: PersonaConfig = {
 const PERSONA_CONFIGS: Readonly<Record<PersonaName, PersonaConfig>> = {
   'runner-es': RUNNER_ES,
   cyclist: CYCLIST,
+  'cyclist-power': CYCLIST_POWER,
   multisport: MULTISPORT,
   'no-gear': NO_GEAR,
   'few-activities': FEW_ACTIVITIES,
@@ -1335,6 +1433,15 @@ function rowFields(spec: ActivitySpec): string[] {
   if (spec.avgHeartRate !== null) {
     fields[COL.heartRateAvg] = `${spec.avgHeartRate}.0`
   }
+  if (spec.maxPowerW !== null) {
+    fields[COL.maxPower] = String(spec.maxPowerW)
+  }
+  if (spec.avgPowerW !== null) {
+    fields[COL.avgPower] = String(spec.avgPowerW)
+  }
+  if (spec.weightedAvgPowerW !== null) {
+    fields[COL.weightedAvgPower] = String(spec.weightedAvgPowerW)
+  }
   return fields
 }
 
@@ -1356,6 +1463,9 @@ function generateActivities(config: PersonaConfig): ActivitySpec[] {
         const movingSec = intBetween(rng, ...profile.movingSecRange)
         const activity: ActivitySpec = {
           id: 0,
+          avgPowerW: null,
+          maxPowerW: null,
+          weightedAvgPowerW: null,
           year: yearPlan.year,
           month0: Math.min(11, Math.trunc((index / sportPlan.count) * 12)),
           day: 1 + intBetween(rng, 0, 27),
@@ -1388,6 +1498,14 @@ function generateActivities(config: PersonaConfig): ActivitySpec[] {
         }
         activity.avgHeartRate =
           activity.maxHeartRate === null ? null : activity.maxHeartRate - intBetween(rng, 8, 25)
+        if (config.power !== undefined) {
+          const avgW = intBetween(rng, ...config.power.avgWRange)
+          activity.avgPowerW = avgW
+          activity.maxPowerW = avgW + intBetween(rng, ...config.power.maxAboveAvg)
+          activity.weightedAvgPowerW = Number(
+            (avgW * floatBetween(rng, config.power.weightedFactorRange)).toFixed(1),
+          )
+        }
         specs.push(activity)
       }
     }

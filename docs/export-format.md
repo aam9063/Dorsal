@@ -30,26 +30,30 @@ Reference export: 104 columns, 0.3 MB, several years of history, zero malformed 
 
 Only the columns Dorsal needs are listed. Indices are the contract.
 
-| Index | Spanish header                 | Type               | Meaning                                                                           |
-| ----- | ------------------------------ | ------------------ | --------------------------------------------------------------------------------- |
-| 0     | `ID de actividad`              | integer            | Activity id, unique per row                                                       |
-| 1     | `Fecha de la actividad`        | localized datetime | Local start time, see below                                                       |
-| 2     | `Nombre de la actividad`       | text               | Title. **Personal data: never leaves the worker and is not needed by any story.** |
-| 3     | `Tipo de actividad`            | localized text     | Sport label, see the sport map                                                    |
-| 4     | `Descripción de la actividad`  | text               | Usually empty. Personal data, unused                                              |
-| 5     | `Tiempo transcurrido`          | integer seconds    | Elapsed time, no decimals                                                         |
-| 6     | `Distancia`                    | decimal with comma | Display distance in km                                                            |
-| 7     | `Frecuencia cardiaca máxima`   | integer bpm        | Max heart rate, well populated                                                    |
-| 8     | `Esfuerzo Relativo`            | integer            | Relative effort. v1.1 material                                                    |
-| 11    | `Equipamiento de la actividad` | text               | Gear name as the user typed it, frequently empty                                  |
-| 15    | `Tiempo transcurrido`          | decimal seconds    | Same elapsed time, with `.0`                                                      |
-| 16    | `Tiempo en movimiento`         | decimal seconds    | **Moving time**, the one metrics use                                              |
-| 17    | `Distancia`                    | decimal with dot   | **Distance in metres**, more precise than index 6                                 |
-| 20    | `Desnivel positivo`            | integer metres     | Elevation gain                                                                    |
-| 30    | `Frecuencia cardiaca máxima`   | integer bpm        | Second occurrence, sparse. Prefer index 7                                         |
-| 31    | `Frecuencia cardiaca promedio` | integer bpm        | Average heart rate                                                                |
-| 37    | `Esfuerzo Relativo`            | integer            | Second occurrence                                                                 |
-| 103   | `Etiqueta`                     | text               | Tag                                                                               |
+| Index | Spanish header                 | Type               | Meaning                                                                                                                                              |
+| ----- | ------------------------------ | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | `ID de actividad`              | integer            | Activity id, unique per row                                                                                                                          |
+| 1     | `Fecha de la actividad`        | localized datetime | Local start time, see below                                                                                                                          |
+| 2     | `Nombre de la actividad`       | text               | Title. **Personal data: never leaves the worker and is not needed by any story.**                                                                    |
+| 3     | `Tipo de actividad`            | localized text     | Sport label, see the sport map                                                                                                                       |
+| 4     | `Descripción de la actividad`  | text               | Usually empty. Personal data, unused                                                                                                                 |
+| 5     | `Tiempo transcurrido`          | integer seconds    | Elapsed time, no decimals                                                                                                                            |
+| 6     | `Distancia`                    | decimal with comma | Display distance in km                                                                                                                               |
+| 7     | `Frecuencia cardiaca máxima`   | integer bpm        | Max heart rate, well populated                                                                                                                       |
+| 8     | `Esfuerzo Relativo`            | integer            | Relative effort. v1.1 material                                                                                                                       |
+| 11    | `Equipamiento de la actividad` | text               | Gear name as the user typed it, frequently empty                                                                                                     |
+| 15    | `Tiempo transcurrido`          | decimal seconds    | Same elapsed time, with `.0`                                                                                                                         |
+| 16    | `Tiempo en movimiento`         | decimal seconds    | **Moving time**, the one metrics use                                                                                                                 |
+| 17    | `Distancia`                    | decimal with dot   | **Distance in metres**, more precise than index 6                                                                                                    |
+| 20    | `Desnivel positivo`            | integer metres     | Elevation gain                                                                                                                                       |
+| 30    | `Frecuencia cardiaca máxima`   | integer bpm        | Second occurrence, sparse. Prefer index 7                                                                                                            |
+| 31    | `Frecuencia cardiaca promedio` | integer bpm        | Average heart rate                                                                                                                                   |
+| 32    | `Vatios máx.`                  | watts              | Max power. Header-verified; values unconfirmed, see "Power columns"                                                                                  |
+| 33    | `Vatios promedio`              | watts              | Average power. Header-verified; values unconfirmed, see "Power columns"                                                                              |
+| 37    | `Esfuerzo Relativo`            | integer            | Second occurrence                                                                                                                                    |
+| 46    | `Potencia promedio ponderada`  | watts              | Weighted average power. Header-verified like 32 and 33, and additionally confirmed present in a real export; values unconfirmed, see "Power columns" |
+| 47    | `Recuento de potencia`         | integer            | Power sample count. Header-verified; values unconfirmed, see "Power columns"                                                                         |
+| 103   | `Etiqueta`                     | text               | Tag                                                                                                                                                  |
 
 Distance check performed on the reference export: index 17 divided by index 6 is 1000 for every non-zero row, so index 17 is metres with one decimal and index 6 is kilometres with two. **Use index 17.**
 
@@ -84,6 +88,22 @@ Consequences, written down rather than discovered later:
 | Empty cell                    | Absent value, never zero                                                 |
 
 The worker never sees a raw string: parsing and conversion happen in `src/core/export-reader/`, and the year filter happens in `src/core/time/`.
+
+## Power columns
+
+Status of the four power headers, worded so nothing is claimed beyond the evidence in the repo:
+
+| Index | Header                        | Presence in the reference export | Presence in a real export                                | Values          |
+| ----- | ----------------------------- | -------------------------------- | -------------------------------------------------------- | --------------- |
+| 32    | `Vatios máx.`                 | Header-verified                  | Not confirmed                                            | **Unconfirmed** |
+| 33    | `Vatios promedio`             | Header-verified                  | Not confirmed                                            | **Unconfirmed** |
+| 46    | `Potencia promedio ponderada` | Header-verified                  | **Confirmed** (the export carries the header; see below) | **Unconfirmed** |
+| 47    | `Recuento de potencia`        | Header-verified                  | Not confirmed                                            | **Unconfirmed** |
+
+- **No value of any power column has ever been observed.** The two exports this repo has seen (the H-01 reference and the one that confirmed column 46) belong to accounts without a power meter, and neither carried a watt. "Values unconfirmed" means exactly that: Dorsal does not know how Strava formats watts in this export, and it does not claim a number format it cannot show.
+- Column 46 was **observed present in a second real export** whose account also has no power meter: the header is there and every row's cell is empty. That confirms the header sits at index 46 in the layout, and nothing about its values, which stay unconfirmed like the rest.
+- Because the values are unconfirmed, every power read is **locale-tolerant and nullable**: an absent cell is `null`, and a cell Dorsal cannot parse is also `null`, never `0` and never a guess. A power value never makes its row corrupt, and the three read columns (32, 33, 46) degrade independently, so an export that fills only one of them still produces what it can prove.
+- The generator fills the three read columns for one persona (`cyclist-power`) and leaves them empty for every other persona, so the power-present and power-absent paths both have deterministic fixtures without pretending to reproduce Strava's format.
 
 ## Sport labels
 

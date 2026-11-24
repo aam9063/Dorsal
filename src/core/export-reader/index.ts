@@ -23,6 +23,15 @@ const COLUMN = {
   distanceMetres: 17,
   elevationGainM: 20,
   heartRateAvg: 31,
+  /** `Vatios máx.` Header-verified, values unconfirmed (docs/export-format.md). */
+  maxPowerW: 32,
+  /** `Vatios promedio`. Header-verified, values unconfirmed (docs/export-format.md). */
+  avgPowerW: 33,
+  /**
+   * `Potencia promedio ponderada`, the one power column confirmed present in
+   * a real export (L5); its values stay unconfirmed, so the read is nullable.
+   */
+  weightedAvgPowerW: 46,
 } as const
 
 const FIELD_COUNT = 104
@@ -98,6 +107,34 @@ function readOptionalText(text: string): string | null {
 }
 
 /**
+ * Watts of the power columns (`Vatios máx.`, `Vatios promedio`). The value
+ * format of these columns is unconfirmed (docs/export-format.md), so the read
+ * is locale-tolerant and never invents numbers: an absent or unparseable
+ * value is `null`, never `0`.
+ *
+ * Accepted shapes: an integer (`245`); a single decimal (`245,7`, `245.7`);
+ * dot-grouped with a comma decimal (`1.234,5`); comma-grouped with a dot
+ * decimal (`1,234.5`); or a pure 3-digit grouping (`1.234`, `1,234` read as
+ * grouped numbers, since a three-digit tail after a one-to-three-digit head
+ * is a grouping and watts never need a per-mille reading). Anything else is
+ * `null`; a power cell never makes its row corrupt.
+ */
+function readOptionalPowerWatts(text: string): number | null {
+  const trimmed = text.trim()
+  const grouped = (pattern: RegExp, separator: string): number | null =>
+    pattern.test(trimmed) ? Number(trimmed.replaceAll(separator, EMPTY).replaceAll(',', '.')) : null
+
+  return (
+    (/^\d+$/.test(trimmed) ? Number(trimmed) : null) ??
+    grouped(/^\d{1,3}(\.\d{3})*,\d{1,3}$/, '.') ??
+    grouped(/^\d{1,3}(,\d{3})*\.\d{1,3}$/, ',') ??
+    grouped(/^\d{1,3}(\.\d{3})+$/, '.') ??
+    grouped(/^\d{1,3}(,\d{3})+$/, ',') ??
+    (/^\d+[.,]\d{1,3}$/.test(trimmed) ? Number(trimmed.replaceAll(',', '.')) : null)
+  )
+}
+
+/**
  * The header is the only row whose first field is not an activity id, so a
  * file without one keeps its first row instead of losing it.
  */
@@ -152,6 +189,9 @@ function normalizeRow(row: readonly string[]): Activity | null {
     elevationGainM,
     avgHeartRate,
     maxHeartRate,
+    avgPowerW: readOptionalPowerWatts(field(row, COLUMN.avgPowerW)),
+    maxPowerW: readOptionalPowerWatts(field(row, COLUMN.maxPowerW)),
+    weightedAvgPowerW: readOptionalPowerWatts(field(row, COLUMN.weightedAvgPowerW)),
     gear: readOptionalText(field(row, COLUMN.gear)),
   }
 }

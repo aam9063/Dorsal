@@ -144,3 +144,77 @@ export function weekdayOf(value: PlainDateTime): Weekday {
   const shifted = (dayOrdinal(value) % 7) + 7 + 4
   return (shifted % 7) as Weekday
 }
+
+/**
+ * Calendar day of a day ordinal (the inverse of {@link dayOrdinal}), using Howard
+ * Hinnant's `civil_from_days` algorithm. Pure date arithmetic: no locale and
+ * no clock is involved.
+ */
+export function calendarDateOf(ordinal: number): { year: number; month: number; day: number } {
+  const z = ordinal + 719_468
+  const era = Math.floor(z / 146_097)
+  const dayOfEra = z - era * 146_097
+  const yearOfEra = Math.floor(
+    (dayOfEra -
+      Math.floor(dayOfEra / 1460) +
+      Math.floor(dayOfEra / 36524) -
+      Math.floor(dayOfEra / 146_096)) /
+      365,
+  )
+  const year = yearOfEra + era * 400
+  const dayOfYear =
+    dayOfEra - (365 * yearOfEra + Math.floor(yearOfEra / 4) - Math.floor(yearOfEra / 100))
+  const shiftedMonth = Math.floor((5 * dayOfYear + 2) / 153)
+  const day = dayOfYear - Math.floor((153 * shiftedMonth + 2) / 5) + 1
+  const month = shiftedMonth < 10 ? shiftedMonth + 3 : shiftedMonth - 9
+  return { year: year + (month <= 2 ? 1 : 0), month, day }
+}
+
+/** The weekday with the ISO numbering, where `1` is Monday and `7` is Sunday. */
+export function isoWeekdayOf(value: PlainDateTime): 1 | 2 | 3 | 4 | 5 | 6 | 7 {
+  const weekday = weekdayOf(value)
+  return weekday === 0 ? 7 : weekday
+}
+
+/** Number of ISO weeks in a calendar year: 52, or 53 for a long year. */
+function isoWeeksInYear(year: number): number {
+  const januaryFirst: PlainDateTime = { year, month: 1, day: 1, hour: 12, minute: 0, second: 0 }
+  const startsLong =
+    weekdayOf(januaryFirst) === 4 || (isLeapYear(year) && weekdayOf(januaryFirst) === 3)
+  return startsLong ? 53 : 52
+}
+
+/** ISO year and week of a calendar date, e.g. `2025-12-29` is week 1 of 2026. */
+export interface IsoWeek {
+  isoYear: number
+  /** `1` to `53`; week 1 holds the year's first Thursday. */
+  isoWeek: number
+}
+
+/**
+ * ISO-8601 week of a calendar date: Monday start, week 1 is the week
+ * containing the first Thursday, and a week belongs to the ISO year of its
+ * Thursday. Weeks only need three calendar facts, so no `Date` and no locale
+ * is involved.
+ */
+export function isoWeekOf(value: PlainDateTime): IsoWeek {
+  const ordinal = dayOrdinal(value)
+  const yearStartOrdinal = dayOrdinal({
+    year: value.year,
+    month: 1,
+    day: 1,
+    hour: 12,
+    minute: 0,
+    second: 0,
+  })
+  const dayOfYear = ordinal - yearStartOrdinal + 1
+  const isoWeekday = isoWeekdayOf(value)
+  const week = Math.floor((dayOfYear - isoWeekday + 10) / 7)
+  if (week < 1) {
+    return { isoYear: value.year - 1, isoWeek: isoWeeksInYear(value.year - 1) }
+  }
+  if (week > isoWeeksInYear(value.year)) {
+    return { isoYear: value.year + 1, isoWeek: 1 }
+  }
+  return { isoYear: value.year, isoWeek: week }
+}
