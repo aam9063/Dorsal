@@ -22,11 +22,26 @@ import {
  * and fulfilled weeks, best marks, power evolution — while the bib card keeps
  * the legible two-second composition (odd/tasks/h11b-season-cards.md S2).
  *
+ * The body is laid out by construction instead of on fixed baselines:
+ * `seasonCardLayout` measures every present panel — its rows, its title, its
+ * bars — from the data it actually has, stacks the panels with one fixed
+ * `PANEL_GAP`, and places the footer after the last panel plus a fixed
+ * `BOTTOM_PADDING`. `drawSeasonCard` consumes that same layout, so a test
+ * asserted on `seasonCardLayout` is a test on the painted card, and a season
+ * with two sports and no power composes as deliberately as one with six
+ * sports and watts.
+ *
+ * The panels share one rhythm: a panel starts its first line at `ROW_LEAD`
+ * from its top, a title separates from its rows by `TITLE_TO_ROWS`, and
+ * consecutive rows sit `LINE_PITCH` apart. Sport rows read as a list — name,
+ * kilometres, counting caption and a short share bar — with the caption copy
+ * taken from the same `06-material` keys the DOM replica prints, so the two
+ * artifacts cannot drift.
+ *
  * The draw is pure over the same `CardSurface` subset the bib card paints
- * with, every coordinate is a named constant, and every string comes from
- * `src/shared/i18n/` and `src/shared/format.ts`. No `Date`, no
- * `Math.random`, no runtime locale: two draws from the same inputs produce
- * the same command stream.
+ * with, every string comes from `src/shared/i18n/` and `src/shared/format.ts`.
+ * No `Date`, no `Math.random`, no runtime locale: two draws from the same
+ * inputs produce the same command stream.
  *
  * Every panel renders only when the season's data exists (`YearSummary`
  * stores each section as nullable and `availability` carries the flags), so a
@@ -79,71 +94,88 @@ const NAME_SIZE_LONG = 38
 const NAME_LETTER_SPACING = '10px'
 const LONG_NAME_LENGTH = 12
 
+// — Vertical rhythm (the constructed layout) ————————————————————————————————
+
+const BODY_TOP = 330
+/** Fixed space between the measured bottom of one panel and the top of the next. */
+const PANEL_GAP = 64
+/** Fixed space from the plate's bottom edge to the footer baseline. */
+const BOTTOM_PADDING = 64
+/** Room kept between the last panel and the footer, so they never touch. */
+const FOOTER_CLEARANCE = 56
+/** Ceiling for the breathing room the layout may add between panels. */
+const MAX_PANEL_GAP = 96
+/** Panel top to its first baseline (a title or, without one, the first row). */
+const ROW_LEAD = 22
+/** Title baseline to the first row baseline under it. */
+const TITLE_TO_ROWS = 30
+/** Baseline pitch of consecutive simple label/value rows inside a panel. */
+const LINE_PITCH = 32
+/** Descent allowance from the last baseline to the panel's measured bottom. */
+const TEXT_DESCENT = 12
+
 // — Sport rows ——————————————————————————————————————————————————————————————
 
-const SPORTS_TOP = 356
-const SPORT_ROW_H = 78
-/** The first row also carries the most-practiced tag under its bar. */
-const SPORT_FIRST_EXTRA = 36
-/** One row per `SportKind`, the upper bound of `sportBreakdown.sports`. */
-const MAX_SPORT_ROWS = 6
-const SPORT_NAME_OFFSET = 36
+/** Baseline pitch of two sport rows: a tight list, not bars floating in air. */
+const SPORT_ROW_H = 62
+/** Every row after the first sits this much lower: row 0 carries the most-practiced tag. */
+const SPORT_FIRST_EXTRA = 24
+/** Row top to the sport name baseline. */
+const SPORT_ROW_LEAD = 24
+/** Name baseline down to the counting caption baseline. */
+const SPORT_CAPTION_DROP = 22
+/** First row top down to the most-practiced tag baseline. */
+const SPORT_TAG_DROP = 70
 const SPORT_NAME_X = CONTENT_X + 66
 const ICON_SIZE = 44
 const ICON_CENTER_OFFSET = 26
 const SPORT_ROW_STROKE_WIDTH = 2.4
-const BAR_TOP_OFFSET = 58
-const BAR_HEIGHT = 8
-const BAR_RADIUS = 4
+/** A short right-aligned bar, not a divider across the whole plate. */
+const SPORT_BAR_WIDTH = 240
+const SPORT_BAR_DROP = 38
+const BAR_HEIGHT = 6
+const BAR_RADIUS = 3
 /** The empty track behind a share bar; decorative fill, never text. */
 const BAR_TRACK_COLOUR = 'rgba(15, 16, 13, 0.16)'
-const SPORT_TAG_OFFSET = 96
-const SPORT_TAG_SIZE = 17
-const SPORT_TAG_LETTER_SPACING = '2px'
 
 // — Weeks ———————————————————————————————————————————————————————————————————
 
-const WEEKS_TOP = 904
-const WEEKS_BEST_BASELINE = WEEKS_TOP + 28
-const WEEKS_STREAK_BASELINE = WEEKS_TOP + 80
-const WEEKS_RULE_BASELINE = WEEKS_TOP + 114
 const WEEKS_LABEL_SIZE = 18
 const WEEKS_LABEL_LETTER_SPACING = '1px'
 const WEEKS_VALUE_SIZE = 26
 
 // — Best marks ——————————————————————————————————————————————————————————————
 
-const MARKS_TITLE_BASELINE = 1086
 const MARKS_TITLE_SIZE = 20
-const MARKS_FIRST_BASELINE = 1132
-const MARK_ROW_H = 48
 const MARKS_TEXT_SIZE = 18
 
 // — Power ———————————————————————————————————————————————————————————————————
 
-const POWER_TITLE_BASELINE = 1296
 const POWER_TITLE_SIZE = 20
-const POWER_STAT_VALUE_BASELINE = 1350
-const POWER_STAT_VALUE_SIZE = 52
-const POWER_STAT_LABEL_BASELINE = 1376
+const POWER_VALUE_DROP = 56
+const POWER_VALUE_SIZE = 52
+const POWER_STAT_LABEL_DROP = 26
 const POWER_STAT_LABEL_SIZE = 17
 const POWER_STAT_LABEL_LETTER_SPACING = '2px'
 const POWER_SECOND_STAT_X = CONTENT_X + 260
-const POWER_CAPTION_BASELINE = 1410
-const POWER_CAPTION_SIZE = 17
-const POWER_CAPTION_LETTER_SPACING = '1px'
-const BARS_TOP = 1420
-const BARS_BASE = 1452
+const POWER_CAPTION_DROP = 24
+const POWER_BARS_DROP = 10
+const POWER_BARS_HEIGHT = 34
 const POWER_BAR_GAP = 10
 const POWER_BAR_RADIUS = 5
-const MONTH_LABEL_BASELINE = 1478
-const MONTH_LABEL_SIZE = 15
+const POWER_MONTH_LABEL_DROP = 22
+const POWER_MONTH_LABEL_SIZE = 15
+
+// — Shared small copy —————————————————————————————————————————————————————————
+
+const NOTE_SIZE = 17
+const NOTE_LETTER_SPACING = '1px'
+const TAG_LETTER_SPACING = '2px'
 
 // — Footer ——————————————————————————————————————————————————————————————————
 
 const FOOTER_SIZE = 20
 const FOOTER_LETTER_SPACING = '2px'
-const FOOTER_BASELINE = CARD_H - 44
 
 /** Quarter of a turn, for the rounded-corner arcs. */
 const QUARTER = Math.PI / 2
@@ -154,33 +186,142 @@ const FONT_MONO = '"JetBrains Mono"'
 
 /**
  * The vertical skeleton of the plate, exported so a layout regression is a
- * test failure instead of a card nobody notices: the panels stack morning to
- * night, the deepest baseline is the month labels, and the footer sits near
- * the plate's bottom edge.
+ * test failure instead of a card nobody notices: the body starts at
+ * `bodyTop`, the panels stack with `panelGap` between their measured extents,
+ * and the footer follows the last one after `bottomPadding`. The per-data
+ * positions themselves live in `seasonCardLayout`.
  */
 export const seasonCardGeometry = {
   plateTop: CARD_Y,
   plateHeight: CARD_H,
-  headerTitleBaseline: TITLE_BASELINE,
-  headerNameBaseline: NAME_BASELINE,
-  sportsTop: SPORTS_TOP,
+  plateWidth: CARD_W,
+  bodyTop: BODY_TOP,
+  panelGap: PANEL_GAP,
+  maxPanelGap: MAX_PANEL_GAP,
+  footerClearance: FOOTER_CLEARANCE,
+  bottomPadding: BOTTOM_PADDING,
+  rowLead: ROW_LEAD,
+  titleToRows: TITLE_TO_ROWS,
+  linePitch: LINE_PITCH,
+  textDescent: TEXT_DESCENT,
   sportRowHeight: SPORT_ROW_H,
-  sportFirstRowExtra: SPORT_FIRST_EXTRA,
-  maxSportRows: MAX_SPORT_ROWS,
-  weeksBestBaseline: WEEKS_BEST_BASELINE,
-  weeksStreakBaseline: WEEKS_STREAK_BASELINE,
-  weeksRuleBaseline: WEEKS_RULE_BASELINE,
-  marksTitleBaseline: MARKS_TITLE_BASELINE,
-  marksFirstBaseline: MARKS_FIRST_BASELINE,
-  marksRowHeight: MARK_ROW_H,
-  powerTitleBaseline: POWER_TITLE_BASELINE,
-  barsTop: BARS_TOP,
-  barsBase: BARS_BASE,
-  powerMonthLabelBaseline: MONTH_LABEL_BASELINE,
-  footerBaseline: FOOTER_BASELINE,
+  sportFirstExtra: SPORT_FIRST_EXTRA,
+  sportRowLead: SPORT_ROW_LEAD,
+  sportCaptionDrop: SPORT_CAPTION_DROP,
+  sportTagDrop: SPORT_TAG_DROP,
+  powerPanelHeight: powerPanelHeight(),
+  footerSize: FOOTER_SIZE,
 } as const
 
+/** The vertical band one panel occupies on the plate. */
+export interface SeasonPanelLayout {
+  top: number
+  bottom: number
+}
+
+export interface SeasonCardLayout {
+  sports: SeasonPanelLayout | null
+  weeks: SeasonPanelLayout | null
+  marks: SeasonPanelLayout | null
+  power: SeasonPanelLayout | null
+  footerBaseline: number
+}
+
 type SportRow = NonNullable<YearSummary['sportBreakdown']>['sports'][number]
+type SeasonPanelKey = 'sports' | 'weeks' | 'marks' | 'power'
+
+/**
+ * The sports panel's height for `rowCount` rows. The metrics emit at most one
+ * entry per `SportKind` (six), so the worst case is bounded.
+ */
+function sportPanelHeight(rowCount: number): number {
+  return (
+    (rowCount - 1) * SPORT_ROW_H +
+    SPORT_FIRST_EXTRA +
+    SPORT_ROW_LEAD +
+    SPORT_CAPTION_DROP +
+    TEXT_DESCENT
+  )
+}
+
+/** The weeks panel's height: the best-week row (when proven), the streak row and the threshold note. */
+function weeksPanelHeight(weeklyLoad: NonNullable<YearSummary['weeklyLoad']>): number {
+  const rows = (weeklyLoad.best !== null ? 1 : 0) + 1
+  const lines = rows + 1
+  return ROW_LEAD + (lines - 1) * LINE_PITCH + TEXT_DESCENT
+}
+
+/** The marks panel's height: its title plus one label/value row per mark. */
+function marksPanelHeight(rowCount: number): number {
+  return ROW_LEAD + TITLE_TO_ROWS + (rowCount - 1) * LINE_PITCH + TEXT_DESCENT
+}
+
+/** The power panel's height: its title, its stats, its caption, its bars and its month labels. */
+function powerPanelHeight(): number {
+  return (
+    ROW_LEAD +
+    POWER_VALUE_DROP +
+    POWER_STAT_LABEL_DROP +
+    POWER_CAPTION_DROP +
+    POWER_BARS_DROP +
+    POWER_BARS_HEIGHT +
+    POWER_MONTH_LABEL_DROP +
+    TEXT_DESCENT
+  )
+}
+
+/**
+ * The whole vertical layout, computed from the data before anything is
+ * painted: each present panel takes the height its data needs, consecutive
+ * panels are separated by the fixed `PANEL_GAP`, and the footer baseline
+ * follows the last panel after the fixed `BOTTOM_PADDING`. `drawSeasonCard`
+ * consumes this same layout, so a season of any size composes inside the
+ * plate by construction.
+ */
+export function seasonCardLayout(summary: YearSummary): SeasonCardLayout {
+  const candidates: { key: SeasonPanelKey; height: number }[] = []
+  const sports = summary.sportBreakdown?.sports ?? null
+  if (sports !== null && sports.length > 0) {
+    candidates.push({ key: 'sports', height: sportPanelHeight(sports.length) })
+  }
+  if (summary.weeklyLoad !== null) {
+    candidates.push({ key: 'weeks', height: weeksPanelHeight(summary.weeklyLoad) })
+  }
+  const markRows = bibCardMarkRows(summary)
+  if (markRows.length > 0) {
+    candidates.push({ key: 'marks', height: marksPanelHeight(markRows.length) })
+  }
+  if (summary.availability.powerProfile && summary.powerProfile !== null) {
+    candidates.push({ key: 'power', height: powerPanelHeight() })
+  }
+
+  // The footer is pinned to the plate's bottom edge, and the panels take the
+  // room that is left: the gap between them grows up to `MAX_PANEL_GAP`, and
+  // whatever still remains is split evenly above and below the stack. A sparse
+  // season then reads as an airy card instead of a card with a hole in it.
+  const footerBaseline = CARD_H - BOTTOM_PADDING
+  const contentHeight = candidates.reduce((total, candidate) => total + candidate.height, 0)
+  const gapCount = Math.max(candidates.length - 1, 0)
+  const room = footerBaseline - FOOTER_CLEARANCE - BODY_TOP - contentHeight
+  const gap =
+    gapCount === 0 ? PANEL_GAP : Math.min(MAX_PANEL_GAP, Math.max(PANEL_GAP, room / gapCount))
+  const slack = Math.max(0, room - gap * gapCount)
+
+  const panels = new Map<SeasonPanelKey, SeasonPanelLayout>()
+  let cursor = BODY_TOP + slack / 2
+  for (const candidate of candidates) {
+    const panel = { top: cursor, bottom: cursor + candidate.height }
+    panels.set(candidate.key, panel)
+    cursor = panel.bottom + gap
+  }
+  return {
+    sports: panels.get('sports') ?? null,
+    weeks: panels.get('weeks') ?? null,
+    marks: panels.get('marks') ?? null,
+    power: panels.get('power') ?? null,
+    footerBaseline,
+  }
+}
 
 /** Rounded rectangle out of the four supported arcs (`arc` only, no `arcTo`). */
 function roundRectPath(
@@ -262,18 +403,25 @@ function drawShareBar(
 }
 
 /**
- * One row per sport present in 2026, ordered by moving time (S8): the icon,
- * the sport name, the activity count with the distance in km, and the share
- * of moving time as a bar. The first entry is the most practiced sport and
- * carries the tag that says so.
+ * One row per sport present in 2026, ordered by moving time (S8), reading as
+ * a list: the icon, the sport name with its kilometres, a short share bar and
+ * the counting caption — the same activity-count and share copy the DOM
+ * replica prints, from the same i18n keys. The first entry is the most
+ * practiced sport and carries the tag that says so.
  */
-function drawSportsPanel(surface: SeasonCardSurface, sports: readonly SportRow[]): void {
+function drawSportsPanel(
+  surface: SeasonCardSurface,
+  sports: readonly SportRow[],
+  panel: SeasonPanelLayout,
+): void {
   const copy = t.stories['08-dorsal'].carnet
+  const material = t.stories['06-material']
   const maxShare = sports.reduce((acc, row) => Math.max(acc, row.share), 0)
   const iconScale = ICON_SIZE / SPORT_ICON_VIEWBOX
 
   for (const [index, row] of sports.entries()) {
-    const top = SPORTS_TOP + index * SPORT_ROW_H + (index === 0 ? 0 : SPORT_FIRST_EXTRA)
+    const top = panel.top + index * SPORT_ROW_H + (index === 0 ? 0 : SPORT_FIRST_EXTRA)
+
     const bounds = measureSportIcon(row.sport)
     const iconWidth = (bounds.maxX - bounds.minX) * iconScale
     const iconHeight = (bounds.maxY - bounds.minY) * iconScale
@@ -290,7 +438,7 @@ function drawSportsPanel(surface: SeasonCardSurface, sports: readonly SportRow[]
       strokeWidth: SPORT_ROW_STROKE_WIDTH,
     })
 
-    const nameBaseline = top + SPORT_NAME_OFFSET
+    const nameBaseline = top + SPORT_ROW_LEAD
     setFont(surface, '600', 26, FONT_SANS, '0px')
     surface.fillStyle = CardColours.ink
     surface.textAlign = 'left'
@@ -299,27 +447,32 @@ function drawSportsPanel(surface: SeasonCardSurface, sports: readonly SportRow[]
     setFont(surface, '400', 22, FONT_MONO, '0px')
     surface.fillStyle = CardColours.ink
     surface.textAlign = 'right'
-    surface.fillText(
-      `${formatNumber(row.activityCount)} · ${formatKilometres(row.distanceM)} km`,
-      CONTENT_RIGHT,
-      nameBaseline,
-    )
+    surface.fillText(`${formatKilometres(row.distanceM)} km`, CONTENT_RIGHT, nameBaseline)
+
+    setFont(surface, '400', NOTE_SIZE, FONT_MONO, NOTE_LETTER_SPACING)
+    surface.fillStyle = CardColours.labelInk
+    surface.textAlign = 'left'
+    const unit = row.activityCount === 1 ? material.rowActivitySingular : material.rowActivityPlural
+    const caption = `${formatNumber(row.activityCount)} ${unit} · ${formatNumber(
+      Math.round(row.share * 100),
+    )} %`
+    surface.fillText(caption.toUpperCase(), SPORT_NAME_X, nameBaseline + SPORT_CAPTION_DROP)
 
     drawShareBar(
       surface,
-      CONTENT_X,
-      top + BAR_TOP_OFFSET,
-      CONTENT_W,
+      CONTENT_RIGHT - SPORT_BAR_WIDTH,
+      top + SPORT_BAR_DROP,
+      SPORT_BAR_WIDTH,
       row.share,
       maxShare,
       index === 0 ? CardColours.accent : CardColours.ink,
     )
 
     if (index === 0) {
-      setFont(surface, '400', SPORT_TAG_SIZE, FONT_MONO, SPORT_TAG_LETTER_SPACING)
+      setFont(surface, '400', NOTE_SIZE, FONT_MONO, TAG_LETTER_SPACING)
       surface.fillStyle = CardColours.labelInk
       surface.textAlign = 'left'
-      surface.fillText(copy.mostPracticedLabel.toUpperCase(), CONTENT_X, top + SPORT_TAG_OFFSET)
+      surface.fillText(copy.mostPracticedLabel.toUpperCase(), SPORT_NAME_X, top + SPORT_TAG_DROP)
     }
   }
 }
@@ -352,46 +505,55 @@ function drawLabelValueRow(
 function drawWeeksPanel(
   surface: CardSurface,
   weeklyLoad: NonNullable<YearSummary['weeklyLoad']>,
+  panel: SeasonPanelLayout,
 ): void {
   const copy = t.stories['08-dorsal'].carnet
+  const rows: { label: string; value: string }[] = []
   const best = weeklyLoad.best
   if (best !== null) {
+    rows.push({
+      label: copy.bestWeekLabel,
+      value: `${formatKilometres(best.distanceM)} km · ${monthDayText(best.monday.month, best.monday.day)}`,
+    })
+  }
+  const streak = weeklyLoad.longestFulfilledStreak
+  rows.push({
+    label: copy.consecutiveLead,
+    value: `${formatNumber(streak)} ${streak === 1 ? copy.weeksUnitSingular : copy.weeksUnit}`,
+  })
+  for (const [index, row] of rows.entries()) {
     drawLabelValueRow(
       surface,
-      copy.bestWeekLabel,
-      `${formatKilometres(best.distanceM)} km · ${monthDayText(best.monday.month, best.monday.day)}`,
-      WEEKS_BEST_BASELINE,
+      row.label,
+      row.value,
+      panel.top + ROW_LEAD + index * LINE_PITCH,
       WEEKS_VALUE_SIZE,
     )
   }
-  const streak = weeklyLoad.longestFulfilledStreak
-  const unit = streak === 1 ? copy.weeksUnitSingular : copy.weeksUnit
-  drawLabelValueRow(
-    surface,
-    copy.consecutiveLead,
-    `${formatNumber(streak)} ${unit}`,
-    WEEKS_STREAK_BASELINE,
-    WEEKS_VALUE_SIZE,
-  )
-  setFont(surface, '400', SPORT_TAG_SIZE, FONT_MONO, WEEKS_LABEL_LETTER_SPACING)
+  setFont(surface, '400', NOTE_SIZE, FONT_MONO, NOTE_LETTER_SPACING)
   surface.fillStyle = CardColours.labelInk
   surface.textAlign = 'left'
-  surface.fillText(fulfilledWeeksSentence(MIN_SESSIONS_PER_WEEK), CONTENT_X, WEEKS_RULE_BASELINE)
+  surface.fillText(
+    fulfilledWeeksSentence(MIN_SESSIONS_PER_WEEK),
+    CONTENT_X,
+    panel.top + ROW_LEAD + rows.length * LINE_PITCH,
+  )
 }
 
 /** The season's best marks, in the same wording the dorsal prints. */
 function drawMarksPanel(
   surface: CardSurface,
   markRows: readonly { label: string; value: string }[],
+  panel: SeasonPanelLayout,
 ): void {
   const copy = t.stories['08-dorsal'].carnet
-  setFont(surface, '700', MARKS_TITLE_SIZE, FONT_MONO, WEEKS_LABEL_LETTER_SPACING)
+  setFont(surface, '700', MARKS_TITLE_SIZE, FONT_MONO, NOTE_LETTER_SPACING)
   surface.fillStyle = CardColours.labelInk
   surface.textAlign = 'left'
-  surface.fillText(copy.marksTitle.toUpperCase(), CONTENT_X, MARKS_TITLE_BASELINE)
+  surface.fillText(copy.marksTitle.toUpperCase(), CONTENT_X, panel.top + ROW_LEAD)
   for (const [index, mark] of markRows.entries()) {
-    const baseline = MARKS_FIRST_BASELINE + index * MARK_ROW_H
-    setFont(surface, '400', MARKS_TEXT_SIZE, FONT_MONO, WEEKS_LABEL_LETTER_SPACING)
+    const baseline = panel.top + ROW_LEAD + TITLE_TO_ROWS + index * LINE_PITCH
+    setFont(surface, '400', MARKS_TEXT_SIZE, FONT_MONO, NOTE_LETTER_SPACING)
     surface.fillStyle = CardColours.labelInk
     surface.textAlign = 'left'
     surface.fillText(mark.label.toUpperCase(), CONTENT_X, baseline)
@@ -403,15 +565,14 @@ function drawMarksPanel(
 }
 
 /** One power bar of the twelve-month evolution, filled only where watts exist. */
-function drawPowerBar(surface: CardSurface, x: number, height: number, colour: string): void {
+function drawPowerBar(surface: CardSurface, x: number, barsBase: number, height: number): void {
   if (height <= 0) {
     return
   }
-  surface.fillStyle = colour
   roundRectPath(
     surface,
     x,
-    BARS_BASE - height,
+    barsBase - height,
     (CONTENT_W - POWER_BAR_GAP * 11) / 12,
     height,
     POWER_BAR_RADIUS,
@@ -428,12 +589,21 @@ function drawPowerBar(surface: CardSurface, x: number, height: number, colour: s
 function drawPowerPanel(
   surface: CardSurface,
   power: NonNullable<YearSummary['powerProfile']>,
+  panel: SeasonPanelLayout,
 ): void {
   const copy = t.stories['08-dorsal'].carnet
-  setFont(surface, '700', POWER_TITLE_SIZE, FONT_MONO, WEEKS_LABEL_LETTER_SPACING)
+  const titleBaseline = panel.top + ROW_LEAD
+  const valueBaseline = titleBaseline + POWER_VALUE_DROP
+  const statLabelBaseline = valueBaseline + POWER_STAT_LABEL_DROP
+  const captionBaseline = statLabelBaseline + POWER_CAPTION_DROP
+  const barsTop = captionBaseline + POWER_BARS_DROP
+  const barsBase = barsTop + POWER_BARS_HEIGHT
+  const monthBaseline = barsBase + POWER_MONTH_LABEL_DROP
+
+  setFont(surface, '700', POWER_TITLE_SIZE, FONT_MONO, NOTE_LETTER_SPACING)
   surface.fillStyle = CardColours.labelInk
   surface.textAlign = 'left'
-  surface.fillText(copy.powerTitle.toUpperCase(), CONTENT_X, POWER_TITLE_BASELINE)
+  surface.fillText(copy.powerTitle.toUpperCase(), CONTENT_X, titleBaseline)
 
   const stats: { label: string; x: number; value: number | null }[] = [
     { label: copy.weightedAvgPowerLabel, x: CONTENT_X, value: power.totals.bestWeightedAvgPowerW },
@@ -443,27 +613,28 @@ function drawPowerPanel(
     if (stat.value === null) {
       continue
     }
-    setFont(surface, '400', POWER_STAT_VALUE_SIZE, FONT_DISPLAY, '0px')
+    setFont(surface, '400', POWER_VALUE_SIZE, FONT_DISPLAY, '0px')
     surface.fillStyle = CardColours.ink
     surface.textAlign = 'left'
-    surface.fillText(`${formatNumber(Math.round(stat.value))} W`, stat.x, POWER_STAT_VALUE_BASELINE)
+    surface.fillText(`${formatNumber(Math.round(stat.value))} W`, stat.x, valueBaseline)
     setFont(surface, '400', POWER_STAT_LABEL_SIZE, FONT_MONO, POWER_STAT_LABEL_LETTER_SPACING)
     surface.fillStyle = CardColours.labelInk
-    surface.fillText(stat.label.toUpperCase(), stat.x, POWER_STAT_LABEL_BASELINE)
+    surface.fillText(stat.label.toUpperCase(), stat.x, statLabelBaseline)
   }
 
-  setFont(surface, '400', POWER_CAPTION_SIZE, FONT_MONO, POWER_CAPTION_LETTER_SPACING)
+  setFont(surface, '400', NOTE_SIZE, FONT_MONO, NOTE_LETTER_SPACING)
   surface.fillStyle = CardColours.labelInk
   surface.textAlign = 'left'
-  surface.fillText(copy.powerEvolutionLabel.toUpperCase(), CONTENT_X, POWER_CAPTION_BASELINE)
+  surface.fillText(copy.powerEvolutionLabel.toUpperCase(), CONTENT_X, captionBaseline)
   surface.textAlign = 'right'
   surface.fillText(
     powerCoverageSentence(power.totals.sessionsWithPower, power.totals.activityCount).toUpperCase(),
     CONTENT_RIGHT,
-    POWER_CAPTION_BASELINE,
+    captionBaseline,
   )
   surface.textAlign = 'center'
 
+  const barWidth = (CONTENT_W - POWER_BAR_GAP * 11) / 12
   const wattsByMonth = new Map<number, number>()
   let maxWatts = 0
   for (const entry of power.months) {
@@ -475,8 +646,6 @@ function drawPowerPanel(
       wattsByMonth.set(entry.month, watts)
     }
   }
-  const barWidth = (CONTENT_W - POWER_BAR_GAP * 11) / 12
-  const barHeight = BARS_BASE - BARS_TOP
   let peakMonth = 0
   let peakWatts = 0
   for (const [month, watts] of wattsByMonth) {
@@ -490,26 +659,28 @@ function drawPowerPanel(
     if (watts === undefined) {
       continue
     }
-    const height = maxWatts > 0 ? (watts / maxWatts) * barHeight : 0
+    const height = maxWatts > 0 ? (watts / maxWatts) * POWER_BARS_HEIGHT : 0
     const x = CONTENT_X + (month - 1) * (barWidth + POWER_BAR_GAP)
-    drawPowerBar(surface, x, height, month === peakMonth ? CardColours.accent : CardColours.ink)
+    surface.fillStyle = month === peakMonth ? CardColours.accent : CardColours.ink
+    drawPowerBar(surface, x, barsBase, height)
   }
 
-  setFont(surface, '400', MONTH_LABEL_SIZE, FONT_MONO, '0px')
+  setFont(surface, '400', POWER_MONTH_LABEL_SIZE, FONT_MONO, '0px')
   surface.fillStyle = CardColours.labelInk
   for (let month = 0; month < 12; month += 1) {
     surface.fillText(
       t.monthsAbbr[month] ?? '',
       CONTENT_X + month * (barWidth + POWER_BAR_GAP) + barWidth / 2,
-      MONTH_LABEL_BASELINE,
+      monthBaseline,
     )
   }
 }
 
 /**
  * Paints the whole season card: the field, the rotated plate and its holes,
- * the header, then the four panels top to bottom, then the footer. Each panel
- * renders only when its data exists.
+ * the header, then the panels stacked on the computed layout — each one only
+ * when its data exists — and the footer after the last panel's measured
+ * bottom plus the fixed bottom padding.
  */
 export function drawSeasonCard(surface: SeasonCardSurface, input: SeasonCardInput): void {
   const copy = t.stories['08-dorsal']
@@ -558,32 +729,30 @@ export function drawSeasonCard(surface: SeasonCardSurface, input: SeasonCardInpu
   surface.fillStyle = CardColours.ink
   surface.fillText(bibCardNameText(name), CONTENT_X, NAME_BASELINE)
 
-  // The panels, only when the season's data exists.
+  // The panels, stacked on the layout computed from the season's own data.
+  const layout = seasonCardLayout(summary)
   const sports = summary.sportBreakdown?.sports ?? null
-  if (sports !== null && sports.length > 0) {
-    drawSportsPanel(surface, sports)
+  if (layout.sports !== null && sports !== null && sports.length > 0) {
+    drawSportsPanel(surface, sports, layout.sports)
   }
-
-  if (summary.weeklyLoad !== null) {
-    drawWeeksPanel(surface, summary.weeklyLoad)
+  if (layout.weeks !== null && summary.weeklyLoad !== null) {
+    drawWeeksPanel(surface, summary.weeklyLoad, layout.weeks)
   }
-
   const marks = bibCardMarkRows(summary)
-  if (marks.length > 0) {
-    drawMarksPanel(surface, marks)
+  if (layout.marks !== null && marks.length > 0) {
+    drawMarksPanel(surface, marks, layout.marks)
   }
-
-  if (summary.availability.powerProfile && summary.powerProfile !== null) {
-    drawPowerPanel(surface, summary.powerProfile)
+  if (layout.power !== null && summary.powerProfile !== null) {
+    drawPowerPanel(surface, summary.powerProfile, layout.power)
   }
 
   // The footer: the app's own words and the season's card number.
   setFont(surface, '400', FOOTER_SIZE, FONT_MONO, FOOTER_LETTER_SPACING)
   surface.fillStyle = CardColours.labelInk
   surface.textAlign = 'left'
-  surface.fillText(copy.madeWith.toUpperCase(), CONTENT_X, FOOTER_BASELINE)
+  surface.fillText(copy.madeWith.toUpperCase(), CONTENT_X, layout.footerBaseline)
   surface.textAlign = 'right'
-  surface.fillText(String(summary.bibCard.number), CONTENT_RIGHT, FOOTER_BASELINE)
+  surface.fillText(String(summary.bibCard.number), CONTENT_RIGHT, layout.footerBaseline)
 
   surface.restore()
 }

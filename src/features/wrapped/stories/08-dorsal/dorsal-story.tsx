@@ -9,6 +9,7 @@ import {
 } from '../../../share'
 import type { YearSummary } from '../../../../core/model/year-summary'
 import { t } from '../../../../shared/i18n'
+import { useFitScale } from '../../../../shared/hooks'
 import { useSeasonName } from '../01-portada/season-name'
 import { cycleCardSelection, type CardSelection } from './card-selection'
 
@@ -29,6 +30,7 @@ export function DorsalStory({ summary }: { summary: YearSummary }) {
   const cardName = trimmedName === '' ? null : trimmedName
   const [selection, setSelection] = useState<CardSelection>('dorsal')
   const [busy, setBusy] = useState(false)
+  const { slotRef, designRef, scale } = useFitScale()
   const radioRefs = useRef(new Map<CardSelection, HTMLButtonElement>())
   const isDorsal = selection === 'dorsal'
   const label = isDorsal ? bibCardActionLabel() : seasonCardActionLabel()
@@ -64,16 +66,19 @@ export function DorsalStory({ summary }: { summary: YearSummary }) {
       {/* The player clips anything taller than the screen, so the card scrolls
           inside its own slot instead of disappearing behind the chrome. It opts
           back into pointer events so the scroll reaches it. */}
-      <div className="relative flex min-h-0 flex-1">
-        <div className="pointer-events-auto flex min-h-0 max-h-[60dvh] w-full touch-pan-y items-start justify-center overflow-y-auto overscroll-contain rounded-chip py-2">
+      {/* The card is authored at one size and the player's box changes with the
+          window, so it is scaled to fit instead of scrolled or clipped. */}
+      <div
+        ref={slotRef}
+        className="flex min-h-0 max-h-[62dvh] flex-1 items-start justify-center overflow-hidden rounded-chip py-1"
+      >
+        <div ref={designRef} className="origin-top" style={{ transform: `scale(${scale})` }}>
           {isDorsal ? (
             <BibCardPreview summary={summary} name={cardName} />
           ) : (
             <CarnetPreview summary={summary} name={cardName} />
           )}
         </div>
-        {/* A short fade marks that the card continues below the fold. */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-accent to-transparent" />
       </div>
 
       <div

@@ -43,7 +43,7 @@ export function BibCardPreview({ summary, name }: { summary: YearSummary; name: 
 
       <div
         data-testid="dorsal-number"
-        className={`font-display leading-none ${numberText.length >= 5 ? 'text-[64px]' : 'text-[80px]'}`}
+        className={`text-center font-display leading-none ${numberText.length >= 5 ? 'text-[64px]' : 'text-[80px]'}`}
       >
         {numberText}
       </div>
@@ -59,10 +59,10 @@ export function BibCardPreview({ summary, name }: { summary: YearSummary; name: 
       )}
 
       <div>
-        <div className="mb-1 flex items-baseline justify-between font-mono text-[9px] uppercase tracking-[0.14em] text-label-ink">
-          <span>{copy.chartCaption}</span>
+        <div className="mb-1 flex items-baseline justify-between gap-1 font-mono text-[8px] uppercase tracking-[0.08em] text-label-ink">
+          <span className="whitespace-nowrap">{copy.chartCaption}</span>
           {maxMonthly > 0 ? (
-            <span>
+            <span className="whitespace-nowrap tabular-nums">
               {t.monthsShort[peakMonth] ?? ''} · {formatKilometres(maxMonthly)}
             </span>
           ) : null}

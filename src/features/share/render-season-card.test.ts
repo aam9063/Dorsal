@@ -10,7 +10,9 @@ import {
   SEASON_CARD_WIDTH,
   drawSeasonCard,
   seasonCardGeometry,
+  seasonCardLayout,
   type SeasonCardInput,
+  type SeasonPanelLayout,
 } from './render-season-card'
 
 /**
@@ -253,6 +255,43 @@ function fullSeason(): YearSummary {
   }
 }
 
+type SportRowFixture = NonNullable<YearSummary['sportBreakdown']>['sports'][number]
+
+function sportRow(
+  sport: SportRowFixture['sport'],
+  activityCount: number,
+  distanceM: number,
+  movingTimeS: number,
+  elevationGainM: number,
+  share: number,
+): SportRowFixture {
+  return { sport, activityCount, distanceM, movingTimeS, elevationGainM, share }
+}
+
+/** The six `SportKind` values, in moving-time order like the metrics emit them. */
+const sixSports: SportRowFixture[] = [
+  sportRow('ride', 180, 540_000, 720_000, 62_000, 0.63),
+  sportRow('run', 96, 860_000, 300_000, 9_400, 0.26),
+  sportRow('swim', 40, 90_000, 120_000, 0, 0.22),
+  sportRow('hike', 22, 140_000, 66_000, 5_200, 0.35),
+  sportRow('walk', 12, 40_000, 18_000, 0, 0.48),
+  sportRow('other', 1, 2_000, 900, 0, 0.9),
+]
+
+const oneSportSeason = (): YearSummary => ({
+  ...fullSeason(),
+  sportBreakdown: { sports: [sportRow('ride', 1, 5_400, 1_800, 60, 0.63)] },
+  powerProfile: null,
+  availability: { ...fullSeason().availability, powerProfile: false },
+})
+
+const sixSportSeason = (withPower: boolean): YearSummary => ({
+  ...fullSeason(),
+  sportBreakdown: { sports: sixSports },
+  powerProfile: withPower ? fullSeason().powerProfile : null,
+  availability: { ...fullSeason().availability, powerProfile: withPower },
+})
+
 const draw = (summary: YearSummary, name: string | null): RecordingSurface => {
   const surface = new RecordingSurface()
   drawSeasonCard(surface, { summary, name } satisfies SeasonCardInput)
@@ -307,20 +346,31 @@ describe('season card renderer', () => {
     expect(surface.texts().length).toBeGreaterThanOrEqual(30)
   })
 
-  it('draws every sport of the season with icon strokes, count, distance and share', () => {
+  it('draws every sport of the season with icon strokes, distance and a counting caption', () => {
     const surface = draw(fullSeason(), 'Lucía M.')
 
     const texts = surface.texts().map((text) => text.text)
     expect(texts).toContain(t.sports.ride)
     expect(texts).toContain(t.sports.run)
     expect(texts).toContain(t.sports.swim)
-    expect(texts).toContain('180 · 540,0 km')
-    expect(texts).toContain('96 · 860,0 km')
-    expect(texts).toContain('40 · 90,0 km')
+    // The caption copy is the same the DOM replica prints, uppercase.
+    expect(texts).toContain('180 ACTIVIDADES · 63 %')
+    expect(texts).toContain('96 ACTIVIDADES · 26 %')
+    expect(texts).toContain('40 ACTIVIDADES · 11 %')
+    expect(texts).toContain('540,0 km')
+    expect(texts).toContain('860,0 km')
 
     // Every sport row carries its stroked icon: one stroke per subpath.
     const strokes = surface.ops.filter((recorded) => recorded.op === 'stroke').length
     expect(strokes).toBeGreaterThanOrEqual(12)
+  })
+
+  it('prints the sport caption in the singular when the sport was practiced once', () => {
+    const surface = draw(oneSportSeason(), 'Lucía M.')
+
+    const texts = surface.texts().map((text) => text.text)
+    expect(texts).toContain('1 ACTIVIDAD · 63 %')
+    expect(texts).not.toContain('ACTIVIDADES')
   })
 
   it('marks the first entry as the most practiced sport, exactly once', () => {
@@ -444,34 +494,135 @@ describe('season card renderer', () => {
     expect(texts).not.toContain('SEMANAS CONSECUTIVAS CUMPLIENDO ENTRENOS')
     expect(texts).toContain('MEJORES MARCAS')
   })
+})
 
-  it('keeps every panel stacked from top to bottom, above the plate bottom', () => {
-    const geometry = seasonCardGeometry
-    const sportsBottomWorst =
-      geometry.sportsTop +
-      geometry.sportFirstRowExtra +
-      (geometry.maxSportRows - 1) * geometry.sportRowHeight
+const presentPanels = (layout: ReturnType<typeof seasonCardLayout>): SeasonPanelLayout[] =>
+  [layout.sports, layout.weeks, layout.marks, layout.power].filter(
+    (panel): panel is SeasonPanelLayout => panel !== null,
+  )
 
-    expect(geometry.headerTitleBaseline).toBeGreaterThan(0)
-    expect(geometry.headerNameBaseline).toBeGreaterThan(geometry.headerTitleBaseline)
-    expect(geometry.sportsTop).toBeGreaterThan(geometry.headerNameBaseline)
-    expect(geometry.weeksBestBaseline).toBeGreaterThan(sportsBottomWorst)
-    expect(geometry.weeksStreakBaseline).toBeGreaterThan(geometry.weeksBestBaseline)
-    expect(geometry.weeksRuleBaseline).toBeGreaterThan(geometry.weeksStreakBaseline)
-    expect(geometry.marksTitleBaseline).toBeGreaterThan(geometry.weeksRuleBaseline)
-    const marksBottomWorst = geometry.marksFirstBaseline + 2 * geometry.marksRowHeight
-    expect(marksBottomWorst).toBeLessThan(geometry.powerTitleBaseline)
-    expect(geometry.powerTitleBaseline).toBeGreaterThan(geometry.marksTitleBaseline)
-    expect(geometry.barsBase).toBeGreaterThan(geometry.barsTop)
-    expect(geometry.powerMonthLabelBaseline).toBeGreaterThan(geometry.barsBase)
+const requiredLayout = (panel: SeasonPanelLayout | null, label: string): SeasonPanelLayout => {
+  if (panel === null) throw new Error(`panel ${label} is missing from the layout`)
+  return panel
+}
+
+describe('constructed vertical layout', () => {
+  const sizedSeasons = [oneSportSeason(), sixSportSeason(false), sixSportSeason(true)]
+
+  it('stacks the present panels without overlap and with one shared gap', () => {
+    for (const summary of sizedSeasons) {
+      const panels = presentPanels(seasonCardLayout(summary))
+      expect(panels.length).toBeGreaterThan(1)
+      const first = panels[0]
+      const second = panels[1]
+      if (first === undefined || second === undefined) throw new Error('panel is missing')
+      const gap = second.top - first.bottom
+      expect(gap).toBeGreaterThanOrEqual(seasonCardGeometry.panelGap)
+      expect(gap).toBeLessThanOrEqual(seasonCardGeometry.maxPanelGap)
+      for (let index = 1; index < panels.length; index += 1) {
+        const previous = panels[index - 1]
+        const panel = panels[index]
+        if (previous === undefined || panel === undefined) throw new Error('panel is missing')
+        expect(panel.top).toBeGreaterThanOrEqual(previous.bottom)
+        expect(panel.top - previous.bottom).toBeCloseTo(gap, 6)
+      }
+    }
   })
 
-  it('keeps the footer inside the plate and clear of the last panel', () => {
-    const geometry = seasonCardGeometry
+  it('pins the footer to the plate bottom and keeps the panels clear of it', () => {
+    for (const summary of sizedSeasons) {
+      const layout = seasonCardLayout(summary)
+      const panels = presentPanels(layout)
+      const last = panels[panels.length - 1]
+      if (last === undefined) throw new Error('a season must measure at least one panel')
+      expect(layout.footerBaseline).toBe(
+        seasonCardGeometry.plateHeight - seasonCardGeometry.bottomPadding,
+      )
+      expect(last.bottom + seasonCardGeometry.footerClearance).toBeLessThanOrEqual(
+        layout.footerBaseline,
+      )
+    }
+  })
 
-    expect(geometry.powerMonthLabelBaseline).toBeLessThan(geometry.footerBaseline - 16)
-    expect(geometry.footerBaseline).toBeLessThan(geometry.plateHeight - 24)
-    expect(geometry.plateHeight - geometry.footerBaseline).toBeGreaterThan(24)
-    expect(geometry.plateTop + geometry.plateHeight).toBeLessThan(SEASON_CARD_HEIGHT)
+  it('splits the leftover room evenly above and below the stack', () => {
+    for (const summary of sizedSeasons) {
+      const layout = seasonCardLayout(summary)
+      const panels = presentPanels(layout)
+      const first = panels[0]
+      const last = panels[panels.length - 1]
+      if (first === undefined || last === undefined) throw new Error('panel is missing')
+      const above = first.top - seasonCardGeometry.bodyTop
+      const below = layout.footerBaseline - last.bottom
+      expect(above).toBeGreaterThanOrEqual(0)
+      expect(Math.abs(above - (below - seasonCardGeometry.footerClearance))).toBeLessThanOrEqual(2)
+    }
+  })
+
+  it('places all four panels of the six-sport season with power in document order', () => {
+    const layout = seasonCardLayout(sixSportSeason(true))
+    const sports = requiredLayout(layout.sports, 'sports')
+    const weeks = requiredLayout(layout.weeks, 'weeks')
+    const marks = requiredLayout(layout.marks, 'marks')
+    const power = requiredLayout(layout.power, 'power')
+
+    const gap = weeks.top - sports.bottom
+    expect(sports.top).toBeGreaterThanOrEqual(seasonCardGeometry.bodyTop)
+    expect(marks.top).toBe(weeks.bottom + gap)
+    expect(power.top).toBe(marks.bottom + gap)
+    expect(power.bottom + seasonCardGeometry.footerClearance).toBeLessThanOrEqual(
+      layout.footerBaseline,
+    )
+  })
+
+  it('never places a text baseline outside the plate', () => {
+    for (const summary of [...sizedSeasons, fullSeason()]) {
+      const surface = draw(summary, 'Lucía M.')
+      const textOps = surface.ops.filter((recorded) => recorded.op === 'fillText')
+      expect(textOps.length).toBeGreaterThan(0)
+      for (const op of textOps) {
+        const y = Number(op.args[2] ?? '')
+        expect(y).toBeGreaterThan(0)
+        expect(y).toBeLessThan(seasonCardGeometry.plateHeight)
+      }
+    }
+  })
+
+  it('draws every panel exactly where the computed layout says', () => {
+    const summary = sixSportSeason(true)
+    const surface = draw(summary, 'Lucía M.')
+    const layout = seasonCardLayout(summary)
+    const copy = t.stories['08-dorsal'].carnet
+    const g = seasonCardGeometry
+    const baselineOf = (text: string): number => {
+      const op = surface.ops.find(
+        (recorded) => recorded.op === 'fillText' && recorded.args[0] === text,
+      )
+      if (op === undefined) throw new Error(`not drawn: ${text}`)
+      return Number(op.args[2] ?? '')
+    }
+
+    const sports = requiredLayout(layout.sports, 'sports')
+    const weeks = requiredLayout(layout.weeks, 'weeks')
+    expect(baselineOf(t.sports.ride)).toBeCloseTo(sports.top + g.sportRowLead, 3)
+    expect(baselineOf(t.sports.run)).toBeCloseTo(
+      sports.top + g.sportRowHeight + g.sportFirstExtra + g.sportRowLead,
+      3,
+    )
+    expect(baselineOf(copy.bestWeekLabel.toUpperCase())).toBeCloseTo(weeks.top + g.rowLead, 3)
+    expect(baselineOf(copy.consecutiveLead.toUpperCase())).toBeCloseTo(
+      weeks.top + g.rowLead + g.linePitch,
+      3,
+    )
+    expect(baselineOf(copy.marksTitle.toUpperCase())).toBeCloseTo(
+      requiredLayout(layout.marks, 'marks').top + g.rowLead,
+      3,
+    )
+    expect(baselineOf(copy.powerTitle.toUpperCase())).toBe(
+      requiredLayout(layout.power, 'power').top + g.rowLead,
+    )
+    expect(baselineOf(t.stories['08-dorsal'].madeWith.toUpperCase())).toBeCloseTo(
+      layout.footerBaseline,
+      3,
+    )
   })
 })

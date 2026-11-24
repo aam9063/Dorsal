@@ -68,7 +68,6 @@ S9 — Skill/process (`AGENTS.md` §10): `src/core/` is test-first (RED observed
 - The redesigned dorsal PNG and the carnet PNG were downloaded from the running app and inspected: the band holds its text, the number clears it, the months are bars, the best marks fill the lower third and the sport rows carry their icons.
 - Known open item at the time of writing: the carnet PNG still had vertical holes between panels; a layout pass by running cursor is in flight.
 
-
 ## Progress
 
 - T1–T5 done, commit `532c332`. Verified by the parent: 227 tests, `typecheck`, `lint` and `arch` clean.
