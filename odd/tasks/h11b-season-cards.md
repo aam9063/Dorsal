@@ -62,7 +62,12 @@ S9 — Skill/process (`AGENTS.md` §10): `src/core/` is test-first (RED observed
 
 ## Evidence of verification
 
-(filled at T9)
+- `pnpm check` green end to end: prettier, typecheck, lint, 256 unit tests, `arch`, `check:no-real-exports`, `check:brand`.
+- `pnpm test:e2e` full suite in commit `cf9709b`: **142 passed, 2 skipped, 0 failed**, including the `@privacy` test and the axe accessibility checks.
+- Real browser, four viewports in light and dark (`390×844`, `460×760`, `768×700`, `1440×900`): the card fits its story slot with internal scroll, the toggle and the share button stay on screen, and no viewport shows horizontal scroll. Measured, not estimated: root bottom and button bottom were read from `getBoundingClientRect` in every case.
+- The redesigned dorsal PNG and the carnet PNG were downloaded from the running app and inspected: the band holds its text, the number clears it, the months are bars, the best marks fill the lower third and the sport rows carry their icons.
+- Known open item at the time of writing: the carnet PNG still had vertical holes between panels; a layout pass by running cursor is in flight.
+
 
 ## Progress
 
