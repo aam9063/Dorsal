@@ -173,6 +173,16 @@ Shared conventions, so each entry does not repeat them:
 - Code location: `src/core/metrics/` (planned, H-03).
 - Known pitfalls: pure and deterministic — `Math.random` and `Date` are banned there by ESLint; dates come from `src/core/time/`.
 
+## Launch metadata and generated assets
+
+- What it is: the social and device-facing surface — Open Graph and Twitter tags, canonical, robots, sitemap, the icon set and the generated social preview — plus the command that regenerates the images.
+- Sub-features: OG/Twitter metadata, canonical URL, robots.txt, sitemap.xml, PNG icons (icon-192, icon-512, apple-touch-icon), og-image.png.
+- How to reach it in the UI: not reachable; it lives in `index.html` head and in the static files served from `public/`.
+- Selectors for programmatic control: none.
+- Code location: `index.html` (metadata), `public/` (static assets), `scripts/og-image/generate-og-image.ts` (generator).
+- Backend/API involved: none.
+- Known pitfalls: `https://dorsal.app` is a **placeholder** (BRIEF §13 leaves the domain to Albert): every absolute URL lives in one commented block of `index.html` plus one line in each of `robots.txt` and `sitemap.xml`, and all of them must be confirmed before launch. `og-image.png` is 1200×630 and the icons 192/512/180; the generator screenshots self-contained HTML artboards with Playwright using the @fontsource fonts embedded as data URLs, so the images cannot drift from the app's fonts and palette, and it fails loudly if the output size is wrong. Copy comes from `src/shared/i18n/` (brand, tagline, landing eyebrow/CTA, season plate). Regenerate with `pnpm og:image` and `pnpm icons`.
+
 ## Fixture personas
 
 - What it is: synthetic exports used for verification instead of real data.
