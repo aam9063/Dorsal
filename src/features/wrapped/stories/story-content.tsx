@@ -8,6 +8,7 @@ import { ConstanciaStory } from './04-constancia/constancia-story'
 import { ArquetipoStory } from './05-arquetipo/arquetipo-story'
 import { MaterialStory } from './06-material/material-story'
 import { LatidosStory } from './07-latidos/latidos-story'
+import { DorsalStory } from './08-dorsal/dorsal-story'
 
 /**
  * Maps a story id to its component. It lives here, not in the player, so the
@@ -22,6 +23,7 @@ const CONTENT: Record<string, (summary: YearSummary) => ReactElement> = {
   '05-arquetipo': (summary) => <ArquetipoStory summary={summary} />,
   '06-material': (summary) => <MaterialStory summary={summary} />,
   '07-latidos': (summary) => <LatidosStory summary={summary} />,
+  '08-dorsal': (summary) => <DorsalStory summary={summary} />,
 }
 
 export function StoryContent({ story, summary }: { story: StoryDefinition; summary: YearSummary }) {
