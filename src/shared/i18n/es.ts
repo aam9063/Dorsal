@@ -329,6 +329,34 @@ export const es = {
       weekSingular: 'semana',
       weekPlural: 'semanas',
     },
+    '05-arquetipo': {
+      title: 'Tu arquetipo',
+      lead: 'Tu arquetipo deportivo es',
+      archetypeNames: {
+        earlyBird: 'Madrugador',
+        nightOwl: 'Búho',
+        weekendWarrior: 'Guerrero de fin de semana',
+        methodical: 'Metódico',
+        multisport: 'Multideporte',
+        longDistance: 'Fondista',
+        steady: 'Constante',
+      },
+      secondaryLead: 'Tu rasgo secundario:',
+      distributionLabel: 'A qué horas empezaste',
+      clockPeakLabel: 'TU HORA',
+    },
+    '07-latidos': {
+      title: 'El año en latidos',
+      lead: 'Entrenando, tu corazón latió',
+      millionsUnit: 'millones de veces',
+      beatsUnit: 'latidos',
+      restingDaysLead: 'es lo que late un corazón en reposo para llegar a esa cifra.',
+      restingUnit: 'días',
+      restingUnitSingular: 'día',
+      peakLead: 'tu pico del año,',
+      estimateNote:
+        'Estimado con la frecuencia cardiaca media de cada actividad y su tiempo en movimiento.',
+    },
     '06-material': {
       title: 'Tu material',
       eyebrow: 'Etapa 6 · Tu material',
@@ -356,6 +384,24 @@ export const es = {
  */
 export function uploadNoSeasonMessage(totalRows: number): string {
   return `Leímos ${formatNumber(totalRows)} actividades y ninguna es de 2026.`
+}
+
+/**
+ * Copy for story 05: the share of starts at the peak hour, e.g.
+ * `(72, '7:00')` → "El 72 % de tus salidas empezaron a las 7:00.".
+ */
+export function archetypePeakSentence(sharePct: number, hourText: string): string {
+  return `El ${formatNumber(sharePct)} % de tus salidas empezaron a las ${hourText}.`
+}
+
+/** Copy for story 07: the peak date, e.g. `(24, 'octubre')` → "el 24 de octubre". */
+export function heartbeatPeakDate(day: number, month: string): string {
+  return `el ${formatNumber(day)} de ${month}`
+}
+
+/** Copy for story 07: the season coverage in words, e.g. `(85)` → "Cubriste con pulso el 85 % de tu tiempo en movimiento." */
+export function heartbeatCoverageSentence(coveragePct: number): string {
+  return `Cubriste con pulso el ${formatNumber(coveragePct)} % de tu tiempo en movimiento.`
 }
 
 /** List with the Spanish joining, e.g. `[Worker, FileReader]` → "Worker y FileReader". */
