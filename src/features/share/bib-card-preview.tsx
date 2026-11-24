@@ -29,21 +29,21 @@ export function BibCardPreview({ summary, name }: { summary: YearSummary; name: 
   return (
     <div
       data-testid="dorsal-preview"
-      className="relative flex w-[86%] max-w-sm rotate-[-3deg] flex-col gap-3 rounded-card bg-bone p-5 text-ink shadow-xl"
+      className="relative flex w-[86%] max-w-sm flex-col gap-3 rounded-card bg-bone p-5 text-ink shadow-xl"
     >
       <span className="absolute left-3 top-3 h-2.5 w-2.5 rounded-pill bg-accent" />
       <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-pill bg-accent" />
       <span className="absolute bottom-3 left-3 h-2.5 w-2.5 rounded-pill bg-accent" />
       <span className="absolute bottom-3 right-3 h-2.5 w-2.5 rounded-pill bg-accent" />
 
-      <div className="flex items-center justify-between gap-2 rounded-chip bg-ink px-3 py-1.5 font-mono text-[7px] tracking-[0.1em] text-accent">
-        <span className="min-w-0 truncate">{copy.plate.toUpperCase()}</span>
+      <div className="flex items-center justify-between gap-2 rounded-chip bg-ink px-3 py-1.5 font-mono text-[7px] tracking-[0.04em] text-accent">
+        <span className="whitespace-nowrap">{copy.plateShort.toUpperCase()}</span>
         <span className="shrink-0">{copy.plateKm}</span>
       </div>
 
       <div
         data-testid="dorsal-number"
-        className={`translate-x-[2.5%] text-center font-display leading-none ${numberText.length >= 5 ? 'text-[64px]' : 'text-[80px]'}`}
+        className={`text-center font-display leading-none ${numberText.length >= 5 ? 'text-[64px]' : 'text-[80px]'}`}
       >
         {numberText}
       </div>

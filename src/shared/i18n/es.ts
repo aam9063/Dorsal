@@ -376,6 +376,7 @@ export const es = {
       title: 'Tu dorsal',
       eyebrow: 'Meta · Tu dorsal',
       plate: 'Dorsal · Temporada 2026',
+      plateShort: 'Temporada 2026',
       plateKm: 'KM',
       fallbackName: 'Tu año',
       statActivities: 'Activ.',

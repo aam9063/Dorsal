@@ -92,6 +92,7 @@ describe('season card copy', () => {
       'title',
       'eyebrow',
       'plate',
+      'plateShort',
       'plateKm',
       'fallbackName',
       'statActivities',

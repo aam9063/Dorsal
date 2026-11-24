@@ -52,7 +52,7 @@ export function CarnetPreview({ summary, name }: { summary: YearSummary; name: s
       role="group"
       aria-label={copy.previewLabel}
       data-testid="carnet-preview"
-      className="relative flex w-[86%] max-w-sm rotate-[-3deg] flex-col gap-2.5 rounded-card bg-bone p-5 text-ink shadow-xl"
+      className="relative flex w-[86%] max-w-sm flex-col gap-2.5 rounded-card bg-bone p-5 text-ink shadow-xl"
     >
       <span className="absolute left-3 top-3 h-2.5 w-2.5 rounded-pill bg-accent" />
       <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-pill bg-accent" />
@@ -61,7 +61,7 @@ export function CarnetPreview({ summary, name }: { summary: YearSummary; name: s
 
       <div data-testid="carnet-header">
         <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-label-ink">
-          {t.stories['08-dorsal'].plate}
+          {t.stories['08-dorsal'].plateShort}
         </div>
         <div className="mt-1 font-display text-2xl leading-none uppercase">{copy.title}</div>
         <div className="mt-1 text-sm font-bold uppercase tracking-[0.2em]">
