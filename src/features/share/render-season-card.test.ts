@@ -4,7 +4,13 @@ import { MIN_SESSIONS_PER_WEEK } from '../../core/metrics/weekly-load'
 import type { YearSummary } from '../../core/model/year-summary'
 import { t } from '../../shared/i18n'
 import { fulfilledWeeksSentence, powerCoverageSentence } from '../../shared/i18n'
-import { CardColours, CARD_HEIGHT, CARD_WIDTH, type CardSurface } from './render-bib-card'
+import {
+  CardColours,
+  CARD_HEIGHT,
+  CARD_WIDTH,
+  CARD_STAGE_NUMERAL,
+  type CardSurface,
+} from './render-bib-card'
 import {
   SEASON_CARD_HEIGHT,
   SEASON_CARD_WIDTH,
@@ -32,6 +38,9 @@ const ALLOWED_TEXT_COLOURS = [CardColours.ink, CardColours.labelInk, CardColours
 interface RecordedOp {
   op: string
   args: string[]
+  /** The same point the op carries, mapped through the current canvas matrix. */
+  surfaceX: number
+  surfaceY: number
   fillStyle: string
   font: string
   letterSpacing: string
@@ -39,6 +48,19 @@ interface RecordedOp {
   lineWidth: string
 }
 
+/** A 2D affine matrix [a c e; b d f], as canvas composes it. */
+interface Matrix {
+  a: number
+  b: number
+  c: number
+  d: number
+  e: number
+  f: number
+}
+
+const IDENTITY: Matrix = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }
+
+/** The evidence of the stickers' rotation: text must stay inside the plate once mapped back onto the canvas. */
 class RecordingSurface implements CardSurface {
   readonly ops: RecordedOp[] = []
 
@@ -51,24 +73,52 @@ class RecordingSurface implements CardSurface {
   lineWidth = 1
   lineJoin: CanvasLineJoin = 'miter'
   lineCap: CanvasLineCap = 'butt'
+  /** The composition of the save/translate/rotate calls so far. */
+  #matrix: Matrix = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }
+  #stack: Matrix[] = []
 
   save(): void {
+    this.#stack.push({ ...this.#matrix })
     this.push('save', [])
   }
 
   restore(): void {
+    this.#matrix = this.#stack.pop() ?? IDENTITY
     this.push('restore', [])
   }
 
   translate(x: number, y: number): void {
+    const m = this.#matrix
+    this.#matrix = {
+      a: m.a,
+      b: m.b,
+      c: m.c,
+      d: m.d,
+      e: m.e + m.a * x + m.c * y,
+      f: m.f + m.b * x + m.d * y,
+    }
     this.push('translate', [x, y])
   }
 
   scale(x: number, y: number): void {
+    this.#matrix.a *= x
+    this.#matrix.b *= x
+    this.#matrix.c *= y
+    this.#matrix.d *= y
     this.push('scale', [x, y])
   }
-
   rotate(angle: number): void {
+    const { a, b, c, d } = this.#matrix
+    const cos = Math.cos(angle)
+    const sin = Math.sin(angle)
+    this.#matrix = {
+      a: a * cos + c * sin,
+      b: b * cos + d * sin,
+      c: c * cos - a * sin,
+      d: d * cos - b * sin,
+      e: this.#matrix.e,
+      f: this.#matrix.f,
+    }
     this.push('rotate', [angle])
   }
 
@@ -113,9 +163,20 @@ class RecordingSurface implements CardSurface {
   }
 
   private push(op: string, args: readonly (number | string)[]): void {
+    // The op keeps its raw, transform-relative coordinates (the plate-local
+    // space the layout assertions read), and additionally records where the
+    // same point lands on the canvas through the current matrix, so the
+    // stickers' rotated text can be checked against the plate's footprint.
+    const x = op === 'fillText' ? Number(args[1] ?? 0) : 0
+    const y = op === 'fillText' ? Number(args[2] ?? 0) : 0
+    const m = this.#matrix
+    const surfaceX = m.a * x + m.c * y + m.e
+    const surfaceY = m.b * x + m.d * y + m.f
     this.ops.push({
       op,
       args: args.map((argument) => serialiseArgument(argument)),
+      surfaceX: op === 'fillText' ? surfaceX : 0,
+      surfaceY: op === 'fillText' ? surfaceY : 0,
       fillStyle: this.fillStyle,
       font: this.font,
       letterSpacing: this.letterSpacing,
@@ -138,6 +199,11 @@ class RecordingSurface implements CardSurface {
       .filter((recorded) => recorded.op === 'fillText')
       .map((recorded) => ({ text: recorded.args[0] ?? '', fillStyle: recorded.fillStyle }))
   }
+}
+
+/** The fill styles the card paints text with. */
+function textColours(surface: RecordingSurface): string[] {
+  return [...new Set(surface.texts().map((text) => text.fillStyle))]
 }
 
 /** Fixed-point serialization: no exponent notation, no locale. */
@@ -344,6 +410,27 @@ describe('season card renderer', () => {
     const fills = surface.ops.filter((recorded) => recorded.op === 'fill').length
     expect(fills).toBeGreaterThanOrEqual(12)
     expect(surface.texts().length).toBeGreaterThanOrEqual(30)
+  })
+
+  it('prints the spine head on the season card too', () => {
+    const surface = draw(fullSeason(), 'Lucía M.')
+
+    const texts = surface.texts().map((text) => text.text)
+    expect(texts).toContain(CARD_STAGE_NUMERAL)
+    expect(texts).toContain('DORSAL · TEMPORADA 2026')
+  })
+
+  it('paints the most practiced tag as a stamp: ink lettering over the accent pill', () => {
+    const surface = draw(fullSeason(), 'Lucía M.')
+
+    const tagText = t.stories['08-dorsal'].carnet.mostPracticedLabel.toUpperCase()
+    const tagOps = surface.ops.filter(
+      (recorded) => recorded.op === 'fillText' && recorded.args[0] === tagText,
+    )
+    expect(tagOps).toHaveLength(1)
+    expect(tagOps[0]?.fillStyle).toBe(CardColours.ink)
+    // The accent pill it is stamped on is an accent fill, never a text style.
+    expect(textColours(surface)).not.toContain(CardColours.accent)
   })
 
   it('draws every sport of the season with icon strokes, distance and a counting caption', () => {
@@ -574,15 +661,25 @@ describe('constructed vertical layout', () => {
     )
   })
 
-  it('never places a text baseline outside the plate', () => {
+  it('never places a text inside anything but the plate on the canvas', () => {
+    // The plate is tilted 3° counterclockwise, so a text outside it must be
+    // judged in canvas space: the axis-aligned box of the rotated rectangle.
+    const tilt = (3 * Math.PI) / 180
+    const cos = Math.cos(tilt)
+    const sin = Math.sin(tilt)
+    const plateW = seasonCardGeometry.plateWidth
+    const plateH = seasonCardGeometry.plateHeight
+    const halfWidth = (plateW * cos + plateH * sin) / 2 + 0.01
+    const halfHeight = (plateH * cos + plateW * sin) / 2 + 0.01
+    const centerX = plateW / 2
+    const centerY = seasonCardGeometry.plateTop + plateH / 2
     for (const summary of [...sizedSeasons, fullSeason()]) {
       const surface = draw(summary, 'Lucía M.')
       const textOps = surface.ops.filter((recorded) => recorded.op === 'fillText')
       expect(textOps.length).toBeGreaterThan(0)
       for (const op of textOps) {
-        const y = Number(op.args[2] ?? '')
-        expect(y).toBeGreaterThan(0)
-        expect(y).toBeLessThan(seasonCardGeometry.plateHeight)
+        expect(Math.abs(op.surfaceX - centerX)).toBeLessThanOrEqual(halfWidth)
+        expect(Math.abs(op.surfaceY - centerY)).toBeLessThanOrEqual(halfHeight)
       }
     }
   })

@@ -9,14 +9,17 @@ import { t } from '../../shared/i18n'
  * named constant — never measured from the DOM — and the copy and the numbers
  * come from `src/shared/i18n/` and `src/shared/format.ts` only. No `Date`, no
  * `Math.random`, no runtime locale: two draws from the same inputs produce the
- * same command stream, which `e2e/bib-card.spec.ts` pins at the byte level.
+ * same command stream, which `e2e/bib-card.spec.ts` pins at the byte level
+ * (odd/tasks/redesign-objeto-dorsal.md, S7).
  *
- * H-11b redrew the composition (odd/tasks/h11b-season-cards.md, decision 2):
- * the season band is measured to hold its own text, the number never reaches
- * it, the monthly series is drawn as the twelve bars it really is instead of a
- * filled silhouette pretending to be a mountain, and the lower third carries
- * the season's best marks instead of empty bone. The card carries no
- * third-party brand (S4): the only name on it is the app's own.
+ * The card speaks the same object language as the stories
+ * (design/redesign-2026/03-objeto-dorsal/02-numeros.html): the bone plate with
+ * its two punched pins, the editorial spine head — stage numeral and mono
+ * season label on one baseline between two hairlines — the dashed tear-off
+ * with the accent field showing through its punched hole, the accent kept for
+ * stamps, and hairline rules bounding the blocks. The palette is the tokens'
+ * (`src/shared/tokens/tokens.css`), and text only ever uses the AA pairs:
+ * ink on bone, label ink on bone, orange only over ink.
  */
 
 export const CARD_WIDTH = 1080
@@ -32,10 +35,14 @@ export const CardColours = {
   accent: '#fc5200',
   /** `--dorsal-fg-subtle` light: secondary lettering on bone (5.6:1, AA). */
   labelInk: '#5e5f58',
-  /** Orange lettering on the dark plate (5.2:1, AA). */
+  /** `--color-line-light`: the hairline rules bounding the blocks (decorative, 3:1+ against bone). */
+  hairline: '#d3d1c7',
+  /** `--color-bone-soft`: the dashed tear-off edge (decorative). */
+  boneSoft: '#c9c8bf',
+  /** Orange lettering on the ink stamp (5.2:1, AA). */
   orange: '#fc5200',
-  /** Simulated inset shadow of the punched holes; decorative, not text. */
-  holeShadow: 'rgba(0, 0, 0, 0.28)',
+  /** The stories' pin glint, inset shadow of the pins and holes; decorative, not text. */
+  pinGlint: 'rgba(252, 82, 0, 0.45)',
 } as const
 
 /**
@@ -76,87 +83,110 @@ const CARD_Y = 286
 const CARD_W = 924
 const CARD_H = 1400
 const CARD_RADIUS = 40
-/** The artboard tilts the plate 3° counterclockwise. */
+/** The plate tilts 3° counterclockwise on the accent field. */
 const CARD_ROTATION = -(3 * Math.PI) / 180
 
+// — Punched pins —————————————————————————————————————————————————————————————
+
+const PIN_INSET_X = 48
+const PIN_Y = 30
+const PIN_RADIUS = 19
+/** The stories' inset glint, drawn as a small accent dot in the pin's upper left. */
+const PIN_GLINT_RADIUS = 6.5
+const PIN_GLINT_OFFSET = 4
+
 // — Card-local geometry, all coordinates inside the rotated plate ——————————
-
-const HOLE_INSET = 52
-const HOLE_RADIUS = 17
-/** The dark crescent that suggests the punched hole's inset shadow. */
-const HOLE_SHADOW_RADIUS = HOLE_RADIUS - 1.5
-const HOLE_SHADOW_OFFSET = 2.5
-
-/**
- * The dark season band. Its padding is explicit and the band is wider than the
- * text column, so neither the label nor the unit can reach the rounded corner:
- * the pre-H-11b draw let the text run under the corner and the number overlap
- * the band.
- */
-const BAND_INSET_X = 62
-const BAND_Y = 48
-const BAND_H = 84
-const BAND_RADIUS = 16
-const BAND_TEXT_SIZE = 26
-const BAND_LETTER_SPACING = '3px'
-const BAND_INNER_X = 28
 
 const CONTENT_X = 106
 const CONTENT_W = CARD_W - 2 * CONTENT_X
 const CENTER_X = CARD_W / 2
+const CONTENT_RIGHT = CONTENT_X + CONTENT_W
 
-const NUMBER_BASELINE = 448
-const NUMBER_SIZE = 290
 /**
- * Anton's digits advance about 0.75em: they are far wider than the face's
+ * The editorial spine head: the stage numeral and the mono season label on the
+ * same baseline, between two hairline rules of the plate's inner width.
+ */
+export const HEAD_X = 72
+const HEAD_W = CARD_W - 2 * HEAD_X
+const HEAD_RULE_TOP = 88
+const HEAD_RULE_BOTTOM = 172
+const RULE_THICKNESS = 2
+const HEAD_NUMERAL_SIZE = 60
+const HEAD_META_SIZE = 21
+const HEAD_META_LETTER_SPACING = '3px'
+const HEAD_BASELINE = 156
+/**
+ * Anton's digits advance about 0.78em: they are far wider than the face's
  * condensed look suggests, and `1451` and `4760` differ enough that any smaller
  * figure clips the last digit.
  */
 const DIGIT_ADVANCE_EM = 0.78
+/** The numeral is always the two-stage "08": its advance fixes the meta column. */
+const HEAD_META_X = HEAD_X + DIGIT_ADVANCE_EM * HEAD_NUMERAL_SIZE * 2 + 26
+
+const NUMBER_BASELINE = 484
+const NUMBER_SIZE = 290
 /**
- * The number bleeds over the plate's own margin — the artboard gives it the
- * plate's width, not the text column's — so it may fill this share of it.
+ * The number bleeds over the plate's own margin — it gets the plate's width,
+ * not the text column's — so it may fill this share of it.
  */
 const NUMBER_MAX_WIDTH_RATIO = 0.94
 
-const NAME_BASELINE = 528
+const NAME_BASELINE = 564
 const NAME_SIZE = 46
 const NAME_SIZE_LONG = 38
 const NAME_LETTER_SPACING = '11px'
 const LONG_NAME_LENGTH = 12
 
-const ARCHETYPE_BASELINE = 574
+const ARCHETYPE_BASELINE = 606
 const ARCHETYPE_SIZE = 26
 const ARCHETYPE_LETTER_SPACING = '3px'
 
-const CHART_CAPTION_BASELINE = 616
+/**
+ * The accent sticker: the season's Everest equivalence, stamped on the plate's
+ * edge like the stories' sticker — accent pill, ink lettering, a few degrees
+ * of rotation. Its pill width is estimated, never measured from the DOM.
+ */
+const STICKER_CENTER_Y = 656
+const STICKER_RIGHT = 830
+const STICKER_H = 56
+const STICKER_TEXT_SIZE = 22
+const STICKER_TEXT_LETTER_SPACING = '2px'
+const STICKER_PAD = 34
+/** JetBrains Mono's advance is 0.6em; the estimation stays inside that. */
+const MONO_ADVANCE_EM = 0.6
+const STICKER_ROTATION = -(4 * Math.PI) / 180
+
+const CHART_CAPTION_BASELINE = 744
 const CHART_CAPTION_SIZE = 22
-const CHART_TOP = 626
-const CHART_BASE = 800
+const CHART_TOP = 756
+const CHART_BASE = 880
 const CHART_BAR_GAP = 16
 const CHART_BAR_RADIUS = 6
-const MONTH_LABEL_BASELINE = 838
+const MONTH_LABEL_BASELINE = 912
 const MONTH_LABEL_SIZE = 20
 
-const DASH_LENGTH = 18
-const DASH_GAP = 12
-const DASH_THICKNESS = 6
-const DIVIDER_Y = 880
+/* The dashed tear-off edge with the punched hole: the accent field shows through. */
+const TEAR_Y = 950
+const TEAR_HOLE_RADIUS = 13
+const DASH_LENGTH = 24
+const DASH_GAP = 14
+const DASH_THICKNESS = 5
 
 const STAT_VALUE_SIZE = 60
 const STAT_LABEL_SIZE = 27
 const STAT_LABEL_LETTER_SPACING = '2px'
-const STAT_VALUE_BASELINE = 946
-const STAT_LABEL_BASELINE = 990
+const STAT_VALUE_BASELINE = 1012
+const STAT_LABEL_BASELINE = 1052
 
-const MARKS_TITLE_BASELINE = 1052
+const MARKS_TITLE_BASELINE = 1104
 const MARKS_TITLE_SIZE = 22
-const MARKS_FIRST_BASELINE = 1108
-const MARKS_ROW_H = 72
+const MARKS_FIRST_BASELINE = 1148
+const MARKS_ROW_H = 48
 const MARKS_TEXT_SIZE = 22
 const MARKS_LABEL_LETTER_SPACING = '2px'
 const MARKS_RULE_SIZE = 2
-const MARKS_RULE_OFFSET = 26
+const MARKS_RULE_OFFSET = 18
 
 const FOOTER_SIZE = 27
 const FOOTER_LETTER_SPACING = '3px'
@@ -169,22 +199,28 @@ const FONT_DISPLAY = '"Anton"'
 const FONT_SANS = '"Inter"'
 const FONT_MONO = '"JetBrains Mono"'
 
+/** The stage the two cards ship from: the spine numeral on their head band. */
+export const CARD_STAGE_NUMERAL = '08'
+
 /**
  * The vertical skeleton of the plate, exported so a layout regression is a test
- * failure instead of a card nobody notices: the number must clear the season
- * band, the marks must stay above the footer, and the footer must sit near the
+ * failure instead of a card nobody notices: the number must clear the spine
+ * head, the marks must stay above the footer, and the footer must sit near the
  * bottom edge instead of leaving the lower third empty.
  */
 export const bibCardGeometry = {
   plateHeight: CARD_H,
-  bandTop: BAND_Y,
-  bandHeight: BAND_H,
+  bandTop: HEAD_RULE_TOP,
+  bandHeight: HEAD_RULE_BOTTOM - HEAD_RULE_TOP,
+  headRuleTop: HEAD_RULE_TOP,
+  headRuleBottom: HEAD_RULE_BOTTOM,
   numberBaseline: NUMBER_BASELINE,
   numberSize: NUMBER_SIZE,
   contentWidth: CONTENT_W,
   plateWidth: CARD_W,
   digitAdvanceEm: DIGIT_ADVANCE_EM,
   numberMaxWidthRatio: NUMBER_MAX_WIDTH_RATIO,
+  tearY: TEAR_Y,
   marksFirstBaseline: MARKS_FIRST_BASELINE,
   marksRowHeight: MARKS_ROW_H,
   marksRuleOffset: MARKS_RULE_OFFSET,
@@ -201,24 +237,36 @@ export function monthDayText(month: number, day: number): string {
 }
 
 /**
- * The three rows of numbers under the tear-off edge — the same strings the
- * draw and the DOM preview paint (odd/tasks/h11-bib-card.md decision 1): the
- * activity count, the Everest equivalence and the season — the longest streak
- * when the consistency story is available, the active days when it is not.
+ * The closing stat rows under the tear-off edge — the same strings the draw and
+ * the DOM preview paint (odd/tasks/h11-bib-card.md decision 1): the activity
+ * count, the active days and — when the consistency story is available — the
+ * longest streak. The Everest equivalence is not a stat: it is the accent
+ * sticker ({@link bibCardStickerText}).
  */
 export function bibCardStatRows(summary: YearSummary): { value: string; label: string }[] {
   const copy = t.stories['08-dorsal']
-  const streak = summary.consistency?.longestStreak.days ?? null
-  return [
+  const rows: { value: string; label: string }[] = [
     { value: formatNumber(summary.totals.activityCount), label: copy.statActivities },
-    {
-      value: `${formatNumber(Math.round(summary.totals.everests * 10) / 10)}×`,
-      label: copy.statEverest,
-    },
-    streak === null
-      ? { value: formatNumber(summary.totals.activeDays), label: copy.statActiveDays }
-      : { value: `${formatNumber(streak)} D`, label: copy.statStreak },
+    { value: formatNumber(summary.totals.activeDays), label: copy.statActiveDays },
   ]
+  const streak = summary.consistency?.longestStreak.days ?? null
+  if (streak !== null) {
+    rows.push({ value: `${formatNumber(streak)} D`, label: copy.statStreak })
+  }
+  return rows
+}
+
+/**
+ * The accent sticker's text: the season's Everest equivalence, uppercase —
+ * `null` when the season cannot prove it, so the card never stamps a zero.
+ */
+export function bibCardStickerText(summary: YearSummary): string | null {
+  const everests = summary.totals.everests
+  if (everests <= 0) {
+    return null
+  }
+  const value = formatNumber(Math.round(everests * 10) / 10)
+  return `${value}× ${t.stories['08-dorsal'].statEverest}`.toUpperCase()
 }
 
 /**
@@ -286,6 +334,12 @@ export function bibCardArchetypeText(summary: YearSummary): string | null {
   return t.stories['05-arquetipo'].archetypeNames[archetype.primary].toUpperCase()
 }
 
+/** The estimated pill width of a mono stamp, shared by both card surfaces. */
+export function pillWidth(text: string, size: number, letterSpacing: string, pad: number): number {
+  const tracking = Number.parseFloat(letterSpacing) || 0
+  return Math.ceil(text.length * (size * MONO_ADVANCE_EM + tracking)) + pad * 2
+}
+
 /** Rounded rectangle out of the four supported arcs (`arc` only, no `arcTo`). */
 function roundRectPath(
   surface: CardSurface,
@@ -303,6 +357,119 @@ function roundRectPath(
   surface.arc(x + safeRadius, y + height - safeRadius, safeRadius, QUARTER, 2 * QUARTER)
   surface.arc(x + safeRadius, y + safeRadius, safeRadius, 2 * QUARTER, 3 * QUARTER)
   surface.closePath()
+}
+
+/** Axis-aligned filled rectangle (the subset takes fills only, never strokes). */
+export function fillRect(
+  surface: CardSurface,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): void {
+  surface.beginPath()
+  surface.moveTo(x, y)
+  surface.lineTo(x + width, y)
+  surface.lineTo(x + width, y + height)
+  surface.lineTo(x, y + height)
+  surface.closePath()
+  surface.fill()
+}
+
+function setFont(
+  surface: CardSurface,
+  weight: string,
+  size: number,
+  family: string,
+  letterSpacing: string,
+): void {
+  surface.font = `${weight} ${size}px ${family}, sans-serif`
+  surface.letterSpacing = letterSpacing
+}
+
+/**
+ * The two punched pins at the plate's top edge: ink discs with the stories'
+ * inset glint in accent.
+ */
+export function drawCardPins(surface: CardSurface): void {
+  const centerXs = [PIN_INSET_X, CARD_W - PIN_INSET_X]
+  for (const cx of centerXs) {
+    surface.beginPath()
+    surface.arc(cx, PIN_Y, PIN_RADIUS, 0, 2 * Math.PI)
+    surface.fillStyle = CardColours.ink
+    surface.fill()
+    surface.beginPath()
+    surface.arc(cx - PIN_GLINT_OFFSET, PIN_Y - PIN_GLINT_OFFSET, PIN_GLINT_RADIUS, 0, 2 * Math.PI)
+    surface.fillStyle = CardColours.pinGlint
+    surface.fill()
+  }
+}
+
+/**
+ * The editorial spine head on the card: the stage numeral in the display face
+ * and the mono season label on the same baseline, bounded by two hairline
+ * rules (odd/tasks/redesign-objeto-dorsal.md, decision 2).
+ */
+export function drawCardSpineHead(surface: CardSurface, meta: string): void {
+  for (const y of [HEAD_RULE_TOP, HEAD_RULE_BOTTOM]) {
+    fillRect(surface, HEAD_X, y, HEAD_W, RULE_THICKNESS)
+  }
+  surface.fillStyle = CardColours.ink
+  setFont(surface, '400', HEAD_NUMERAL_SIZE, FONT_DISPLAY, '0px')
+  surface.textBaseline = 'alphabetic'
+  surface.textAlign = 'left'
+  surface.fillText(CARD_STAGE_NUMERAL, HEAD_X, HEAD_BASELINE)
+  setFont(surface, '600', HEAD_META_SIZE, FONT_MONO, HEAD_META_LETTER_SPACING)
+  surface.fillStyle = CardColours.labelInk
+  surface.fillText(meta.toUpperCase(), HEAD_META_X, HEAD_BASELINE)
+}
+
+/**
+ * The dashed tear-off edge with its punched hole, drawn as filled dashes
+ * (the subset has no stroke) with the accent field showing through the hole.
+ */
+export function drawCardTearOff(surface: CardSurface, y: number): void {
+  surface.fillStyle = CardColours.boneSoft
+  const half = DASH_THICKNESS / 2
+  const step = DASH_LENGTH + DASH_GAP
+  for (let x = CONTENT_X; x + DASH_LENGTH <= CONTENT_RIGHT; x += step) {
+    fillRect(surface, x, y - half, DASH_LENGTH, DASH_THICKNESS)
+  }
+  surface.beginPath()
+  surface.arc(CENTER_X, y, TEAR_HOLE_RADIUS, 0, 2 * Math.PI)
+  surface.fillStyle = CardColours.accent
+  surface.fill()
+}
+
+/**
+ * One accent stamp pill with ink mono lettering, the sticker treatment of the
+ * stories: a few degrees of rotation, drawn about its own centre.
+ */
+export function drawStickerPill(
+  surface: CardSurface,
+  text: string,
+  centerX: number,
+  centerY: number,
+  size: number,
+  letterSpacing: string,
+  pillHeight: number,
+  pad: number,
+  rotation: number,
+): void {
+  const width = pillWidth(text, size, letterSpacing, pad)
+  surface.save()
+  surface.translate(centerX, centerY)
+  surface.rotate(rotation)
+  roundRectPath(surface, -width / 2, -pillHeight / 2, width, pillHeight, pillHeight / 2)
+  surface.fillStyle = CardColours.accent
+  surface.fill()
+  setFont(surface, '700', size, FONT_MONO, letterSpacing)
+  surface.fillStyle = CardColours.ink
+  surface.textAlign = 'center'
+  surface.textBaseline = 'middle'
+  surface.fillText(text, 0, 0)
+  surface.restore()
+  surface.textBaseline = 'alphabetic'
 }
 
 /** One month bar, so the card shows the twelve real months instead of a silhouette. */
@@ -338,55 +505,9 @@ function drawMonthlyBars(surface: CardSurface, monthlyDistanceM: readonly number
   }
 }
 
-/** Dashed tear-off edge, drawn as filled dashes because the subset has no stroke. */
-function dashedDivider(surface: CardSurface): void {
-  surface.fillStyle = CardColours.ink
-  const half = DASH_THICKNESS / 2
-  const step = DASH_LENGTH + DASH_GAP
-  for (let x = CONTENT_X; x + DASH_LENGTH <= CONTENT_X + CONTENT_W; x += step) {
-    surface.beginPath()
-    surface.moveTo(x, DIVIDER_Y - half)
-    surface.lineTo(x + DASH_LENGTH, DIVIDER_Y - half)
-    surface.lineTo(x + DASH_LENGTH, DIVIDER_Y + half)
-    surface.lineTo(x, DIVIDER_Y + half)
-    surface.closePath()
-    surface.fill()
-  }
-}
-
-function drawHoles(surface: CardSurface): void {
-  const corners: [number, number][] = [
-    [HOLE_INSET, HOLE_INSET],
-    [CARD_W - HOLE_INSET, HOLE_INSET],
-    [HOLE_INSET, CARD_H - HOLE_INSET],
-    [CARD_W - HOLE_INSET, CARD_H - HOLE_INSET],
-  ]
-  for (const [cx, cy] of corners) {
-    surface.beginPath()
-    surface.arc(cx, cy - HOLE_SHADOW_OFFSET, HOLE_RADIUS, 0, 2 * Math.PI)
-    surface.fillStyle = CardColours.holeShadow
-    surface.fill()
-    surface.beginPath()
-    surface.arc(cx, cy, HOLE_SHADOW_RADIUS, 0, 2 * Math.PI)
-    surface.fillStyle = CardColours.accent
-    surface.fill()
-  }
-}
-
-function setFont(
-  surface: CardSurface,
-  weight: string,
-  size: number,
-  family: string,
-  letterSpacing: string,
-): void {
-  surface.font = `${weight} ${size}px ${family}, sans-serif`
-  surface.letterSpacing = letterSpacing
-}
-
 /**
  * Paints the whole card. Order matters: the field, then the rotated plate and
- * its holes, then the lettering, then the data blocks from the top down.
+ * its pins, then the editorial head, then the data blocks from the top down.
  */
 export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
   const copy = t.stories['08-dorsal']
@@ -411,20 +532,8 @@ export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
   roundRectPath(surface, 0, 0, CARD_W, CARD_H, CARD_RADIUS)
   surface.fillStyle = CardColours.bone
   surface.fill()
-  drawHoles(surface)
-
-  // The dark season band, padded so its own text cannot reach the corners.
-  roundRectPath(surface, BAND_INSET_X, BAND_Y, CARD_W - 2 * BAND_INSET_X, BAND_H, BAND_RADIUS)
-  surface.fillStyle = CardColours.ink
-  surface.fill()
-  setFont(surface, '600', BAND_TEXT_SIZE, FONT_MONO, BAND_LETTER_SPACING)
-  surface.fillStyle = CardColours.orange
-  surface.textBaseline = 'middle'
-  surface.textAlign = 'left'
-  surface.fillText(copy.plate.toUpperCase(), BAND_INSET_X + BAND_INNER_X, BAND_Y + BAND_H / 2)
-  surface.textAlign = 'right'
-  surface.fillText(copy.plateKm, CARD_W - BAND_INSET_X - BAND_INNER_X, BAND_Y + BAND_H / 2)
-  surface.textBaseline = 'alphabetic'
+  drawCardPins(surface)
+  drawCardSpineHead(surface, copy.plate)
 
   // The bib number, sized so five digits still fit the content column.
   const numberText = String(summary.bibCard.number)
@@ -457,6 +566,23 @@ export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
     surface.fillText(archetype, CENTER_X, ARCHETYPE_BASELINE)
   }
 
+  // The season's Everest equivalence, stamped on the plate edge in accent.
+  const stickerText = bibCardStickerText(summary)
+  if (stickerText !== null) {
+    drawStickerPill(
+      surface,
+      stickerText,
+      STICKER_RIGHT -
+        pillWidth(stickerText, STICKER_TEXT_SIZE, STICKER_TEXT_LETTER_SPACING, STICKER_PAD) / 2,
+      STICKER_CENTER_Y,
+      STICKER_TEXT_SIZE,
+      STICKER_TEXT_LETTER_SPACING,
+      STICKER_H,
+      STICKER_PAD,
+      STICKER_ROTATION,
+    )
+  }
+
   // The twelve months as bars, with the caption and the peak month's distance.
   const monthly = summary.bibCard.monthlyDistanceM
   const peakDistanceM = Math.max(...monthly, 0)
@@ -469,7 +595,7 @@ export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
     surface.textAlign = 'right'
     surface.fillText(
       `${t.monthsShort[peakMonth] ?? ''} · ${formatKilometres(peakDistanceM)}`.toUpperCase(),
-      CONTENT_X + CONTENT_W,
+      CONTENT_RIGHT,
       CHART_CAPTION_BASELINE,
     )
   }
@@ -486,11 +612,11 @@ export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
     )
   }
 
-  dashedDivider(surface)
+  drawCardTearOff(surface, TEAR_Y)
 
-  // The three closing stats.
+  // The closing stats: the columns follow the rows the season can prove.
   const rows = bibCardStatRows(summary)
-  const statWidth = CONTENT_W / 3
+  const statWidth = CONTENT_W / Math.max(rows.length, 1)
   setFont(surface, '400', STAT_VALUE_SIZE, FONT_DISPLAY, '0px')
   surface.fillStyle = CardColours.ink
   surface.textAlign = 'center'
@@ -506,7 +632,7 @@ export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
     )
   }
 
-  // The season's best marks, the block that used to be empty bone.
+  // The season's best marks, bounded by hairline rules.
   const marks = bibCardMarkRows(summary)
   if (marks.length > 0) {
     setFont(surface, '700', MARKS_TITLE_SIZE, FONT_MONO, MARKS_LABEL_LETTER_SPACING)
@@ -525,15 +651,9 @@ export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
       surface.fillText(mark.label.toUpperCase(), CONTENT_X, baseline)
       surface.fillStyle = CardColours.ink
       surface.textAlign = 'right'
-      surface.fillText(mark.value, CONTENT_X + CONTENT_W, baseline)
-      surface.fillStyle = CardColours.labelInk
-      surface.beginPath()
-      surface.moveTo(CONTENT_X, baseline + MARKS_RULE_OFFSET)
-      surface.lineTo(CONTENT_X + CONTENT_W, baseline + MARKS_RULE_OFFSET)
-      surface.lineTo(CONTENT_X + CONTENT_W, baseline + MARKS_RULE_OFFSET + MARKS_RULE_SIZE)
-      surface.lineTo(CONTENT_X, baseline + MARKS_RULE_OFFSET + MARKS_RULE_SIZE)
-      surface.closePath()
-      surface.fill()
+      surface.fillText(mark.value, CONTENT_RIGHT, baseline)
+      surface.fillStyle = CardColours.hairline
+      fillRect(surface, CONTENT_X, baseline + MARKS_RULE_OFFSET, CONTENT_W, MARKS_RULE_SIZE)
     }
   }
 
