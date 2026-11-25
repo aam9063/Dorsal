@@ -1,7 +1,8 @@
 import { MIN_SESSIONS_PER_WEEK } from '../../core/metrics/weekly-load'
 import type { YearSummary } from '../../core/model/year-summary'
 import { formatKilometres, formatNumber } from '../../shared/format'
-import { t, fulfilledWeeksSentence, powerCoverageSentence } from '../../shared/i18n'
+import { useLocale, useT } from '../../shared/hooks'
+import { fulfilledWeeksSentenceFor, powerCoverageSentenceFor } from '../../shared/i18n'
 import {
   bibCardMarkRows,
   bibCardNameText,
@@ -20,13 +21,18 @@ import { sportIconPaths } from './sport-icons'
  * reads every string from the same helpers the canvas draw uses
  * (`bibCardNameText`, `bibCardMarkRows`, `monthDayText`, `t.sports`, the
  * format helpers and the two sentences of `src/shared/i18n/`), so copy and
- * numbers cannot drift apart between the two surfaces.
+ * numbers cannot drift apart between the two surfaces. It reads the copy
+ * through the reactive `useT()` and hands the same locale to the helpers, so
+ * a language switch re-renders it in the chosen language (odd/tasks/
+ * i18n-english.md, decision 5).
  */
 export function CarnetPreview({ summary, name }: { summary: YearSummary; name: string | null }) {
+  const locale = useLocale()
+  const t = useT()
   const copy = t.stories['08-dorsal'].carnet
   const sports = summary.sportBreakdown?.sports ?? null
   const maxShare = (sports ?? []).reduce((acc, row) => Math.max(acc, row.share), 0)
-  const marks = bibCardMarkRows(summary)
+  const marks = bibCardMarkRows(summary, locale)
   const weeklyLoad = summary.weeklyLoad
   const power = summary.powerProfile
   const showPower = summary.availability.powerProfile && power !== null
@@ -81,7 +87,7 @@ export function CarnetPreview({ summary, name }: { summary: YearSummary; name: s
         </header>
         <div className="mt-1.5 font-display text-2xl leading-none uppercase">{copy.title}</div>
         <div className="mt-1 text-[13px] font-bold uppercase tracking-[0.2em]">
-          {bibCardNameText(name)}
+          {bibCardNameText(name, locale)}
         </div>
       </div>
 
@@ -119,7 +125,7 @@ export function CarnetPreview({ summary, name }: { summary: YearSummary; name: s
                 <div className="flex items-baseline justify-between gap-2 text-[11px]">
                   <span className="truncate font-semibold">{t.sports[row.sport]}</span>
                   <span className="whitespace-nowrap font-mono text-[9px] tabular-nums">
-                    {formatKilometres(row.distanceM)} km
+                    {formatKilometres(row.distanceM, locale)} km
                   </span>
                 </div>
                 <div className="mt-1 h-1.5 w-full rounded-pill bg-ink/15">
@@ -131,12 +137,12 @@ export function CarnetPreview({ summary, name }: { summary: YearSummary; name: s
                   />
                 </div>
                 <div className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-label-ink">
-                  {formatNumber(row.activityCount)}{' '}
+                  {formatNumber(row.activityCount, locale)}{' '}
                   {row.activityCount === 1
                     ? t.stories['06-material'].rowActivitySingular
                     : t.stories['06-material'].rowActivityPlural}
                   {' · '}
-                  {formatNumber(Math.round(row.share * 100))} %
+                  {formatNumber(Math.round(row.share * 100), locale)} %
                 </div>
               </div>
             </div>
@@ -150,20 +156,20 @@ export function CarnetPreview({ summary, name }: { summary: YearSummary; name: s
             <div className="py-0.5">
               <div className="uppercase tracking-[0.06em] text-label-ink">{copy.bestWeekLabel}</div>
               <div className="whitespace-nowrap text-right tabular-nums">
-                {formatKilometres(weeklyLoad.best.distanceM)} km ·{' '}
-                {monthDayText(weeklyLoad.best.monday.month, weeklyLoad.best.monday.day)}
+                {formatKilometres(weeklyLoad.best.distanceM, locale)} km ·{' '}
+                {monthDayText(weeklyLoad.best.monday.month, weeklyLoad.best.monday.day, locale)}
               </div>
             </div>
           )}
           <div className="py-0.5">
             <div className="uppercase tracking-[0.06em] text-label-ink">{copy.consecutiveLead}</div>
             <div className="whitespace-nowrap text-right tabular-nums">
-              {formatNumber(weeklyLoad.longestFulfilledStreak)}{' '}
+              {formatNumber(weeklyLoad.longestFulfilledStreak, locale)}{' '}
               {weeklyLoad.longestFulfilledStreak === 1 ? copy.weeksUnitSingular : copy.weeksUnit}
             </div>
           </div>
           <div className="uppercase tracking-[0.06em] text-label-ink">
-            {fulfilledWeeksSentence(MIN_SESSIONS_PER_WEEK)}
+            {fulfilledWeeksSentenceFor(locale, MIN_SESSIONS_PER_WEEK)}
           </div>
         </div>
       )}
@@ -197,7 +203,7 @@ export function CarnetPreview({ summary, name }: { summary: YearSummary; name: s
               stat.value === null ? null : (
                 <div key={stat.label}>
                   <div className="font-display text-xl leading-none tabular-nums">
-                    {formatNumber(Math.round(stat.value))} W
+                    {formatNumber(Math.round(stat.value), locale)} W
                   </div>
                   <div className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.12em] text-label-ink">
                     {stat.label}
@@ -209,7 +215,11 @@ export function CarnetPreview({ summary, name }: { summary: YearSummary; name: s
           <div className="mt-1 flex items-baseline justify-between gap-2 text-[8px] text-label-ink">
             <span className="uppercase tracking-[0.08em]">{copy.powerEvolutionLabel}</span>
             <span className="uppercase tracking-[0.08em]">
-              {powerCoverageSentence(power.totals.sessionsWithPower, power.totals.activityCount)}
+              {powerCoverageSentenceFor(
+                locale,
+                power.totals.sessionsWithPower,
+                power.totals.activityCount,
+              )}
             </span>
           </div>
           <div className="mt-1 flex h-9 items-end gap-1">

@@ -1,4 +1,4 @@
-import { t } from '../../shared/i18n'
+import { messages, type Locale } from '../../shared/i18n'
 import { CARD_HEIGHT, CARD_WIDTH, type BibCardInput, drawBibCard } from './render-bib-card'
 import {
   SEASON_CARD_HEIGHT,
@@ -242,13 +242,14 @@ function cardActionLabel(shareText: string, downloadText: string): string {
 }
 
 /** The bib card's action label for this browser. */
-export function bibCardActionLabel(): string {
-  return cardActionLabel(t.stories['08-dorsal'].shareLabel, t.stories['08-dorsal'].downloadLabel)
+export function bibCardActionLabel(locale: Locale): string {
+  const copy = messages[locale].stories['08-dorsal']
+  return cardActionLabel(copy.shareLabel, copy.downloadLabel)
 }
 
 /** The season card's action label for this browser. */
-export function seasonCardActionLabel(): string {
-  const carnet = t.stories['08-dorsal'].carnet
+export function seasonCardActionLabel(locale: Locale): string {
+  const carnet = messages[locale].stories['08-dorsal'].carnet
   return cardActionLabel(carnet.shareLabel, carnet.downloadLabel)
 }
 
@@ -296,12 +297,12 @@ export async function shareOrDownloadBibCard(input: BibCardInput): Promise<void>
   await shareOrDownloadCard(
     await exportBibCardPng(input),
     BIB_CARD_FILE_NAME,
-    t.stories['08-dorsal'].title,
+    messages[input.locale].stories['08-dorsal'].title,
   )
 }
 
 /** The season card's action: share the file where possible, download otherwise. */
 export async function shareOrDownloadSeasonCard(input: SeasonCardInput): Promise<void> {
-  const carnet = t.stories['08-dorsal'].carnet
+  const carnet = messages[input.locale].stories['08-dorsal'].carnet
   await shareOrDownloadCard(await exportSeasonCardPng(input), SEASON_CARD_FILE_NAME, carnet.title)
 }

@@ -8,7 +8,7 @@ import {
   shareOrDownloadSeasonCard,
 } from '../../../share'
 import type { YearSummary } from '../../../../core/model/year-summary'
-import { useFitScale, useT } from '../../../../shared/hooks'
+import { useFitScale, useLocale, useT } from '../../../../shared/hooks'
 import { useSeasonName } from '../01-portada/season-name'
 import { cycleCardSelection, type CardSelection } from './card-selection'
 
@@ -28,6 +28,7 @@ import { cycleCardSelection, type CardSelection } from './card-selection'
  */
 export function DorsalStory({ summary }: { summary: YearSummary }) {
   const t = useT()
+  const locale = useLocale()
   const copy = t.stories['08-dorsal']
   const name = useSeasonName()
   const trimmedName = name.trim()
@@ -37,7 +38,7 @@ export function DorsalStory({ summary }: { summary: YearSummary }) {
   const { slotRef, designRef, scale, width: cardWidth } = useFitScale()
   const radioRefs = useRef(new Map<CardSelection, HTMLButtonElement>())
   const isDorsal = selection === 'dorsal'
-  const label = isDorsal ? bibCardActionLabel() : seasonCardActionLabel()
+  const label = isDorsal ? bibCardActionLabel(locale) : seasonCardActionLabel(locale)
   const hint = isDorsal ? copy.actionHint : copy.carnet.actionHint
 
   const CARDS = [
@@ -128,8 +129,8 @@ export function DorsalStory({ summary }: { summary: YearSummary }) {
           onClick={() => {
             setBusy(true)
             const action = isDorsal
-              ? shareOrDownloadBibCard({ summary, name: cardName })
-              : shareOrDownloadSeasonCard({ summary, name: cardName })
+              ? shareOrDownloadBibCard({ summary, name: cardName, locale })
+              : shareOrDownloadSeasonCard({ summary, name: cardName, locale })
             action
               .catch(() => {
                 setBusy(false)

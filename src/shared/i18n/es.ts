@@ -479,12 +479,19 @@ export function archetypePeakSentence(
 }
 
 /** Copy for story 07: the peak date, e.g. `(24, 'octubre')` → "el 24 de octubre". */
-export function heartbeatPeakDate(day: number, month: string, locale: Locale = getLocale()): string {
+export function heartbeatPeakDate(
+  day: number,
+  month: string,
+  locale: Locale = getLocale(),
+): string {
   return `el ${formatNumber(day, locale)} de ${month}`
 }
 
 /** Copy for story 07: the season coverage in words, e.g. `(85)` → "Cubriste con pulso el 85 % de tu tiempo en movimiento." */
-export function heartbeatCoverageSentence(coveragePct: number, locale: Locale = getLocale()): string {
+export function heartbeatCoverageSentence(
+  coveragePct: number,
+  locale: Locale = getLocale(),
+): string {
   return `Cubriste con pulso el ${formatNumber(coveragePct, locale)} % de tu tiempo en movimiento.`
 }
 

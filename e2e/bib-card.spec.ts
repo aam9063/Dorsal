@@ -123,6 +123,54 @@ test('the download path produces a 1080×1920 PNG, identical between runs', asyn
   assertPng(first.bytes)
 })
 
+/**
+ * The locale is part of the card input (odd/tasks/i18n-english.md, decision 5):
+ * every locale is deterministic on its own, and a card that ignored the
+ * drawn locale would paint the same bytes for English and Spanish.
+ */
+test('the dorsal is byte-deterministic in each locale and differs between them', async ({
+  page,
+}) => {
+  const summary = await openPlayerOn(page, 'runner-es')
+  await openStory(page, storyPosition(summary, '08-dorsal'))
+
+  const spanishFirst = await downloadCard(page)
+  const spanishSecond = await downloadCard(page)
+  expect(spanishSecond.bytes).toEqual(spanishFirst.bytes)
+
+  await reopenStoryInLocale(page, summary, 'en')
+  const englishFirst = await downloadCard(page)
+  const englishSecond = await downloadCard(page)
+  expect(englishSecond.bytes).toEqual(englishFirst.bytes)
+
+  assertPng(spanishFirst.bytes)
+  assertPng(englishFirst.bytes)
+  expect(englishFirst.bytes).not.toEqual(spanishFirst.bytes)
+})
+
+/** The same contract for the season card: deterministic per locale, distinct across locales. */
+test('the season card is byte-deterministic in each locale and differs between them', async ({
+  page,
+}) => {
+  const summary = await openPlayerOn(page, 'runner-es')
+  await openStory(page, storyPosition(summary, '08-dorsal'))
+  await selectCarnet(page)
+
+  const spanishFirst = await downloadCard(page)
+  const spanishSecond = await downloadCard(page)
+  expect(spanishSecond.bytes).toEqual(spanishFirst.bytes)
+
+  await reopenStoryInLocale(page, summary, 'en')
+  await selectCarnet(page)
+  const englishFirst = await downloadCard(page)
+  const englishSecond = await downloadCard(page)
+  expect(englishSecond.bytes).toEqual(englishFirst.bytes)
+
+  assertPng(spanishFirst.bytes)
+  assertPng(englishFirst.bytes)
+  expect(englishFirst.bytes).not.toEqual(spanishFirst.bytes)
+})
+
 test('the share path hands the PNG file to navigator.share where supported', async ({ page }) => {
   test.skip(test.info().project.name !== 'mobile', 'exercised on the mobile chromium project')
   await stubShare(page)
@@ -222,6 +270,32 @@ test('the dorsal and the carnet are two different images', async ({ page }) => {
 async function selectCarnet(page: Page): Promise<void> {
   await page.getByTestId('card-toggle-carnet').click()
   await expect(page.getByTestId('carnet-preview')).toBeVisible()
+}
+
+/**
+ * Switches the language through the selector and walks back to story 08: the
+ * user closes the player with Escape, changes the language on the landing —
+ * whose header is clickable, unlike the result screen under its reveal band —
+ * and climbs the flow again with the same fixture.
+ */
+async function reopenStoryInLocale(
+  page: Page,
+  summary: YearSummary,
+  locale: 'es' | 'en',
+): Promise<void> {
+  await page.keyboard.press('Escape')
+  await expect(page.getByTestId('result-root')).toBeVisible()
+  await page.goto('/')
+  await page.getByTestId(`lang-option-${locale}`).click()
+  await expect(page.locator('html')).toHaveAttribute('lang', locale)
+  await page.goto('/subir')
+  await page.getByTestId('upload-input').setInputFiles(fixture('runner-es'))
+  await expect(page.getByTestId('result-root')).toBeVisible()
+  await page.getByTestId('result-open-player').click()
+  await expect(page.getByTestId('player-root')).toBeVisible()
+  await page.keyboard.press('Space')
+  await expect(page.getByTestId('player-root')).toHaveAttribute('data-paused', 'true')
+  await openStory(page, storyPosition(summary, '08-dorsal'))
 }
 
 /** Presses the selected card's action and returns the downloaded file. */

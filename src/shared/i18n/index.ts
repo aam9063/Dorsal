@@ -77,3 +77,24 @@ export function powerCoverageSentence(sessionsWithPower: number, totalSessions: 
     totalSessions,
   )
 }
+
+/**
+ * The card builders (odd/tasks/i18n-english.md, decision 5): the season card
+ * receives its locale explicitly, so these read exactly the language the card
+ * is drawn in — never the actives — and call sites stay deterministic.
+ */
+export function fulfilledWeeksSentenceFor(locale: Locale, sessionsPerWeek: number): string {
+  return locale === 'en'
+    ? enSentences.fulfilledWeeksSentence(sessionsPerWeek)
+    : esSentences.fulfilledWeeksSentence(sessionsPerWeek, locale)
+}
+
+export function powerCoverageSentenceFor(
+  locale: Locale,
+  sessionsWithPower: number,
+  totalSessions: number,
+): string {
+  return locale === 'en'
+    ? enSentences.powerCoverageSentence(sessionsWithPower, totalSessions)
+    : esSentences.powerCoverageSentence(sessionsWithPower, totalSessions, locale)
+}

@@ -1,7 +1,12 @@
 import { MIN_SESSIONS_PER_WEEK } from '../../core/metrics/weekly-load'
 import type { YearSummary } from '../../core/model/year-summary'
 import { formatKilometres, formatNumber } from '../../shared/format'
-import { t, fulfilledWeeksSentence, powerCoverageSentence } from '../../shared/i18n'
+import {
+  fulfilledWeeksSentenceFor,
+  messages,
+  powerCoverageSentenceFor,
+  type Locale,
+} from '../../shared/i18n'
 import {
   CardColours,
   type CardSurface,
@@ -44,10 +49,11 @@ import {
  * artifacts cannot drift.
  *
  * The draw is pure over the same `CardSurface` subset the bib card paints
- * with, every string comes from `src/shared/i18n/` and `src/shared/format.ts`.
- * No `Date`, no `Math.random`, no runtime locale: two draws from the same
- * inputs produce the same command stream (odd/tasks/redesign-objeto-dorsal.md,
- * S7).
+ * with, every string comes from `src/shared/i18n/` and `src/shared/format.ts`
+ * through the locale the card input carries (odd/tasks/i18n-english.md,
+ * decision 5). No `Date`, no `Math.random`, no runtime locale read: two draws
+ * from the same inputs — including the same locale — produce the same command
+ * stream (odd/tasks/redesign-objeto-dorsal.md, S7).
  *
  * It shares the object language with the bib card: the accent field, the bone
  * plate with its two punched pins, the editorial spine head (stage numeral
@@ -69,6 +75,8 @@ export interface SeasonCardInput {
   summary: YearSummary
   /** The optional name the athlete typed on the portada; it never comes from the file. */
   name: string | null
+  /** The card's own language; copy and number grouping follow it (i18n decision 5). */
+  locale: Locale
 }
 
 // — Surface geometry ————————————————————————————————————————————————————————
@@ -288,7 +296,7 @@ function powerPanelHeight(): number {
  * consumes this same layout, so a season of any size composes inside the
  * plate by construction.
  */
-export function seasonCardLayout(summary: YearSummary): SeasonCardLayout {
+export function seasonCardLayout(summary: YearSummary, locale: Locale): SeasonCardLayout {
   const candidates: { key: SeasonPanelKey; height: number }[] = []
   const sports = summary.sportBreakdown?.sports ?? null
   if (sports !== null && sports.length > 0) {
@@ -297,7 +305,7 @@ export function seasonCardLayout(summary: YearSummary): SeasonCardLayout {
   if (summary.weeklyLoad !== null) {
     candidates.push({ key: 'weeks', height: weeksPanelHeight(summary.weeklyLoad) })
   }
-  const markRows = bibCardMarkRows(summary)
+  const markRows = bibCardMarkRows(summary, locale)
   if (markRows.length > 0) {
     candidates.push({ key: 'marks', height: marksPanelHeight(markRows.length) })
   }
@@ -404,9 +412,10 @@ function drawSportsPanel(
   surface: SeasonCardSurface,
   sports: readonly SportRow[],
   panel: SeasonPanelLayout,
+  locale: Locale,
 ): void {
-  const copy = t.stories['08-dorsal'].carnet
-  const material = t.stories['06-material']
+  const copy = messages[locale].stories['08-dorsal'].carnet
+  const material = messages[locale].stories['06-material']
   const maxShare = sports.reduce((acc, row) => Math.max(acc, row.share), 0)
   const iconScale = ICON_SIZE / SPORT_ICON_VIEWBOX
 
@@ -448,19 +457,20 @@ function drawSportsPanel(
     setFont(surface, '600', 26, FONT_SANS, '0px')
     surface.fillStyle = CardColours.ink
     surface.textAlign = 'left'
-    surface.fillText(t.sports[row.sport], SPORT_NAME_X, nameBaseline)
+    surface.fillText(messages[locale].sports[row.sport], SPORT_NAME_X, nameBaseline)
 
     setFont(surface, '400', 22, FONT_MONO, '0px')
     surface.fillStyle = CardColours.ink
     surface.textAlign = 'right'
-    surface.fillText(`${formatKilometres(row.distanceM)} km`, CONTENT_RIGHT, nameBaseline)
+    surface.fillText(`${formatKilometres(row.distanceM, locale)} km`, CONTENT_RIGHT, nameBaseline)
 
     setFont(surface, '400', NOTE_SIZE, FONT_MONO, NOTE_LETTER_SPACING)
     surface.fillStyle = CardColours.labelInk
     surface.textAlign = 'left'
     const unit = row.activityCount === 1 ? material.rowActivitySingular : material.rowActivityPlural
-    const caption = `${formatNumber(row.activityCount)} ${unit} · ${formatNumber(
+    const caption = `${formatNumber(row.activityCount, locale)} ${unit} · ${formatNumber(
       Math.round(row.share * 100),
+      locale,
     )} %`
     surface.fillText(caption.toUpperCase(), SPORT_NAME_X, nameBaseline + SPORT_CAPTION_DROP)
 
@@ -505,20 +515,21 @@ function drawWeeksPanel(
   surface: CardSurface,
   weeklyLoad: NonNullable<YearSummary['weeklyLoad']>,
   panel: SeasonPanelLayout,
+  locale: Locale,
 ): void {
-  const copy = t.stories['08-dorsal'].carnet
+  const copy = messages[locale].stories['08-dorsal'].carnet
   const rows: { label: string; value: string }[] = []
   const best = weeklyLoad.best
   if (best !== null) {
     rows.push({
       label: copy.bestWeekLabel,
-      value: `${formatKilometres(best.distanceM)} km · ${monthDayText(best.monday.month, best.monday.day)}`,
+      value: `${formatKilometres(best.distanceM, locale)} km · ${monthDayText(best.monday.month, best.monday.day, locale)}`,
     })
   }
   const streak = weeklyLoad.longestFulfilledStreak
   rows.push({
     label: copy.consecutiveLead,
-    value: `${formatNumber(streak)} ${streak === 1 ? copy.weeksUnitSingular : copy.weeksUnit}`,
+    value: `${formatNumber(streak, locale)} ${streak === 1 ? copy.weeksUnitSingular : copy.weeksUnit}`,
   })
   for (const [index, row] of rows.entries()) {
     drawLabelValueRow(
@@ -533,7 +544,7 @@ function drawWeeksPanel(
   surface.fillStyle = CardColours.labelInk
   surface.textAlign = 'left'
   surface.fillText(
-    fulfilledWeeksSentence(MIN_SESSIONS_PER_WEEK),
+    fulfilledWeeksSentenceFor(locale, MIN_SESSIONS_PER_WEEK),
     CONTENT_X,
     panel.top + ROW_LEAD + rows.length * LINE_PITCH,
   )
@@ -544,8 +555,9 @@ function drawMarksPanel(
   surface: CardSurface,
   markRows: readonly { label: string; value: string }[],
   panel: SeasonPanelLayout,
+  locale: Locale,
 ): void {
-  const copy = t.stories['08-dorsal'].carnet
+  const copy = messages[locale].stories['08-dorsal'].carnet
   setFont(surface, '700', MARKS_TITLE_SIZE, FONT_MONO, NOTE_LETTER_SPACING)
   surface.fillStyle = CardColours.labelInk
   surface.textAlign = 'left'
@@ -589,8 +601,9 @@ function drawPowerPanel(
   surface: CardSurface,
   power: NonNullable<YearSummary['powerProfile']>,
   panel: SeasonPanelLayout,
+  locale: Locale,
 ): void {
-  const copy = t.stories['08-dorsal'].carnet
+  const copy = messages[locale].stories['08-dorsal'].carnet
   const titleBaseline = panel.top + ROW_LEAD
   const valueBaseline = titleBaseline + POWER_VALUE_DROP
   const statLabelBaseline = valueBaseline + POWER_STAT_LABEL_DROP
@@ -615,7 +628,7 @@ function drawPowerPanel(
     setFont(surface, '400', POWER_VALUE_SIZE, FONT_DISPLAY, '0px')
     surface.fillStyle = CardColours.ink
     surface.textAlign = 'left'
-    surface.fillText(`${formatNumber(Math.round(stat.value))} W`, stat.x, valueBaseline)
+    surface.fillText(`${formatNumber(Math.round(stat.value), locale)} W`, stat.x, valueBaseline)
     setFont(surface, '400', POWER_STAT_LABEL_SIZE, FONT_MONO, POWER_STAT_LABEL_LETTER_SPACING)
     surface.fillStyle = CardColours.labelInk
     surface.fillText(stat.label.toUpperCase(), stat.x, statLabelBaseline)
@@ -627,7 +640,11 @@ function drawPowerPanel(
   surface.fillText(copy.powerEvolutionLabel.toUpperCase(), CONTENT_X, captionBaseline)
   surface.textAlign = 'right'
   surface.fillText(
-    powerCoverageSentence(power.totals.sessionsWithPower, power.totals.activityCount).toUpperCase(),
+    powerCoverageSentenceFor(
+      locale,
+      power.totals.sessionsWithPower,
+      power.totals.activityCount,
+    ).toUpperCase(),
     CONTENT_RIGHT,
     captionBaseline,
   )
@@ -668,7 +685,7 @@ function drawPowerPanel(
   surface.fillStyle = CardColours.labelInk
   for (let month = 0; month < 12; month += 1) {
     surface.fillText(
-      t.monthsAbbr[month] ?? '',
+      messages[locale].monthsAbbr[month] ?? '',
       CONTENT_X + month * (barWidth + POWER_BAR_GAP) + barWidth / 2,
       monthBaseline,
     )
@@ -682,8 +699,8 @@ function drawPowerPanel(
  * bottom plus the fixed bottom padding.
  */
 export function drawSeasonCard(surface: SeasonCardSurface, input: SeasonCardInput): void {
-  const copy = t.stories['08-dorsal']
-  const { summary, name } = input
+  const { summary, name, locale } = input
+  const copy = messages[locale].stories['08-dorsal']
 
   // The field.
   surface.fillStyle = CardColours.accent
@@ -718,30 +735,30 @@ export function drawSeasonCard(surface: SeasonCardSurface, input: SeasonCardInpu
   setFont(
     surface,
     '700',
-    bibCardNameText(name).length > LONG_NAME_LENGTH ? NAME_SIZE_LONG : NAME_SIZE,
+    bibCardNameText(name, locale).length > LONG_NAME_LENGTH ? NAME_SIZE_LONG : NAME_SIZE,
     FONT_SANS,
     NAME_LETTER_SPACING,
   )
   surface.fillStyle = CardColours.ink
-  surface.fillText(bibCardNameText(name), CONTENT_X, NAME_BASELINE)
+  surface.fillText(bibCardNameText(name, locale), CONTENT_X, NAME_BASELINE)
 
   drawCardTearOff(surface, TEAR_Y)
 
   // The panels, stacked on the layout computed from the season's own data.
-  const layout = seasonCardLayout(summary)
+  const layout = seasonCardLayout(summary, locale)
   const sports = summary.sportBreakdown?.sports ?? null
   if (layout.sports !== null && sports !== null && sports.length > 0) {
-    drawSportsPanel(surface, sports, layout.sports)
+    drawSportsPanel(surface, sports, layout.sports, locale)
   }
   if (layout.weeks !== null && summary.weeklyLoad !== null) {
-    drawWeeksPanel(surface, summary.weeklyLoad, layout.weeks)
+    drawWeeksPanel(surface, summary.weeklyLoad, layout.weeks, locale)
   }
-  const marks = bibCardMarkRows(summary)
+  const marks = bibCardMarkRows(summary, locale)
   if (layout.marks !== null && marks.length > 0) {
-    drawMarksPanel(surface, marks, layout.marks)
+    drawMarksPanel(surface, marks, layout.marks, locale)
   }
   if (layout.power !== null && summary.powerProfile !== null) {
-    drawPowerPanel(surface, summary.powerProfile, layout.power)
+    drawPowerPanel(surface, summary.powerProfile, layout.power, locale)
   }
 
   // The footer: the app's own words and the season's card number.

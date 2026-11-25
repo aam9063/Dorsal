@@ -9,9 +9,10 @@ import {
   bibCardGeometry,
   bibCardNumberSize,
   drawBibCard,
+  type BibCardInput,
   type CardSurface,
 } from './render-bib-card'
-import { t } from '../../shared/i18n'
+import { messages, type Locale } from '../../shared/i18n'
 
 /**
  * The unit test runs in Vitest's node environment, which cannot host a real
@@ -20,6 +21,11 @@ import { t } from '../../shared/i18n'
  * style at that moment, is serialized byte for byte in the order it happens.
  * That proves the *command stream* is identical between two draws from the
  * same inputs, and that text only ever uses the AA colour pairs.
+ *
+ * The locale is part of the input (odd/tasks/i18n-english.md, decision 5): the
+ * same draw must be deterministic inside each locale and must print the copy
+ * of that locale, so these tests run every content assertion twice and check
+ * the English grouping (`62.4 km`) against the Spanish one (`62,4 km`).
  *
  * It cannot see pixels: glyph rasterization, antialiasing, font loading and
  * PNG encoding are covered by `e2e/bib-card.spec.ts`, which downloads the real
@@ -33,6 +39,8 @@ import { t } from '../../shared/i18n'
  */
 
 const ALLOWED_TEXT_COLOURS = [CardColours.ink, CardColours.labelInk, CardColours.orange] as const
+
+const LOCALES = ['es', 'en'] as const
 
 interface RecordedOp {
   op: string
@@ -166,21 +174,62 @@ function fullSeason(): YearSummary {
   }
 }
 
+const drawCard = (input: Omit<BibCardInput, 'locale'>, locale: Locale): RecordingSurface => {
+  const surface = new RecordingSurface()
+  drawBibCard(surface, { ...input, locale })
+  return surface
+}
+
 describe('bib card renderer', () => {
   it('produces the same byte-for-byte command stream from the same inputs', () => {
     const summary = fullSeason()
-    const first = new RecordingSurface()
-    const second = new RecordingSurface()
-
-    drawBibCard(first, { summary, name: 'Lucía M.' })
-    drawBibCard(second, { summary, name: 'Lucía M.' })
+    const first = drawCard({ summary, name: 'Lucía M.' }, 'es')
+    const second = drawCard({ summary, name: 'Lucía M.' }, 'es')
 
     expect(second.bytes()).toEqual(first.bytes())
   })
 
+  it('is byte-for-byte deterministic in the English locale too', () => {
+    const summary = fullSeason()
+    const first = drawCard({ summary, name: 'Lucía M.' }, 'en')
+    const second = drawCard({ summary, name: 'Lucía M.' }, 'en')
+
+    expect(second.bytes()).toEqual(first.bytes())
+  })
+
+  it('prints English copy when the card is drawn in the English locale', () => {
+    const surface = drawCard({ summary: fullSeason(), name: 'Lucía M.' }, 'en')
+
+    const texts = surface.texts().map((text) => text.text)
+    const copy = messages.en.stories['08-dorsal']
+    expect(texts).toContain(copy.madeWith.toUpperCase())
+    expect(texts).not.toContain(messages.es.stories['08-dorsal'].madeWith.toUpperCase())
+    // The month bar labels follow the drawn locale's month table: English
+    // starts the year with J, Spanish with E.
+    expect(texts).toContain(messages.en.monthsAbbr[0] ?? '')
+    expect(texts).not.toContain(messages.es.monthsAbbr[0] ?? '')
+  })
+
+  it('formats the marks and the months through the drawn locale, not the active one', () => {
+    const english = drawCard({ summary: fullSeason(), name: 'Lucía M.' }, 'en')
+      .texts()
+      .map((row) => row.text)
+    const spanish = drawCard({ summary: fullSeason(), name: 'Lucía M.' }, 'es')
+      .texts()
+      .map((row) => row.text)
+
+    // English grouping and month names: `62.4 km`, the August day is `aug`.
+    expect(english).toContain('62.4 km · 12 mar')
+    expect(english).toContain('1,240 m · 4 aug')
+    expect(english).toContain('187.3 km · 11 may')
+    // Spanish grouping and month names: `62,4 km`, the August day is `ago`.
+    expect(spanish).toContain('62,4 km · 12 mar')
+    expect(spanish).toContain('1240 m · 4 ago')
+    expect(spanish).toContain('187,3 km · 11 may')
+  })
+
   it('paints the whole declared surface and the composition is not blank', () => {
-    const surface = new RecordingSurface()
-    drawBibCard(surface, { summary: fullSeason(), name: 'Lucía M.' })
+    const surface = drawCard({ summary: fullSeason(), name: 'Lucía M.' }, 'es')
 
     // The first fill covers the full declared surface.
     const firstOp = surface.ops[0]
@@ -195,20 +244,20 @@ describe('bib card renderer', () => {
   })
 
   it('draws every text with the AA colour pairs of the design tokens', () => {
-    const surface = new RecordingSurface()
-    drawBibCard(surface, { summary: fullSeason(), name: 'Lucía M.' })
+    for (const locale of LOCALES) {
+      const surface = drawCard({ summary: fullSeason(), name: 'Lucía M.' }, locale)
 
-    const textColours = new Set(surface.texts().map((text) => text.fillStyle))
-    for (const fillStyle of textColours) {
-      expect(ALLOWED_TEXT_COLOURS).toContain(fillStyle)
+      const textColours = new Set(surface.texts().map((text) => text.fillStyle))
+      for (const fillStyle of textColours) {
+        expect(ALLOWED_TEXT_COLOURS).toContain(fillStyle)
+      }
+      expect(textColours).toContain(CardColours.ink)
+      expect(textColours).toContain(CardColours.labelInk)
     }
-    expect(textColours).toContain(CardColours.ink)
-    expect(textColours).toContain(CardColours.labelInk)
   })
 
   it('prints the spine head: the stage numeral and the season label on the same baseline', () => {
-    const surface = new RecordingSurface()
-    drawBibCard(surface, { summary: fullSeason(), name: 'Lucía M.' })
+    const surface = drawCard({ summary: fullSeason(), name: 'Lucía M.' }, 'es')
 
     const texts = surface.texts().map((text) => text.text)
     expect(texts).toContain('08')
@@ -216,9 +265,16 @@ describe('bib card renderer', () => {
     expect(texts).toContain('DORSAL · TEMPORADA 2026')
   })
 
+  it('prints the spine head label from the drawn locale', () => {
+    const english = drawCard({ summary: fullSeason(), name: 'Lucía M.' }, 'en')
+    const spanish = drawCard({ summary: fullSeason(), name: 'Lucía M.' }, 'es')
+
+    expect(english.texts().map((text) => text.text)).toContain('DORSAL · 2026 SEASON')
+    expect(spanish.texts().map((text) => text.text)).toContain('DORSAL · TEMPORADA 2026')
+  })
+
   it('stamps the everest equivalence as the one accent sticker', () => {
-    const surface = new RecordingSurface()
-    drawBibCard(surface, { summary: fullSeason(), name: 'Lucía M.' })
+    const surface = drawCard({ summary: fullSeason(), name: 'Lucía M.' }, 'es')
 
     const texts = surface.texts().map((text) => text.text)
     expect(texts).toContain('3× EVEREST')
@@ -226,32 +282,30 @@ describe('bib card renderer', () => {
   })
 
   it('omits the sticker when the season cannot prove the equivalence', () => {
-    const surface = new RecordingSurface()
     const season = fullSeason()
     const summary: YearSummary = {
       ...season,
       totals: { ...season.totals, everests: 0 },
     }
-    drawBibCard(surface, { summary, name: null })
+    const surface = drawCard({ summary, name: null }, 'es')
 
     expect(surface.texts().map((text) => text.text)).not.toContain('3× EVEREST')
   })
 
   it('writes the bib number and the typed name onto the card', () => {
-    const surface = new RecordingSurface()
-    drawBibCard(surface, { summary: fullSeason(), name: '  Lucía M.  ' })
+    const surface = drawCard({ summary: fullSeason(), name: '  Lucía M.  ' }, 'es')
 
     const texts = surface.texts().map((text) => text.text)
     expect(texts).toContain('3214')
     expect(texts).toContain('LUCÍA M.')
   })
 
-  it('falls back to the season copy when the name was never typed', () => {
-    const surface = new RecordingSurface()
-    drawBibCard(surface, { summary: fullSeason(), name: '   ' })
+  it('falls back to the season copy when the name was never typed, in the drawn locale', () => {
+    const spanish = drawCard({ summary: fullSeason(), name: '   ' }, 'es')
+    const english = drawCard({ summary: fullSeason(), name: '   ' }, 'en')
 
-    const texts = surface.texts().map((text) => text.text)
-    expect(texts).toContain('TU AÑO')
+    expect(spanish.texts().map((text) => text.text)).toContain('TU AÑO')
+    expect(english.texts().map((text) => text.text)).toContain('YOUR YEAR')
   })
 
   it('keeps the declared surface at 1080×1920', () => {
@@ -260,8 +314,7 @@ describe('bib card renderer', () => {
   })
 
   it('prints the season best marks in the lower third of the plate', () => {
-    const surface = new RecordingSurface()
-    drawBibCard(surface, { summary: fullSeason(), name: 'Lucía M.' })
+    const surface = drawCard({ summary: fullSeason(), name: 'Lucía M.' }, 'es')
 
     const texts = surface.texts().map((text) => text.text)
     expect(texts).toContain('MEJORES MARCAS')
@@ -273,8 +326,17 @@ describe('bib card renderer', () => {
     expect(texts).toContain('187,3 km · 11 may')
   })
 
+  it('prints the season best marks with the English wording of the drawn locale', () => {
+    const surface = drawCard({ summary: fullSeason(), name: 'Lucía M.' }, 'en')
+
+    const texts = surface.texts().map((text) => text.text)
+    expect(texts).toContain('BEST MARKS')
+    expect(texts).toContain('THE LONGEST OUTING')
+    expect(texts).toContain('THE DAY WITH MOST CLIMBING')
+    expect(texts).toContain('THE BEST WEEK')
+  })
+
   it('leaves out a mark the season cannot prove', () => {
-    const surface = new RecordingSurface()
     const summary: YearSummary = {
       ...fullSeason(),
       seasonBests: {
@@ -283,7 +345,7 @@ describe('bib card renderer', () => {
         bestWeek: { distanceM: 12_000, isoWeek: 3, monday: { month: 1, day: 12 } },
       },
     }
-    drawBibCard(surface, { summary, name: null })
+    const surface = drawCard({ summary, name: null }, 'es')
 
     const texts = surface.texts().map((text) => text.text)
     expect(texts).toContain('LA MEJOR SEMANA')
@@ -292,20 +354,18 @@ describe('bib card renderer', () => {
   })
 
   it('draws a season with no marks at all without a block', () => {
-    const surface = new RecordingSurface()
-    drawBibCard(surface, { summary: { ...fullSeason(), seasonBests: null }, name: null })
+    const surface = drawCard({ summary: { ...fullSeason(), seasonBests: null }, name: null }, 'es')
 
     expect(surface.texts().map((text) => text.text)).not.toContain('MEJORES MARCAS')
     expect(surface.texts().length).toBeGreaterThanOrEqual(11)
   })
 
   it('draws the twelve month bars instead of a filled silhouette', () => {
-    const surface = new RecordingSurface()
-    drawBibCard(surface, { summary: fullSeason(), name: 'Lucía M.' })
+    const surface = drawCard({ summary: fullSeason(), name: 'Lucía M.' }, 'es')
 
     const texts = surface.texts().map((text) => text.text)
     expect(texts).toContain('KM POR MES')
-    for (const month of t.monthsAbbr) {
+    for (const month of messages.es.monthsAbbr) {
       expect(texts).toContain(month)
     }
     // One accent bar for the peak month, ink bars for the other eleven months.
