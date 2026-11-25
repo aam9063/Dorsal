@@ -44,3 +44,6 @@ fixtures/generated/
 
 # Screenshots captured for the launch video, not part of the app
 public/img/
+
+# Rendered captures of the artboards; the HTML next to them is the source
+design/**/*.png

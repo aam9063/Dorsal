@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dorsal · Dirección 03 · Objeto dorsal · El dorsal como objeto</title>
+<style>
+  :root {
+    --font-display: 'Anton', 'Impact', 'Haettenschweiler', 'Arial Narrow Bold', sans-serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+    --ink: #0f100d; --bone: #f2f0e9; --orange: #fc5200; --accent-text: #c23f00;
+    --text-ink: #1a1b16; --body-ink: #4a4b44; --label-ink: #5e5f58;
+    --line-light: #d3d1c7; --bone-muted: #e2e0d6; --bone-soft: #c9c8bf;
+    --hairline-ink: rgba(242, 240, 233, .28);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: var(--font-sans); background: var(--ink); color: var(--bone); }
+  .board { width: 1440px; height: 900px; margin: 0 auto; background: var(--ink); display: flex; flex-direction: column; position: relative; }
+  h1 { font-family: var(--font-display); font-weight: 400; line-height: .95; text-wrap: balance; }
+  .m { font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--bone-soft); }
+  .m--stamp { color: var(--accent-text); }
+  :is(a, button):focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+  .header { padding: 20px 56px; display: flex; justify-content: space-between; align-items: center; }
+  .brand { display: flex; align-items: baseline; gap: 10px; text-decoration: none; }
+  .brand strong { font-family: var(--font-display); font-weight: 400; font-size: 26px; color: var(--bone); }
+  .brand span { font-family: var(--font-mono); font-size: 12px; border: 1.5px solid var(--bone-soft); border-radius: 999px; padding: 1px 8px; color: var(--bone); }
+  .header nav { display: flex; gap: 24px; }
+  .header nav a { color: var(--bone); font-size: 15px; font-weight: 500; text-decoration: underline; text-decoration-color: var(--line-light); text-underline-offset: 4px; padding: 6px 2px; }
+  .header nav a:hover { text-decoration-color: var(--orange); }
+  .btn-top { background: var(--cta-dark-bg, #c23f00); color: var(--bone); font-weight: 700; font-size: 15px; padding: 11px 22px; border-radius: 12px; border: 0; text-decoration: none; box-shadow: 4px 4px 0 rgba(15,16,13,.9); }
+  .btn-top:hover { border-color: var(--bone); }
+
+  .field { flex: 1; display: grid; grid-template-columns: 44px 1fr 1fr; gap: 48px; padding: 18px 56px 26px; min-height: 0; }
+  .spine { border-right: 1px solid var(--hairline-ink); padding-top: 26px; }
+  .spine span { writing-mode: vertical-rl; display: block; margin-left: auto; padding-right: 14px; transform: rotate(180deg); font-family: var(--font-mono); font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--bone-soft); white-space: nowrap; }
+
+  .col-head { display: flex; align-items: baseline; gap: 14px; border-top: 1px solid var(--hairline-ink); border-bottom: 1px solid var(--hairline-ink); padding: 12px 0 8px; }
+  .col-head .num { font-family: var(--font-display); font-weight: 400; font-size: 40px; line-height: 1.1; color: var(--orange); }
+
+  .copy-col { display: flex; flex-direction: column; min-height: 0; }
+  .copy-col h1 { font-size: 88px; color: var(--bone); margin: 20px 0 16px; }
+  .copy-col h1 .stamped { color: var(--orange); text-shadow: -2px -2px 0 var(--ink), 2px -2px 0 var(--ink), -2px 2px 0 var(--ink), 2px 2px 0 var(--ink), 4px 4px 0 var(--bone); }
+  .copy-col .lede { font-size: 16px; line-height: 1.6; color: var(--bone-soft); max-width: 56ch; }
+  .copy-col .cta-row { margin-top: auto; display: flex; align-items: center; gap: 18px; padding-top: 26px; padding-bottom: 18px; }
+  .btn-main { background: var(--bone); color: var(--text-ink); font-size: 17px; font-weight: 700; padding: 16px 30px; border-radius: 12px; border: 0; cursor: pointer; box-shadow: 4px 4px 0 var(--orange); text-decoration: none; display: inline-block; }
+  .btn-main:hover { transform: translateY(-2px); box-shadow: 6px 6px 0 var(--orange); }
+  .btn-main:active { transform: translateY(0); box-shadow: 2px 2px 0 var(--orange); }
+  .link-notes { color: var(--bone); font-weight: 600; font-size: 15px; text-decoration: underline; text-decoration-color: var(--bone-soft); text-underline-offset: 4px; }
+  .copy-col .privacy { margin-top: 14px; border-top: 1px dashed var(--line-light); padding-top: 12px; font-size: 13.5px; color: var(--bone-soft); }
+
+  .plate-col { display: flex; align-items: center; justify-content: center; min-height: 0; }
+  .bib { width: 100%; max-width: 470px; background: var(--bone); color: var(--text-ink); border-radius: 4px; padding: 22px 30px 26px; box-shadow: 0 34px 70px rgba(0,0,0,.55); position: relative; transform: rotate(-2.5deg); }
+  .bib .corner-pin { position: absolute; width: 18px; height: 18px; border-radius: 999px; background: var(--ink); box-shadow: inset 3px 3px 5px rgba(252,82,0,.45); top: 12px; }
+  .bib .corner-pin.p1 { left: 22px; }
+  .bib .corner-pin.p2 { right: 22px; }
+  .bib .plate-head { text-align: center; font-family: var(--font-mono); font-size: 11px; letter-spacing: .26em; text-transform: uppercase; color: var(--label-ink); border-bottom: 2px solid var(--ink); padding-bottom: 10px; }
+  .bib .big { text-align: center; font-family: var(--font-display); font-size: 92px; line-height: 1; color: var(--accent-text); margin: 12px 0 2px; }
+  .bib .big small { font-family: var(--font-sans); font-size: 22px; font-weight: 700; }
+  .bib .who { text-align: center; font-family: var(--font-mono); font-size: 13px; letter-spacing: .22em; text-transform: uppercase; }
+  .bib .tear { margin: 14px 0 12px; border-top: 2px dashed var(--bone-soft); }
+  .bib .stamps { display: flex; justify-content: space-between; gap: 8px; }
+  .bib .stamps div { text-align: center; }
+  .bib .stamps b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 21px; }
+  .bib .stamps span { font-size: 11px; color: var(--label-ink); }
+  .sticker { position: absolute; bottom: 78px; right: -26px; background: var(--orange); color: var(--ink); font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 8px 14px; border-radius: 999px; transform: rotate(6deg); box-shadow: 0 6px 14px rgba(0,0,0,.4); }
+
+  .tabs-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; padding: 0 56px; }
+  .tabs-head { display: flex; align-items: baseline; gap: 14px; border-top: 1px solid var(--hairline-ink); border-bottom: 1px solid var(--hairline-ink); padding: 12px 56px 8px; margin-bottom: 6px; }
+  .tabs-head .num { font-family: var(--font-display); font-weight: 400; font-size: 40px; line-height: 1.1; color: var(--orange); }
+  .mini-card { background: var(--bone); color: var(--text-ink); border-radius: 4px; padding: 14px 18px; transform: rotate(-1.2deg); display: flex; justify-content: space-between; align-items: center; gap: 12px; box-shadow: 0 14px 30px rgba(0,0,0,.4); }
+  .mini-card:nth-child(2) { transform: rotate(.8deg); background: var(--bone-muted); }
+  .mini-card:nth-child(3) { transform: rotate(1.6deg); }
+  .mini-card .txt b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 19px; }
+  .mini-card .txt span { font-size: 12.5px; color: var(--body-ink); }
+  .mini-card .tag { flex: none; font-family: var(--font-mono); font-size: 11px; font-weight: 400; color: var(--text-ink); border: 1.5px solid var(--accent-text); border-radius: 999px; padding: 3px 10px; }
+
+  .footer { margin-top: 22px; border-top: 1px solid var(--line-light); padding: 14px 56px; display: flex; justify-content: space-between; }
+  .footer span { font-size: 12px; color: var(--bone-soft); }
+</style>
+</head>
+<body>
+<main class="board">
+  <header class="header">
+    <a class="brand" href="#"><strong>Dorsal</strong><span>26</span></a>
+    <nav aria-label="Principal">
+      <a href="#">Cómo funciona</a>
+      <a href="#">Privacidad</a>
+      <a href="#">Preguntas</a>
+    </nav>
+    <a class="btn-top" href="#">Crear mi Dorsal</a>
+  </header>
+
+  <div class="field">
+    <div class="spine" aria-hidden="true"><span>Dorsal · Temporada 2026</span></div>
+
+    <section class="copy-col" aria-labelledby="title-objeto">
+      <header class="col-head">
+        <span class="num" aria-hidden="true">01</span>
+        <span class="m">Objeto · Dorsal de temporada</span>
+      </header>
+      <h1 id="title-objeto">Tu año entero, en un <span class="stamped">dorsal</span>.</h1>
+      <p class="lede">Sube el activities.csv de la exportación de tu cuenta de Strava y te devolvemos tu 2026 contado como una carrera: tus kilómetros, tu perfil de etapa, tus rachas y un dorsal listo para compartir. Sin registro ni suscripción.</p>
+      <div class="cta-row">
+        <a class="btn-main" href="#" role="button" aria-label="Subir mi activities.csv" data-impeccable-ignore="hard-offset-shadow">Subir mi activities.csv</a>
+        <a class="link-notes" href="#">¿Cómo lo descargo?</a>
+      </div>
+      <p class="privacy">Se procesa en tu navegador. Tu archivo no sale de tu dispositivo.</p>
+    </section>
+
+    <section class="plate-col" aria-label="Ejemplo de dorsal">
+      <div class="bib">
+        <span class="corner-pin p1" aria-hidden="true"></span>
+        <span class="corner-pin p2" aria-hidden="true"></span>
+        <div class="plate-head">Dorsal · Temporada 2026</div>
+        <div class="big">3214 <small>km</small></div>
+        <div class="who">Javier A.</div>
+        <div class="tear" aria-hidden="true"></div>
+        <div class="stamps">
+          <div><b>412</b><span>Activ.</span></div>
+          <div><b>287 h</b><span>En movimiento</span></div>
+          <div><b>41.380</b><span>m desnivel</span></div>
+          <div><b>23</b><span>Días de racha</span></div>
+        </div>
+        <span class="sticker">4,7× Everest</span>
+      </div>
+    </section>
+  </div>
+
+  <header class="tabs-head">
+    <span class="num" aria-hidden="true">02</span>
+    <span class="m">Lo que vas a ver · tu temporada, por etapas</span>
+  </header>
+  <div class="tabs-strip">
+    <div class="mini-card"><div class="txt"><b>01 · La portada</b><span>Tu número de temporada, con tu nombre si quieres.</span></div><span class="tag">Etapa 1</span></div>
+    <div class="mini-card"><div class="txt"><b>02 · Los números</b><span>Kilómetros, horas y Everests.</span></div><span class="tag">Etapa 2</span></div>
+    <div class="mini-card"><div class="txt"><b>03 · El perfil de tu año</b><span>Tus meses como una etapa de montaña.</span></div><span class="tag">Etapa 3</span></div>
+  </div>
+
+  <footer class="footer">
+    <span>Dorsal no está afiliado a Strava ni cuenta con su respaldo.</span>
+    <span>Temporada 2026 · Hecho por corredores, para corredores</span>
+  </footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,48 @@
+{
+  "title": "Redesign 2026 — three directions",
+  "brief": "Full UI redesign of Dorsal with the exact current palette (see ../system.md): the colours are fixed, the design changes. The app has a landing, an upload screen, a processing screen, a result screen, a story player with eight stories and two shareable cards. Each direction carries two sample artboards — the landing at 1440×900 and one wrapped story at 390×844 — as a sample of the direction, not the whole app; the other screens and stories would follow the same visual strategy. Artboard copy is Spanish and uses realistic season data (the same fictional example the production landing shows).",
+  "artboards": [
+    {
+      "file": "01-programa-de-carrera/01-landing.html",
+      "title": "Programa de carrera · Portada",
+      "tradeoff": "Distinctive and grown-up editorial programme with hairlines, folios and mono metadata; slower to scan for an impatient user",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "01-programa-de-carrera/02-numeros.html",
+      "title": "Programa de carrera · Etapa 02 · Los números",
+      "tradeoff": "Tables and stage folios make dense figures feel official; less emotional pull than the hero numbers",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "02-telemetria/01-landing.html",
+      "title": "Telemetría · Consola",
+      "tradeoff": "Numbers lead with gauges and tabular mono; excellent for data people but risks feeling cold and gadgety",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "02-telemetria/02-latidos.html",
+      "title": "Telemetría · Etapa 07 · El año en latidos",
+      "tradeoff": "Every claim gets an instrument and an axis, so nothing needs explaining; dense module stack can overwhelm readers who just want the hero number",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "03-objeto-dorsal/01-landing.html",
+      "title": "Objeto dorsal · Portada · El dorsal con espina editorial",
+      "tradeoff": "Unmistakably ours — bone plates, punched pins, torn edges and sticker energy on the ink field — and it also carries the editorial page spine borrowed from 01: a rotated ‘Dorsal · Temporada 2026’ side label plus numbered hairline header bands. The print structure keeps dense screens legible, but the editorial furniture risks diluting the very object language that makes the direction unmistakable",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "03-objeto-dorsal/02-numeros.html",
+      "title": "Objeto dorsal · Etapa 02 · Los números con cabecera editorial",
+      "tradeoff": "The bib itself carries the data stamps, the most realistic option of the three, and at 390 px the spine lives inside the plate as a numbered hairline header band instead of a rotated side column, so the print structure never eats the reading column; long copy above the band still risks crowding the stamps",
+      "width": 390,
+      "height": 844
+    }
+  ]
+}
