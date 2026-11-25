@@ -1,5 +1,5 @@
 import { formatNumber } from '../../../../shared/format'
-import { t } from '../../../../shared/i18n'
+import { useT } from '../../../../shared/hooks'
 import type { YearSummary } from '../../../../core/model/year-summary'
 import { PlateHead, StoryPlate } from '../story-plate'
 import { setSeasonName, useSeasonName } from './season-name'
@@ -11,6 +11,7 @@ import { setSeasonName, useSeasonName } from './season-name'
  * (odd/tasks/h08-stories-01-04.md, decision 5): it is never persisted.
  */
 export function PortadaStory({ summary }: { summary: YearSummary }) {
+  const t = useT()
   const copy = t.stories['01-portada']
   const name = useSeasonName()
   const trimmedName = name.trim()

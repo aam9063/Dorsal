@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation } from 'react-router'
-import { t } from '../shared/i18n'
-import { ThemeToggle } from '../shared/ui'
+import { useT } from '../shared/hooks'
+import { LanguageToggle, ThemeToggle } from '../shared/ui'
 
 /**
  * Brand mark that is also the way home. The landing draws its own header, so
@@ -8,6 +8,8 @@ import { ThemeToggle } from '../shared/ui'
  * it, because without it there is no way back to the start of the flow.
  */
 function BrandHome() {
+  const copy = useT()
+
   return (
     <Link
       to="/"
@@ -15,17 +17,22 @@ function BrandHome() {
       className="inline-flex min-h-11 items-center gap-2 rounded-chip"
     >
       <span className="flex h-8 w-8 items-center justify-center rounded-chip bg-accent font-display text-sm text-ink">
-        {t.brand.chip}
+        {copy.brand.chip}
       </span>
-      <span className="font-display text-lg uppercase tracking-wide">{t.brand.name}</span>
+      {/* The chip mark keeps the brand on its own on phones, where the word
+          would push the two preference groups over the 390 px width. */}
+      <span className="hidden font-display text-lg uppercase tracking-wide sm:inline">
+        {copy.brand.name}
+      </span>
       {/* The visible text is the accessible name; this only says where it goes. */}
-      <span className="sr-only">{t.brand.home}</span>
+      <span className="sr-only">{copy.brand.home}</span>
     </Link>
   )
 }
 
 export function RootLayout() {
   const { pathname } = useLocation()
+  const copy = useT()
   const isLanding = pathname === '/'
 
   return (
@@ -34,12 +41,22 @@ export function RootLayout() {
         href="#contenido"
         className="sr-only focus:not-sr-only focus:m-3 focus:inline-block focus:rounded-chip focus:bg-accent focus:px-4 focus:py-2 focus:text-ink"
       >
-        {t.a11y.skipToContent}
+        {copy.a11y.skipToContent}
       </a>
-      <header className="flex items-center justify-between gap-4 px-5 pt-5 sm:px-8">
-        {isLanding ? <span aria-hidden="true" /> : <BrandHome />}
-        <ThemeToggle />
-      </header>
+      {/* The landing draws its own full header, brand and preference strip
+          included, so this one steps aside there entirely on phones it would
+          stack a second row above the brand and its toggles could never be
+          in that single row. Every other screen gets this strip, because
+          without it there is no way back to the start of the flow. */}
+      {!isLanding && (
+        <header className="flex items-center justify-between gap-4 px-5 pt-5 sm:px-8">
+          <BrandHome />
+          <div className="flex shrink-0 items-center gap-2">
+            <LanguageToggle />
+            <ThemeToggle />
+          </div>
+        </header>
+      )}
       <main id="contenido" className="flex-1">
         <Outlet />
       </main>

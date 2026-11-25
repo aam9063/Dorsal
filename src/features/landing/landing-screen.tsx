@@ -1,14 +1,7 @@
 import { useRef } from 'react'
 import { Link } from 'react-router'
-import { t } from '../../shared/i18n'
-import { useGsapReveal } from '../../shared/hooks'
-import { ScrollRow } from '../../shared/ui'
-
-const NAV_ITEMS = [
-  { href: '#como', label: t.landing.navHow },
-  { href: '#privacidad', label: t.landing.navPrivacy },
-  { href: '#faq', label: t.landing.navFaq },
-] as const
+import { useGsapReveal, useT } from '../../shared/hooks'
+import { LanguageToggle, ScrollRow, ThemeToggle } from '../../shared/ui'
 
 const SECTION_WIDTH = 'mx-auto flex w-full max-w-[1200px] flex-col px-5 sm:px-8'
 const HEADING_SIZE = 'font-display text-[clamp(44px,5vw,68px)] uppercase leading-none'
@@ -23,6 +16,8 @@ const PLATE_ROTATIONS = [
 ] as const
 
 function BrandChip() {
+  const t = useT()
+
   return (
     <span className="rounded-pill border border-line px-2 py-0.5 font-mono text-xs leading-none text-fg">
       {t.brand.chip}
@@ -81,38 +76,85 @@ function SectionHeader({
 }
 
 function LandingHeader() {
+  const t = useT()
+  const navItems = [
+    { href: '#como', label: t.landing.navHow },
+    { href: '#privacidad', label: t.landing.navPrivacy },
+    { href: '#faq', label: t.landing.navFaq },
+  ] as const
+
   return (
-    <header
-      className={`${SECTION_WIDTH} flex-row flex-wrap items-center justify-between gap-x-6 gap-y-3 py-6`}
-    >
-      <Link
-        to="/"
-        className="inline-flex min-h-11 items-center gap-2.5 font-display text-[26px] tracking-[0.05em] text-fg"
+    <header>
+      {/* The preference strip. On phones this is the header's first row:
+          brand on the left and the two preference toggles on the right.
+          The brand word is visible at every width, so on a 390 px screen the
+          mark is sized down around it — smaller word size, tighter gaps —
+          while every toggle button keeps its 44 px touch target. At the
+          desktop breakpoint the strip keeps the shared layout's geometry. */}
+      <div className="flex items-center justify-between gap-2 px-5 pt-5 sm:px-8">
+        <Link
+          to="/"
+          className="inline-flex min-h-11 items-center gap-1.5 font-display text-lg leading-none tracking-[0.04em] text-fg lg:hidden"
+        >
+          <BrandChip />
+          {t.brand.name}
+        </Link>
+        <span aria-hidden="true" className="hidden lg:block" />
+        <div className="flex shrink-0 items-center gap-1">
+          <LanguageToggle />
+          <ThemeToggle />
+        </div>
+      </div>
+      {/* The three page anchors on phones: a compact row directly under the
+          preference strip, visible without opening anything and keyboard
+          reachable. Each anchor keeps a 44 px tappable height even though the
+          text is short. The desktop navigation below replaces this row. */}
+      <nav
+        aria-label={t.landing.navAriaLabel}
+        className="mt-2 flex items-center justify-between gap-1 px-4 pb-1 sm:px-6 lg:hidden"
       >
-        <BrandChip />
-        {t.brand.name}
-      </Link>
-      <nav aria-label={t.landing.navAriaLabel} className="flex flex-wrap items-center gap-2">
-        {NAV_ITEMS.map((item) => (
+        {navItems.map((item) => (
           <a
             key={item.href}
             href={item.href}
-            className="inline-flex min-h-11 items-center px-2 text-[15px] text-fg underline decoration-line underline-offset-4 hover:decoration-accent"
+            className="inline-flex min-h-11 items-center px-1.5 text-[13px] text-fg underline decoration-line underline-offset-4 hover:decoration-accent"
           >
             {item.label}
           </a>
         ))}
-        <Link
-          to="/subir"
-          data-anim-button
-          className="inline-flex min-h-11 items-center rounded-pill bg-cta-bg px-5 font-semibold text-cta-fg"
-        >
-          {t.landing.headerCta}
-        </Link>
       </nav>
+      <div
+        className={`${SECTION_WIDTH} hidden flex-row flex-wrap items-center justify-between gap-x-6 gap-y-3 py-6 lg:flex`}
+      >
+        <Link
+          to="/"
+          className="inline-flex min-h-11 items-center gap-2.5 font-display text-[26px] tracking-[0.05em] text-fg"
+        >
+          <BrandChip />
+          {t.brand.name}
+        </Link>
+        <nav aria-label={t.landing.navAriaLabel} className="flex flex-wrap items-center gap-2">
+          {navItems.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              className="inline-flex min-h-11 items-center px-2 text-[15px] text-fg underline decoration-line underline-offset-4 hover:decoration-accent"
+            >
+              {item.label}
+            </a>
+          ))}
+          <Link
+            to="/subir"
+            data-anim-button
+            className="inline-flex min-h-11 items-center rounded-pill bg-cta-bg px-5 font-semibold text-cta-fg"
+          >
+            {t.landing.headerCta}
+          </Link>
+        </nav>
+      </div>
       <p
         aria-hidden="true"
-        className="order-last w-full text-center font-mono text-[11px] uppercase tracking-[0.3em] text-fg-subtle lg:hidden"
+        className={`${SECTION_WIDTH} pb-6 pt-3 text-center font-mono text-[11px] uppercase tracking-[0.3em] text-fg-subtle lg:hidden`}
       >
         {t.landing.spineLabel}
       </p>
@@ -121,8 +163,10 @@ function LandingHeader() {
 }
 
 function ExampleBibCard() {
+  const t = useT()
+
   return (
-    <div aria-hidden="true" className="relative my-16 w-full max-w-[470px] lg:my-0">
+    <div aria-hidden="true" className="relative w-full max-w-[470px]">
       <div className="relative w-full -rotate-[2.5deg] rounded-[4px] bg-bone px-7 pb-7 pt-5 text-ink shadow-[0_34px_70px_rgba(15,16,13,0.55)]">
         <span className="absolute left-6 top-3 size-[18px] rounded-full bg-ink shadow-[inset_3px_3px_5px_rgba(252,82,0,0.45)]" />
         <span className="absolute right-6 top-3 size-[18px] rounded-full bg-ink shadow-[inset_3px_3px_5px_rgba(252,82,0,0.45)]" />
@@ -164,6 +208,8 @@ function ExampleBibCard() {
 }
 
 function LandingHero() {
+  const t = useT()
+
   return (
     <section id="top" className={`${SECTION_WIDTH} pb-24 pt-12 sm:pt-16`}>
       <div className="lg:grid lg:grid-cols-[44px_minmax(0,1fr)_minmax(0,1fr)] lg:gap-10">
@@ -214,6 +260,20 @@ function LandingHero() {
           >
             {t.landing.privacyNote}
           </p>
+          {/* On phones the example card is the product's strongest argument, so
+              it shows below the hero CTA at about 86% of the screen width: the
+              fit keeps the rotated card (and its bottom sticker) inside the
+              content column, so the page never scrolls sideways. Desktop keeps
+              the card in its own hero column. */}
+          <div
+            className="mt-12 flex w-[86vw] max-w-[470px] flex-col items-center self-center lg:hidden"
+            data-anim-hero
+          >
+            <ExampleBibCard />
+            <p className="mt-14 text-center font-mono text-xs uppercase tracking-[0.14em] text-fg-subtle">
+              {t.landing.exampleLabel}
+            </p>
+          </div>
         </div>
 
         <div className="mt-12 hidden lg:flex lg:flex-col lg:items-center lg:pt-16" data-anim-hero>
@@ -228,6 +288,8 @@ function LandingHero() {
 }
 
 function LandingSteps() {
+  const t = useT()
+
   return (
     <section id="como" aria-labelledby="como-title" className="w-full scroll-mt-6">
       <div className={`${SECTION_WIDTH} gap-8 py-24 sm:py-26`} data-anim-section>
@@ -270,6 +332,8 @@ const HEAT_PATTERN = [
 const HEAT_CLASSES = ['bg-heat-1', 'bg-heat-2', 'bg-heat-3', 'bg-heat-4'] as const
 
 function StoryArt({ index }: { index: number }) {
+  const t = useT()
+
   if (index === 0) {
     return (
       <p className="font-display text-[56px] leading-none text-ink" aria-hidden="true">
@@ -353,6 +417,8 @@ function StoryArt({ index }: { index: number }) {
 }
 
 function LandingPreviews() {
+  const t = useT()
+
   return (
     <section
       id="historias"
@@ -403,6 +469,8 @@ function LandingPreviews() {
 }
 
 function LandingPrivacyStrip() {
+  const t = useT()
+
   return (
     <section
       id="privacidad"
@@ -436,6 +504,8 @@ function LandingPrivacyStrip() {
 }
 
 function LandingFaq() {
+  const t = useT()
+
   return (
     <section
       id="faq"
@@ -478,11 +548,7 @@ function LandingFaq() {
 }
 
 function LandingFooter() {
-  const links = [
-    { href: '#como', label: t.landing.footer.howLink },
-    { href: '#faq', label: t.landing.navFaq },
-    { href: '/subir', label: t.landing.footer.ctaLink },
-  ] as const satisfies readonly { href: string; label: string }[]
+  const t = useT()
 
   return (
     <footer className="border-t border-line">
@@ -495,26 +561,12 @@ function LandingFooter() {
         </p>
         <p className="text-[12px]">{t.footer.disclaimer}</p>
         <p className="text-[12px]">{t.landing.footer.madeWith}</p>
+        {/* The three page anchors live only in the header, at every width;
+            the footer keeps just the upload action so no link is duplicated. */}
         <nav aria-label={t.landing.footer.navAriaLabel} className="flex flex-wrap gap-2">
-          {links.map((link) =>
-            link.href.startsWith('/') ? (
-              <Link
-                key={link.href}
-                to={link.href}
-                className="inline-flex min-h-11 items-center px-2 hover:text-fg"
-              >
-                {link.label}
-              </Link>
-            ) : (
-              <a
-                key={link.href}
-                href={link.href}
-                className="inline-flex min-h-11 items-center px-2 hover:text-fg"
-              >
-                {link.label}
-              </a>
-            ),
-          )}
+          <Link to="/subir" className="inline-flex min-h-11 items-center px-2 hover:text-fg">
+            {t.landing.footer.ctaLink}
+          </Link>
         </nav>
       </div>
     </footer>

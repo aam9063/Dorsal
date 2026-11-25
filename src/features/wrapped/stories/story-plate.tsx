@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { t } from '../../../shared/i18n'
+import { useT } from '../../../shared/hooks'
 
 /**
  * Bone plates with punched pins, the object language of the stories
@@ -44,6 +44,8 @@ export function StoryPlate({
  * and mono metadata on the same baseline between two hairlines.
  */
 export function PlateHead({ number }: { number: string }) {
+  const t = useT()
+
   return (
     <header className="mb-2 mt-1 flex items-baseline gap-2.5 border-y border-line-light py-1">
       <span

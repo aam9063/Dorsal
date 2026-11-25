@@ -1,15 +1,17 @@
 import type { YearSummary } from '../../core/model/year-summary'
 import { formatKilometres, formatNumber } from '../../shared/format'
-import { t } from '../../shared/i18n'
+import { messages, type Locale } from '../../shared/i18n'
 
 /**
  * The shareable bib card: a 1080×1920 PNG painted with Canvas 2D
  * (BRIEF §3, odd/tasks/h11-bib-card.md decision 3). The draw is pure over the
  * `CardSurface` subset of `CanvasRenderingContext2D`, every coordinate is a
  * named constant — never measured from the DOM — and the copy and the numbers
- * come from `src/shared/i18n/` and `src/shared/format.ts` only. No `Date`, no
- * `Math.random`, no runtime locale: two draws from the same inputs produce the
- * same command stream, which `e2e/bib-card.spec.ts` pins at the byte level
+ * come from `src/shared/i18n/` and `src/shared/format.ts` through the locale
+ * the card input carries (odd/tasks/i18n-english.md, decision 5). No `Date`,
+ * no `Math.random`, no runtime locale read: two draws from the same inputs —
+ * including the same locale — produce the same command stream, which
+ * `e2e/bib-card.spec.ts` pins at the byte level
  * (odd/tasks/redesign-objeto-dorsal.md, S7).
  *
  * The card speaks the same object language as the stories
@@ -74,6 +76,12 @@ export interface BibCardInput {
   summary: YearSummary
   /** The optional name the athlete typed on the portada; it never comes from the file. */
   name: string | null
+  /**
+   * The card's own language (odd/tasks/i18n-english.md, decision 5): the copy
+   * and the number grouping follow it, so a draw is deterministic in its own
+   * language and the DOM preview and the PNG can never split.
+   */
+  locale: Locale
 }
 
 // — Surface geometry ————————————————————————————————————————————————————————
@@ -232,8 +240,8 @@ export const bibCardGeometry = {
  * in `src/shared/i18n/`, so the card never formats a date through a runtime
  * locale and two draws keep identical bytes.
  */
-export function monthDayText(month: number, day: number): string {
-  return `${day} ${(t.monthsShort[month - 1] ?? '').toLowerCase()}`
+export function monthDayText(month: number, day: number, locale: Locale): string {
+  return `${day} ${(messages[locale].monthsShort[month - 1] ?? '').toLowerCase()}`
 }
 
 /**
@@ -243,15 +251,18 @@ export function monthDayText(month: number, day: number): string {
  * longest streak. The Everest equivalence is not a stat: it is the accent
  * sticker ({@link bibCardStickerText}).
  */
-export function bibCardStatRows(summary: YearSummary): { value: string; label: string }[] {
-  const copy = t.stories['08-dorsal']
+export function bibCardStatRows(
+  summary: YearSummary,
+  locale: Locale,
+): { value: string; label: string }[] {
+  const copy = messages[locale].stories['08-dorsal']
   const rows: { value: string; label: string }[] = [
-    { value: formatNumber(summary.totals.activityCount), label: copy.statActivities },
-    { value: formatNumber(summary.totals.activeDays), label: copy.statActiveDays },
+    { value: formatNumber(summary.totals.activityCount, locale), label: copy.statActivities },
+    { value: formatNumber(summary.totals.activeDays, locale), label: copy.statActiveDays },
   ]
   const streak = summary.consistency?.longestStreak.days ?? null
   if (streak !== null) {
-    rows.push({ value: `${formatNumber(streak)} D`, label: copy.statStreak })
+    rows.push({ value: `${formatNumber(streak, locale)} D`, label: copy.statStreak })
   }
   return rows
 }
@@ -260,13 +271,13 @@ export function bibCardStatRows(summary: YearSummary): { value: string; label: s
  * The accent sticker's text: the season's Everest equivalence, uppercase —
  * `null` when the season cannot prove it, so the card never stamps a zero.
  */
-export function bibCardStickerText(summary: YearSummary): string | null {
+export function bibCardStickerText(summary: YearSummary, locale: Locale): string | null {
   const everests = summary.totals.everests
   if (everests <= 0) {
     return null
   }
-  const value = formatNumber(Math.round(everests * 10) / 10)
-  return `${value}× ${t.stories['08-dorsal'].statEverest}`.toUpperCase()
+  const value = formatNumber(Math.round(everests * 10) / 10, locale)
+  return `${value}× ${messages[locale].stories['08-dorsal'].statEverest}`.toUpperCase()
 }
 
 /**
@@ -274,32 +285,35 @@ export function bibCardStickerText(summary: YearSummary): string | null {
  * third of the plate. A mark the season cannot prove is left out entirely, so
  * the card never prints a zero it did not measure.
  */
-export function bibCardMarkRows(summary: YearSummary): { label: string; value: string }[] {
+export function bibCardMarkRows(
+  summary: YearSummary,
+  locale: Locale,
+): { label: string; value: string }[] {
   const bests = summary.seasonBests
   if (bests === null) {
     return []
   }
-  const copy = t.stories['08-dorsal'].carnet
+  const copy = messages[locale].stories['08-dorsal'].carnet
   const rows: { label: string; value: string }[] = []
   const longest = bests.longestSessionByDistance
   if (longest !== null) {
     rows.push({
       label: copy.longestSessionLabel,
-      value: `${formatKilometres(longest.distanceM)} km · ${monthDayText(longest.month, longest.day)}`,
+      value: `${formatKilometres(longest.distanceM, locale)} km · ${monthDayText(longest.month, longest.day, locale)}`,
     })
   }
   const climb = bests.biggestElevationDay
   if (climb !== null) {
     rows.push({
       label: copy.biggestElevationDayLabel,
-      value: `${formatNumber(climb.elevationGainM)} m · ${monthDayText(climb.month, climb.day)}`,
+      value: `${formatNumber(climb.elevationGainM, locale)} m · ${monthDayText(climb.month, climb.day, locale)}`,
     })
   }
   const week = bests.bestWeek
   if (week !== null) {
     rows.push({
       label: copy.bestWeekMarkLabel,
-      value: `${formatKilometres(week.distanceM)} km · ${monthDayText(week.monday.month, week.monday.day)}`,
+      value: `${formatKilometres(week.distanceM, locale)} km · ${monthDayText(week.monday.month, week.monday.day, locale)}`,
     })
   }
   return rows
@@ -320,18 +334,20 @@ export function bibCardNumberSize(digits: number): number {
  * The name line: the athlete's own name when they typed one, otherwise the
  * same words the portada uses (h11 decision 4 — the export carries no name).
  */
-export function bibCardNameText(name: string | null): string {
+export function bibCardNameText(name: string | null, locale: Locale): string {
   const trimmed = name?.trim() ?? ''
-  return (trimmed === '' ? t.stories['08-dorsal'].fallbackName : trimmed).toUpperCase()
+  return (
+    trimmed === '' ? messages[locale].stories['08-dorsal'].fallbackName : trimmed
+  ).toUpperCase()
 }
 
 /** The archetype name in caps, or `null` when the season has no archetype. */
-export function bibCardArchetypeText(summary: YearSummary): string | null {
+export function bibCardArchetypeText(summary: YearSummary, locale: Locale): string | null {
   const archetype = summary.archetype
   if (archetype === null) {
     return null
   }
-  return t.stories['05-arquetipo'].archetypeNames[archetype.primary].toUpperCase()
+  return messages[locale].stories['05-arquetipo'].archetypeNames[archetype.primary].toUpperCase()
 }
 
 /** The estimated pill width of a mono stamp, shared by both card surfaces. */
@@ -510,8 +526,8 @@ function drawMonthlyBars(surface: CardSurface, monthlyDistanceM: readonly number
  * its pins, then the editorial head, then the data blocks from the top down.
  */
 export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
-  const copy = t.stories['08-dorsal']
-  const { summary, name } = input
+  const { summary, name, locale } = input
+  const copy = messages[locale].stories['08-dorsal']
 
   // The field.
   surface.fillStyle = CardColours.accent
@@ -548,7 +564,7 @@ export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
   surface.textAlign = 'center'
   surface.fillText(numberText, CENTER_X + opticalCenter, NUMBER_BASELINE)
 
-  const nameText = bibCardNameText(name)
+  const nameText = bibCardNameText(name, locale)
   setFont(
     surface,
     '700',
@@ -559,7 +575,7 @@ export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
   surface.fillStyle = CardColours.ink
   surface.fillText(nameText, CENTER_X, NAME_BASELINE)
 
-  const archetype = bibCardArchetypeText(summary)
+  const archetype = bibCardArchetypeText(summary, locale)
   if (archetype !== null) {
     setFont(surface, '400', ARCHETYPE_SIZE, FONT_MONO, ARCHETYPE_LETTER_SPACING)
     surface.fillStyle = CardColours.labelInk
@@ -567,7 +583,7 @@ export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
   }
 
   // The season's Everest equivalence, stamped on the plate edge in accent.
-  const stickerText = bibCardStickerText(summary)
+  const stickerText = bibCardStickerText(summary, locale)
   if (stickerText !== null) {
     drawStickerPill(
       surface,
@@ -594,7 +610,7 @@ export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
   if (peakDistanceM > 0) {
     surface.textAlign = 'right'
     surface.fillText(
-      `${t.monthsShort[peakMonth] ?? ''} · ${formatKilometres(peakDistanceM)}`.toUpperCase(),
+      `${messages[locale].monthsShort[peakMonth] ?? ''} · ${formatKilometres(peakDistanceM, locale)}`.toUpperCase(),
       CONTENT_RIGHT,
       CHART_CAPTION_BASELINE,
     )
@@ -606,7 +622,7 @@ export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
   const barWidth = (CONTENT_W - CHART_BAR_GAP * 11) / 12
   for (let month = 0; month < 12; month += 1) {
     surface.fillText(
-      t.monthsAbbr[month] ?? '',
+      messages[locale].monthsAbbr[month] ?? '',
       CONTENT_X + month * (barWidth + CHART_BAR_GAP) + barWidth / 2,
       MONTH_LABEL_BASELINE,
     )
@@ -615,7 +631,7 @@ export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
   drawCardTearOff(surface, TEAR_Y)
 
   // The closing stats: the columns follow the rows the season can prove.
-  const rows = bibCardStatRows(summary)
+  const rows = bibCardStatRows(summary, locale)
   const statWidth = CONTENT_W / Math.max(rows.length, 1)
   setFont(surface, '400', STAT_VALUE_SIZE, FONT_DISPLAY, '0px')
   surface.fillStyle = CardColours.ink
@@ -633,16 +649,12 @@ export function drawBibCard(surface: CardSurface, input: BibCardInput): void {
   }
 
   // The season's best marks, bounded by hairline rules.
-  const marks = bibCardMarkRows(summary)
+  const marks = bibCardMarkRows(summary, locale)
   if (marks.length > 0) {
     setFont(surface, '700', MARKS_TITLE_SIZE, FONT_MONO, MARKS_LABEL_LETTER_SPACING)
     surface.fillStyle = CardColours.labelInk
     surface.textAlign = 'left'
-    surface.fillText(
-      t.stories['08-dorsal'].carnet.marksTitle.toUpperCase(),
-      CONTENT_X,
-      MARKS_TITLE_BASELINE,
-    )
+    surface.fillText(copy.carnet.marksTitle.toUpperCase(), CONTENT_X, MARKS_TITLE_BASELINE)
     setFont(surface, '400', MARKS_TEXT_SIZE, FONT_MONO, MARKS_LABEL_LETTER_SPACING)
     for (const [index, mark] of marks.entries()) {
       const baseline = MARKS_FIRST_BASELINE + index * MARKS_ROW_H

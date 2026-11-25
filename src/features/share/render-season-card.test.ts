@@ -3,7 +3,12 @@ import { buildYearSummary } from '../../core/metrics/build-year-summary'
 import { MIN_SESSIONS_PER_WEEK } from '../../core/metrics/weekly-load'
 import type { YearSummary } from '../../core/model/year-summary'
 import { t } from '../../shared/i18n'
-import { fulfilledWeeksSentence, powerCoverageSentence } from '../../shared/i18n'
+import {
+  fulfilledWeeksSentenceFor,
+  messages,
+  powerCoverageSentenceFor,
+  type Locale,
+} from '../../shared/i18n'
 import {
   CardColours,
   CARD_HEIGHT,
@@ -358,9 +363,13 @@ const sixSportSeason = (withPower: boolean): YearSummary => ({
   availability: { ...fullSeason().availability, powerProfile: withPower },
 })
 
-const draw = (summary: YearSummary, name: string | null): RecordingSurface => {
+const draw = (
+  summary: YearSummary,
+  name: string | null,
+  locale: Locale = 'es',
+): RecordingSurface => {
   const surface = new RecordingSurface()
-  drawSeasonCard(surface, { summary, name } satisfies SeasonCardInput)
+  drawSeasonCard(surface, { summary, name, locale } satisfies SeasonCardInput)
   return surface
 }
 
@@ -371,6 +380,62 @@ describe('season card renderer', () => {
     const second = draw(summary, 'Lucía M.')
 
     expect(second.bytes()).toEqual(first.bytes())
+  })
+
+  it('is byte-for-byte deterministic in the English locale too', () => {
+    const summary = fullSeason()
+    const first = draw(summary, 'Lucía M.', 'en')
+    const second = draw(summary, 'Lucía M.', 'en')
+
+    expect(second.bytes()).toEqual(first.bytes())
+  })
+
+  it('prints English copy when the card is drawn in the English locale', () => {
+    const surface = draw(fullSeason(), 'Lucía M.', 'en')
+    const spanish = draw(fullSeason(), 'Lucía M.', 'es')
+
+    const texts = surface.texts().map((text) => text.text)
+    expect(texts).toContain(messages.en.stories['08-dorsal'].carnet.title.toUpperCase())
+    expect(spanish.texts().map((text) => text.text)).toContain(
+      messages.es.stories['08-dorsal'].carnet.title.toUpperCase(),
+    )
+    // A card ignoring the drawn locale would print the Spanish caption here.
+    expect(texts).toContain('180 ACTIVITIES · 63 %')
+    expect(texts).not.toContain('180 ACTIVIDADES · 63 %')
+  })
+
+  it('formats the numbers through the drawn locale without touching the active one', () => {
+    const english = draw(fullSeason(), 'Lucía M.', 'en')
+      .texts()
+      .map((row) => row.text)
+    const spanish = draw(fullSeason(), 'Lucía M.', 'es')
+      .texts()
+      .map((row) => row.text)
+
+    expect(english).toContain('540.0 km')
+    expect(english).toContain('1,240 m · 4 aug')
+    expect(english).toContain('POWER IN 34 OF 60 WORKOUTS')
+    expect(spanish).toContain('540,0 km')
+    expect(spanish).toContain('1240 m · 4 ago')
+    expect(spanish).toContain('POTENCIA EN 34 DE 60 SALIDAS')
+  })
+
+  it('prints the sport caption in the English singular when the sport was practiced once', () => {
+    const surface = draw(oneSportSeason(), 'Lucía M.', 'en')
+
+    expect(surface.texts().map((text) => text.text)).toContain('1 ACTIVITY · 63 %')
+  })
+
+  it('prints the fulfilled-week rule from the drawn locale', () => {
+    const english = draw(fullSeason(), 'Lucía M.', 'en')
+      .texts()
+      .map((row) => row.text)
+    const spanish = draw(fullSeason(), 'Lucía M.', 'es')
+      .texts()
+      .map((row) => row.text)
+
+    expect(english).toContain(fulfilledWeeksSentenceFor('en', MIN_SESSIONS_PER_WEEK))
+    expect(spanish).toContain(fulfilledWeeksSentenceFor('es', MIN_SESSIONS_PER_WEEK))
   })
 
   it('keeps the declared surface at 1080×1920', () => {
@@ -480,7 +545,7 @@ describe('season card renderer', () => {
     expect(texts).toContain('187,3 km · 11 may')
     expect(texts).toContain('SEMANAS CONSECUTIVAS CUMPLIENDO ENTRENOS')
     expect(texts).toContain('12 semanas')
-    expect(texts).toContain(fulfilledWeeksSentence(MIN_SESSIONS_PER_WEEK))
+    expect(texts).toContain(fulfilledWeeksSentenceFor('es', MIN_SESSIONS_PER_WEEK))
   })
 
   it('prints the best marks with the same wording the dorsal uses', () => {
@@ -505,7 +570,7 @@ describe('season card renderer', () => {
     expect(texts).toContain('MEJOR MEDIA PONDERADA')
     expect(texts).toContain('MEJOR PICO')
     expect(texts).toContain('EVOLUCIÓN POR MES')
-    expect(texts).toContain(powerCoverageSentence(34, 60).toUpperCase())
+    expect(texts).toContain(powerCoverageSentenceFor('es', 34, 60).toUpperCase())
 
     for (const month of t.monthsAbbr) {
       expect(texts).toContain(month)
@@ -598,7 +663,7 @@ describe('constructed vertical layout', () => {
 
   it('stacks the present panels without overlap and with one shared gap', () => {
     for (const summary of sizedSeasons) {
-      const panels = presentPanels(seasonCardLayout(summary))
+      const panels = presentPanels(seasonCardLayout(summary, 'es'))
       expect(panels.length).toBeGreaterThan(1)
       const first = panels[0]
       const second = panels[1]
@@ -618,7 +683,7 @@ describe('constructed vertical layout', () => {
 
   it('pins the footer to the plate bottom and keeps the panels clear of it', () => {
     for (const summary of sizedSeasons) {
-      const layout = seasonCardLayout(summary)
+      const layout = seasonCardLayout(summary, 'es')
       const panels = presentPanels(layout)
       const last = panels[panels.length - 1]
       if (last === undefined) throw new Error('a season must measure at least one panel')
@@ -633,7 +698,7 @@ describe('constructed vertical layout', () => {
 
   it('splits the leftover room evenly above and below the stack', () => {
     for (const summary of sizedSeasons) {
-      const layout = seasonCardLayout(summary)
+      const layout = seasonCardLayout(summary, 'es')
       const panels = presentPanels(layout)
       const first = panels[0]
       const last = panels[panels.length - 1]
@@ -646,7 +711,7 @@ describe('constructed vertical layout', () => {
   })
 
   it('places all four panels of the six-sport season with power in document order', () => {
-    const layout = seasonCardLayout(sixSportSeason(true))
+    const layout = seasonCardLayout(sixSportSeason(true), 'es')
     const sports = requiredLayout(layout.sports, 'sports')
     const weeks = requiredLayout(layout.weeks, 'weeks')
     const marks = requiredLayout(layout.marks, 'marks')
@@ -687,7 +752,7 @@ describe('constructed vertical layout', () => {
   it('draws every panel exactly where the computed layout says', () => {
     const summary = sixSportSeason(true)
     const surface = draw(summary, 'Lucía M.')
-    const layout = seasonCardLayout(summary)
+    const layout = seasonCardLayout(summary, 'es')
     const copy = t.stories['08-dorsal'].carnet
     const g = seasonCardGeometry
     const baselineOf = (text: string): number => {

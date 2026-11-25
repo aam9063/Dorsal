@@ -1,8 +1,12 @@
 import { useCallback, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import type { YearSummary } from '../../../core/model/year-summary'
-import { useAutoAdvance, useFocusOnMount, usePrefersReducedMotion } from '../../../shared/hooks'
-import { t } from '../../../shared/i18n'
+import {
+  useAutoAdvance,
+  useFocusOnMount,
+  usePrefersReducedMotion,
+  useT,
+} from '../../../shared/hooks'
 import { availableStories, AUTO_ADVANCE_BASE_MS, type StoryDefinition } from '../stories/registry'
 import { clampIndex, initialPlayerState, reducePlayer, type PlayerInput } from './player-machine'
 
@@ -41,6 +45,7 @@ const RIBBON =
  * below the stage, with the visible back button keeping the H-11 contract.
  */
 export function Player({ stories, summary, renderStory, onClose }: PlayerProps) {
+  const t = useT()
   const available = availableStories(stories, summary)
   const count = available.length
   const [state, setState] = useState(() => initialPlayerState(count))

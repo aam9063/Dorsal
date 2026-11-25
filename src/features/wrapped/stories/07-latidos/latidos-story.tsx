@@ -1,5 +1,6 @@
 import { formatNumber } from '../../../../shared/format'
-import { heartbeatCoverageSentence, heartbeatPeakDate, t } from '../../../../shared/i18n'
+import { heartbeatCoverageSentence, heartbeatPeakDate, type Locale } from '../../../../shared/i18n'
+import { useLocale, useT } from '../../../../shared/hooks'
 import type { YearSummary } from '../../../../core/model/year-summary'
 import { PlateHead, PlateTitle, StoryPlate } from '../story-plate'
 
@@ -7,16 +8,39 @@ import { PlateHead, PlateTitle, StoryPlate } from '../story-plate'
 const ECG_WIDTH = 390
 const ECG_HEIGHT = 110
 
-const twoDecimals = new Intl.NumberFormat('es-ES', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-})
+const twoDecimalMillions = new Map<Locale, Intl.NumberFormat>()
+
+/**
+ * Two-decimal millions hero formatters, cached per locale the way
+ * `src/shared/format.ts` caches its number formatters: the grouping and the
+ * decimal marks follow the active locale instead of a fixed one.
+ */
+function twoDecimalFormatter(locale: Locale): Intl.NumberFormat {
+  const cached = twoDecimalMillions.get(locale)
+  if (cached !== undefined) {
+    return cached
+  }
+  const created = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+  twoDecimalMillions.set(locale, created)
+  return created
+}
 
 /** Hero number for the season beats: two decimals of millions from one million up. */
-function beatsHeroText(beats: number): string {
+function beatsHeroText(beats: number, locale: Locale): string {
   return beats >= 1_000_000
-    ? twoDecimals.format(beats / 1_000_000)
-    : formatNumber(Math.round(beats))
+    ? twoDecimalFormatter(locale).format(beats / 1_000_000)
+    : formatNumber(Math.round(beats), locale)
+}
+
+/**
+ * The peak unit word follows the active locale — pulsaciones per minute in
+ * Spanish, beats per minute in English (odd/tasks/i18n-english.md T3).
+ */
+function peakBpmUnit(locale: Locale): string {
+  return locale === 'en' ? 'bpm' : 'ppm'
 }
 
 /**
@@ -31,13 +55,15 @@ function beatsHeroText(beats: number): string {
  * shape in ink and marks it `aria-hidden`.
  */
 export function LatidosStory({ summary }: { summary: YearSummary }) {
+  const t = useT()
+  const locale = useLocale()
   const copy = t.stories['07-latidos']
   const heartbeats = summary.heartbeats
   if (heartbeats === null) {
     return null
   }
 
-  const heroText = beatsHeroText(heartbeats.beats)
+  const heroText = beatsHeroText(heartbeats.beats, locale)
   const heroUnit = heartbeats.beats >= 1_000_000 ? copy.millionsUnit : copy.beatsUnit
   const restingDays = Math.round(heartbeats.restingDays)
   const coveragePct = Math.round(heartbeats.coverage * 100)
@@ -95,7 +121,7 @@ export function LatidosStory({ summary }: { summary: YearSummary }) {
             className="flex items-baseline gap-3 border-t-2 border-line-light pt-2.5"
           >
             <span className="min-w-20 font-display text-2xl text-accent-on-bone">
-              {formatNumber(peak.bpm)} ppm
+              {formatNumber(peak.bpm, locale)} {peakBpmUnit(locale)}
             </span>
             <span className="text-[13.5px] leading-snug text-body-ink [text-wrap:pretty]">
               {copy.peakLead} {heartbeatPeakDate(peak.day, peakMonth)}.

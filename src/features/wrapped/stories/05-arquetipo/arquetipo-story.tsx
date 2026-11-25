@@ -1,4 +1,5 @@
-import { archetypePeakSentence, t } from '../../../../shared/i18n'
+import { archetypePeakSentence } from '../../../../shared/i18n'
+import { useT } from '../../../../shared/hooks'
 import type { YearSummary } from '../../../../core/model/year-summary'
 import { PlateHead, PlateTitle, StoryPlate } from '../story-plate'
 import {
@@ -42,6 +43,7 @@ function hourText(hour: number): string {
  * secondary one is a flat outlined chip.
  */
 export function ArquetipoStory({ summary }: { summary: YearSummary }) {
+  const t = useT()
   const copy = t.stories['05-arquetipo']
   const archetype = summary.archetype
   if (archetype === null) {

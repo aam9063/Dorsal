@@ -1,6 +1,7 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { resultCorruptWarning, t } from '../../shared/i18n'
+import { useT } from '../../shared/hooks'
 import { formatDuration, formatKilometres, formatNumber } from '../../shared/format'
+import { resultCorruptWarning } from '../../shared/i18n'
 import { handedOffSeasonSummary } from '../processing'
 import { Player } from './player/player'
 import { STORIES } from './stories/registry'
@@ -61,6 +62,8 @@ function SectionHeader({
 }
 
 function SpineColumn() {
+  const t = useT()
+
   return (
     <div aria-hidden="true" className="hidden lg:block lg:border-r lg:border-line lg:pt-6">
       <span className="block rotate-180 whitespace-nowrap pr-3 text-right font-mono text-[11px] uppercase tracking-[0.3em] text-fg-subtle [writing-mode:vertical-rl]">
@@ -85,6 +88,8 @@ function ScreenField({
   testId?: string
   children: ReactNode
 }) {
+  const t = useT()
+
   return (
     <div
       data-testid={testId}
@@ -142,6 +147,7 @@ function StatPlate({
 }
 
 export function ResultScreen() {
+  const t = useT()
   const season = handedOffSeasonSummary()
   const [playerOpen, setPlayerOpen] = useState(false)
   const openPlayerRef = useRef<HTMLButtonElement>(null)

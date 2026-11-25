@@ -1,5 +1,6 @@
 export { useAnalysis } from './use-analysis'
 export { useThemePreference } from './use-theme-preference'
+export { useLocale, useT } from './use-locale-preference'
 export { usePrefersReducedMotion } from './use-prefers-reduced-motion'
 export { useAutoAdvance } from './use-auto-advance'
 export { useFitScale } from './use-fit-scale'

@@ -8,8 +8,7 @@ import {
   shareOrDownloadSeasonCard,
 } from '../../../share'
 import type { YearSummary } from '../../../../core/model/year-summary'
-import { t } from '../../../../shared/i18n'
-import { useFitScale } from '../../../../shared/hooks'
+import { useFitScale, useLocale, useT } from '../../../../shared/hooks'
 import { useSeasonName } from '../01-portada/season-name'
 import { cycleCardSelection, type CardSelection } from './card-selection'
 
@@ -28,16 +27,19 @@ import { cycleCardSelection, type CardSelection } from './card-selection'
  * bounded by a hairline and the hard offset shadow on the action chip.
  */
 export function DorsalStory({ summary }: { summary: YearSummary }) {
+  const t = useT()
+  const locale = useLocale()
   const copy = t.stories['08-dorsal']
   const name = useSeasonName()
   const trimmedName = name.trim()
   const cardName = trimmedName === '' ? null : trimmedName
   const [selection, setSelection] = useState<CardSelection>('dorsal')
   const [busy, setBusy] = useState(false)
+  const storyRef = useRef<HTMLDivElement>(null)
   const { slotRef, designRef, scale, width: cardWidth } = useFitScale()
   const radioRefs = useRef(new Map<CardSelection, HTMLButtonElement>())
   const isDorsal = selection === 'dorsal'
-  const label = isDorsal ? bibCardActionLabel() : seasonCardActionLabel()
+  const label = isDorsal ? bibCardActionLabel(locale) : seasonCardActionLabel(locale)
   const hint = isDorsal ? copy.actionHint : copy.carnet.actionHint
 
   const CARDS = [
@@ -62,8 +64,12 @@ export function DorsalStory({ summary }: { summary: YearSummary }) {
 
   return (
     <div
+      ref={storyRef}
       data-testid="story-08-dorsal"
-      className="flex min-h-0 w-full flex-col gap-2 self-stretch rounded-[6px] bg-accent p-5 text-ink shadow-[0_26px_50px_rgba(0,0,0,0.55)]"
+      // The focus target after a card action: reachable programmatically only,
+      // so the shortcuts of the player keep working without a mouse.
+      tabIndex={-1}
+      className="flex min-h-0 w-full flex-col gap-2 self-stretch rounded-[6px] bg-accent p-5 text-ink shadow-[0_26px_50px_rgba(0,0,0,0.55)] outline-none"
     >
       <p className="shrink-0 border-b-2 border-dashed border-ink/50 pb-2 font-mono text-[11px] uppercase tracking-[0.14em]">
         {copy.eyebrow}
@@ -126,15 +132,24 @@ export function DorsalStory({ summary }: { summary: YearSummary }) {
           disabled={busy}
           className="pointer-events-auto inline-flex min-h-14 items-center justify-center rounded-chip bg-ink font-mono text-[13px] font-bold uppercase tracking-[0.1em] text-bone shadow-[4px_4px_0_var(--color-bone)] transition-shadow hover:shadow-[5px_5px_0_var(--color-bone)] aria-busy:opacity-70"
           onClick={() => {
-            setBusy(true)
             const action = isDorsal
-              ? shareOrDownloadBibCard({ summary, name: cardName })
-              : shareOrDownloadSeasonCard({ summary, name: cardName })
+              ? shareOrDownloadBibCard({ summary, name: cardName, locale })
+              : shareOrDownloadSeasonCard({ summary, name: cardName, locale })
+            // The download lands on the player's keydown handler: sharing or
+            // downloading moves the focus out of the player section, so the
+            // focus comes back to the story root before the busy state clears
+            // (success, failure and user cancellation all end in `finally`).
+            const restoreFocus = (): void => {
+              storyRef.current?.focus({ preventScroll: true })
+            }
+            setBusy(true)
             action
               .catch(() => {
+                restoreFocus()
                 setBusy(false)
               })
               .finally(() => {
+                restoreFocus()
                 setBusy(false)
               })
           }}

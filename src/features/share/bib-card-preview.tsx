@@ -1,6 +1,6 @@
 import type { YearSummary } from '../../core/model/year-summary'
 import { formatKilometres } from '../../shared/format'
-import { t } from '../../shared/i18n'
+import { useLocale, useT } from '../../shared/hooks'
 import {
   bibCardArchetypeText,
   bibCardGeometry,
@@ -20,7 +20,10 @@ import {
  * number, name, archetype, the Everest sticker, twelve month bars, the dashed
  * tear-off with its punched hole, the closing stats, the best marks and the
  * footer — and reads every string from the same helpers the canvas draw uses,
- * so the two can never drift apart on copy or numbers.
+ * so the two can never drift apart on copy or numbers. It reads the reactive
+ * copy through `useT()` and hands the same locale to the helpers, so a switch
+ * re-renders the preview in the chosen language (odd/tasks/i18n-english.md,
+ * decision 5).
  */
 export function BibCardPreview({
   summary,
@@ -32,15 +35,17 @@ export function BibCardPreview({
   /** The card's own width in layout pixels; 0 until the story measures it. */
   cardWidth?: number
 }) {
+  const locale = useLocale()
+  const t = useT()
   const copy = t.stories['08-dorsal']
   const numberText = String(summary.bibCard.number)
-  const archetype = bibCardArchetypeText(summary)
-  const stickerText = bibCardStickerText(summary)
+  const archetype = bibCardArchetypeText(summary, locale)
+  const stickerText = bibCardStickerText(summary, locale)
   const monthly = summary.bibCard.monthlyDistanceM
   const maxMonthly = Math.max(...monthly, 0)
   const peakMonth = monthly.indexOf(maxMonthly)
-  const marks = bibCardMarkRows(summary)
-  const statRows = bibCardStatRows(summary)
+  const marks = bibCardMarkRows(summary, locale)
+  const statRows = bibCardStatRows(summary, locale)
   // The preview card *is* the plate, so the number uses the renderer's own fit
   // rule scaled to this width: what fits here fits on the exported PNG.
   const numberSize =
@@ -85,7 +90,7 @@ export function BibCardPreview({
       </div>
 
       <div className="text-center text-[13px] font-bold uppercase tracking-[0.24em]">
-        {bibCardNameText(name)}
+        {bibCardNameText(name, locale)}
       </div>
 
       {archetype === null ? null : (
@@ -107,7 +112,7 @@ export function BibCardPreview({
           <span className="whitespace-nowrap">{copy.chartCaption}</span>
           {maxMonthly > 0 ? (
             <span className="whitespace-nowrap tabular-nums">
-              {t.monthsShort[peakMonth] ?? ''} · {formatKilometres(maxMonthly)}
+              {t.monthsShort[peakMonth] ?? ''} · {formatKilometres(maxMonthly, locale)}
             </span>
           ) : null}
         </div>

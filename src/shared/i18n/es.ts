@@ -1,6 +1,24 @@
 import { formatNumber } from '../format'
+import { getLocale, type Locale } from './locale'
 
 const EMPTY = ''
+
+/**
+ * Every other locale must satisfy the shape this file defines: `es.ts` is the
+ * source of truth for the copy's structure (odd/tasks/i18n-english.md,
+ * decision 2). The widening turns the `as const` literals into plain strings
+ * so a translation is not forced to equal the Spanish text, while a missing
+ * or extra key stays a compile error through the `Messages` type.
+ */
+export type WidenMessages<T> = T extends string
+  ? string
+  : T extends readonly (infer Item)[]
+    ? readonly WidenMessages<Item>[]
+    : T extends object
+      ? { readonly [Key in keyof T]: WidenMessages<T[Key]> }
+      : T
+
+export type Messages = WidenMessages<typeof es>
 
 export const es = {
   brand: {
@@ -14,6 +32,11 @@ export const es = {
     system: 'Sistema',
     light: 'Claro',
     dark: 'Oscuro',
+  },
+  language: {
+    label: 'Idioma',
+    es: 'Español',
+    en: 'English',
   },
   privacy: {
     banner: 'Se procesa en tu navegador. Tu archivo no sale de tu dispositivo.',
@@ -65,7 +88,7 @@ export const es = {
     previewsMeta: 'Lo que vas a ver · Tu temporada, por etapas',
     privacyMeta: 'Privacidad · Sin servidores',
     faqMeta: 'Preguntas · Lo esencial',
-    title: 'Tu año entero, en un dorsal.',
+    title: 'Tu año deportivo, en un dorsal.',
     subtitle:
       'Sube el activities.csv de la exportación de tu cuenta de Strava y te devolvemos tu 2026 contado como una carrera: tus kilómetros, tu perfil de etapa, tus rachas y un dorsal listo para compartir. Sin registro ni suscripción.',
     cta: 'Subir mi activities.csv',
@@ -435,28 +458,41 @@ export const es = {
 
 /**
  * Copy for the refusal to open the wrapped when no activity survived the 2026
- * filter, with the real counts of the run (BRIEF §5.4).
+ * filter, with the real counts of the run (BRIEF §5.4). The locale argument
+ * anchors the number format, so a card drawn for a language keeps the grouping
+ * of that language; it defaults to the active one for the reactive screens.
  */
-export function uploadNoSeasonMessage(totalRows: number): string {
-  return `Leímos ${formatNumber(totalRows)} actividades y ninguna es de 2026.`
+export function uploadNoSeasonMessage(totalRows: number, locale: Locale = getLocale()): string {
+  return `Leímos ${formatNumber(totalRows, locale)} actividades y ninguna es de 2026.`
 }
 
 /**
  * Copy for story 05: the share of starts at the peak hour, e.g.
  * `(72, '7:00')` → "El 72 % de tus salidas empezaron a las 7:00.".
  */
-export function archetypePeakSentence(sharePct: number, hourText: string): string {
-  return `El ${formatNumber(sharePct)} % de tus salidas empezaron a las ${hourText}.`
+export function archetypePeakSentence(
+  sharePct: number,
+  hourText: string,
+  locale: Locale = getLocale(),
+): string {
+  return `El ${formatNumber(sharePct, locale)} % de tus salidas empezaron a las ${hourText}.`
 }
 
 /** Copy for story 07: the peak date, e.g. `(24, 'octubre')` → "el 24 de octubre". */
-export function heartbeatPeakDate(day: number, month: string): string {
-  return `el ${formatNumber(day)} de ${month}`
+export function heartbeatPeakDate(
+  day: number,
+  month: string,
+  locale: Locale = getLocale(),
+): string {
+  return `el ${formatNumber(day, locale)} de ${month}`
 }
 
 /** Copy for story 07: the season coverage in words, e.g. `(85)` → "Cubriste con pulso el 85 % de tu tiempo en movimiento." */
-export function heartbeatCoverageSentence(coveragePct: number): string {
-  return `Cubriste con pulso el ${formatNumber(coveragePct)} % de tu tiempo en movimiento.`
+export function heartbeatCoverageSentence(
+  coveragePct: number,
+  locale: Locale = getLocale(),
+): string {
+  return `Cubriste con pulso el ${formatNumber(coveragePct, locale)} % de tu tiempo en movimiento.`
 }
 
 /** List with the Spanish joining, e.g. `[Worker, FileReader]` → "Worker y FileReader". */
@@ -473,22 +509,29 @@ export function uploadUnsupportedMessage(missing: readonly string[]): string {
 }
 
 /** Copy for the warning about rows that could not be read and were ignored. */
-export function resultCorruptWarning(corruptRows: number): string {
-  return `Ignoramos ${formatNumber(corruptRows)} filas que no pudimos leer. Los números cuentan solo las actividades válidas.`
+export function resultCorruptWarning(corruptRows: number, locale: Locale = getLocale()): string {
+  return `Ignoramos ${formatNumber(corruptRows, locale)} filas que no pudimos leer. Los números cuentan solo las actividades válidas.`
 }
 
 /**
  * Copy for the fulfilled week rule of the season card, printing the threshold
  * so the rule is visible on the artifact, e.g. `(3)` → "3 o más entrenos por semana".
  */
-export function fulfilledWeeksSentence(sessionsPerWeek: number): string {
-  return `${formatNumber(sessionsPerWeek)} o más entrenos por semana`
+export function fulfilledWeeksSentence(
+  sessionsPerWeek: number,
+  locale: Locale = getLocale(),
+): string {
+  return `${formatNumber(sessionsPerWeek, locale)} o más entrenos por semana`
 }
 
 /**
  * Copy for the power coverage of the season card, so a partial year cannot
  * read as a complete one: `(34, 60)` → "potencia en 34 de 60 salidas".
  */
-export function powerCoverageSentence(sessionsWithPower: number, totalSessions: number): string {
-  return `potencia en ${formatNumber(sessionsWithPower)} de ${formatNumber(totalSessions)} salidas`
+export function powerCoverageSentence(
+  sessionsWithPower: number,
+  totalSessions: number,
+  locale: Locale = getLocale(),
+): string {
+  return `potencia en ${formatNumber(sessionsWithPower, locale)} de ${formatNumber(totalSessions, locale)} salidas`
 }

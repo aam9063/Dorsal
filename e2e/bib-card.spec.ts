@@ -4,7 +4,7 @@ import { expect, test, type Page } from '@playwright/test'
 import { readActivities } from '../src/core/export-reader'
 import { buildYearSummary } from '../src/core/metrics/build-year-summary'
 import type { YearSummary } from '../src/core/model/year-summary'
-import { t } from '../src/shared/i18n'
+import { messages, t } from '../src/shared/i18n'
 import { availableStories, STORIES } from '../src/features/wrapped/stories/registry'
 import { BIB_CARD_FILE_NAME, SEASON_CARD_FILE_NAME } from '../src/features/share/bib-card-io'
 
@@ -123,6 +123,68 @@ test('the download path produces a 1080×1920 PNG, identical between runs', asyn
   assertPng(first.bytes)
 })
 
+/**
+ * Downloading or sharing moves the focus out of the player section, and the
+ * player's shortcuts live in its keydown handler: a keyboard user loses
+ * Escape and the arrows exactly when they finish the story's action.
+ */
+test('after downloading a card, Escape still closes the player', async ({ page }) => {
+  const summary = await openPlayerOn(page, 'runner-es')
+  await openStory(page, storyPosition(summary, '08-dorsal'))
+
+  await downloadCard(page)
+  await page.keyboard.press('Escape')
+  await expect(page.getByTestId('player-root')).toHaveCount(0)
+})
+
+/**
+ * The locale is part of the card input (odd/tasks/i18n-english.md, decision 5):
+ * every locale is deterministic on its own, and a card that ignored the
+ * drawn locale would paint the same bytes for English and Spanish.
+ */
+test('the dorsal is byte-deterministic in each locale and differs between them', async ({
+  page,
+}) => {
+  const summary = await openPlayerOn(page, 'runner-es')
+  await openStory(page, storyPosition(summary, '08-dorsal'))
+
+  const spanishFirst = await downloadCard(page)
+  const spanishSecond = await downloadCard(page)
+  expect(spanishSecond.bytes).toEqual(spanishFirst.bytes)
+
+  await reopenStoryInLocale(page, summary, 'en')
+  const englishFirst = await downloadCard(page)
+  const englishSecond = await downloadCard(page)
+  expect(englishSecond.bytes).toEqual(englishFirst.bytes)
+
+  assertPng(spanishFirst.bytes)
+  assertPng(englishFirst.bytes)
+  expect(englishFirst.bytes).not.toEqual(spanishFirst.bytes)
+})
+
+/** The same contract for the season card: deterministic per locale, distinct across locales. */
+test('the season card is byte-deterministic in each locale and differs between them', async ({
+  page,
+}) => {
+  const summary = await openPlayerOn(page, 'runner-es')
+  await openStory(page, storyPosition(summary, '08-dorsal'))
+  await selectCarnet(page)
+
+  const spanishFirst = await downloadCard(page)
+  const spanishSecond = await downloadCard(page)
+  expect(spanishSecond.bytes).toEqual(spanishFirst.bytes)
+
+  await reopenStoryInLocale(page, summary, 'en')
+  await selectCarnet(page)
+  const englishFirst = await downloadCard(page)
+  const englishSecond = await downloadCard(page)
+  expect(englishSecond.bytes).toEqual(englishFirst.bytes)
+
+  assertPng(spanishFirst.bytes)
+  assertPng(englishFirst.bytes)
+  expect(englishFirst.bytes).not.toEqual(spanishFirst.bytes)
+})
+
 test('the share path hands the PNG file to navigator.share where supported', async ({ page }) => {
   test.skip(test.info().project.name !== 'mobile', 'exercised on the mobile chromium project')
   await stubShare(page)
@@ -222,6 +284,32 @@ test('the dorsal and the carnet are two different images', async ({ page }) => {
 async function selectCarnet(page: Page): Promise<void> {
   await page.getByTestId('card-toggle-carnet').click()
   await expect(page.getByTestId('carnet-preview')).toBeVisible()
+}
+
+/**
+ * Switches the language in place on the result screen and climbs back to
+ * story 08: after the player is closed, the header with the language selector
+ * is reachable on every route — the player is the only full-screen modal and
+ * it hides the header by design while it is open.
+ */
+async function reopenStoryInLocale(
+  page: Page,
+  summary: YearSummary,
+  locale: 'es' | 'en',
+): Promise<void> {
+  await page.getByTestId('player-close').click()
+  await expect(page.getByTestId('player-root')).toHaveCount(0)
+  await expect(page.getByTestId('result-root')).toBeVisible()
+  await page.getByTestId(`lang-option-${locale}`).click()
+  await expect(page.locator('html')).toHaveAttribute('lang', locale)
+  await expect(page.getByTestId('result-total-distance').locator('..').locator('dt')).toHaveText(
+    messages[locale].result.kilometres,
+  )
+  await page.getByTestId('result-open-player').click()
+  await expect(page.getByTestId('player-root')).toBeVisible()
+  await page.keyboard.press('Space')
+  await expect(page.getByTestId('player-root')).toHaveAttribute('data-paused', 'true')
+  await openStory(page, storyPosition(summary, '08-dorsal'))
 }
 
 /** Presses the selected card's action and returns the downloaded file. */
