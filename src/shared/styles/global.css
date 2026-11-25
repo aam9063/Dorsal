@@ -60,3 +60,41 @@
     display: none;
   }
 }
+
+/**
+ * The page scrollbar is part of the design, not the operating system's: the
+ * native Windows bar is a grey rail with arrow buttons. The thumb is the
+ * product's orange in both themes, the rail is transparent so the field shows
+ * through, and the arrows are removed. Firefox and Chromium 121+ read the
+ * standard properties; the WebKit pseudo-elements cover everything else.
+ */
+@layer base {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--dorsal-accent) transparent;
+  }
+
+  html::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  html::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  html::-webkit-scrollbar-thumb {
+    background-color: var(--dorsal-accent);
+    border-radius: 999px;
+  }
+
+  html::-webkit-scrollbar-thumb:hover {
+    background-color: var(--dorsal-accent-text);
+  }
+
+  html::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+}
