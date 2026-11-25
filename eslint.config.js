@@ -6,7 +6,7 @@ const MESSAGE = {
   network:
     'No network access in src/: once the file is chosen the app makes zero requests (AGENTS.md 5.1).',
   storage:
-    'Persisting user data is banned. Only src/shared/theme/storage.ts may store the theme preference (AGENTS.md 5.1).',
+    'Persisting user data is banned. Only src/shared/theme/storage.ts may store the two interface preferences, the theme and the language (AGENTS.md 5.1).',
   useEffect:
     'useEffect lives in src/shared/hooks/ so effects stay reusable and testable (AGENTS.md 5.1).',
   coreDeterminism:

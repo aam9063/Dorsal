@@ -13,7 +13,7 @@ test.describe('landing animations', () => {
     await page.goto('/')
 
     const headline = page.getByRole('heading', { level: 1 })
-    await expect(headline).toHaveText('Tu año entero, en un dorsal.')
+    await expect(headline).toHaveText('Tu año deportivo, en un dorsal.')
     expect(await headline.evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
     expect(await headline.evaluate((el) => getComputedStyle(el).transform)).toBe('none')
 

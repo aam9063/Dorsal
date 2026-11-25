@@ -1,5 +1,5 @@
 import type { YearSummary } from '../../../core/model/year-summary'
-import type { t } from '../../../shared/i18n'
+import type { Messages } from '../../../shared/i18n'
 
 /**
  * Reading budget (ms) of the automatic advance of BRIEF §7: one per story,
@@ -33,7 +33,7 @@ const DORSAL_AUTO_ADVANCE_MS = 10000
  */
 export interface StoryDefinition {
   id: string
-  titleKey: keyof typeof t.stories
+  titleKey: keyof Messages['stories']
   isAvailable: (summary: YearSummary) => boolean
   /** Reading budget of the automatic advance; omitted stories use the base. */
   autoAdvanceMs?: number

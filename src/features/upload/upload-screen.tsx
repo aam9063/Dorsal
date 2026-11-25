@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
-import { t, uploadNoSeasonMessage, uploadUnsupportedMessage } from '../../shared/i18n'
+import { uploadNoSeasonMessage, uploadUnsupportedMessage } from '../../shared/i18n'
+import { useT } from '../../shared/hooks'
+import type { Messages } from '../../shared/i18n'
 import type { AnalyzeReadStats, YearSummary } from '../../worker/client'
 import { ProcessingScreen, handOffSeasonSummary } from '../processing'
 import { quickValidate } from './quick-validation'
@@ -53,6 +55,8 @@ function SectionHeader({
 }
 
 function SpineColumn() {
+  const t = useT()
+
   return (
     <div aria-hidden="true" className="hidden lg:block lg:border-r lg:border-line lg:pt-6">
       <span className="block rotate-180 whitespace-nowrap pr-3 text-right font-mono text-[11px] uppercase tracking-[0.3em] text-fg-subtle [writing-mode:vertical-rl]">
@@ -77,6 +81,8 @@ function ScreenField({
   testId?: string
   children: ReactNode
 }) {
+  const t = useT()
+
   return (
     <div
       data-testid={testId}
@@ -125,7 +131,7 @@ function problemTestId(problem: UploadProblem): string {
   }
 }
 
-function problemTitle(problem: UploadProblem): string {
+function problemTitle(problem: UploadProblem, t: Messages): string {
   switch (problem.kind) {
     case 'unsupported':
       return t.upload.errors.unsupportedTitle
@@ -138,7 +144,7 @@ function problemTitle(problem: UploadProblem): string {
   }
 }
 
-function problemBody(problem: UploadProblem): string {
+function problemBody(problem: UploadProblem, t: Messages): string {
   switch (problem.kind) {
     case 'unsupported':
       return uploadUnsupportedMessage(problem.missing)
@@ -159,6 +165,7 @@ function problemBody(problem: UploadProblem): string {
  * focusable thing.
  */
 function FilePicker({ onChoose }: { onChoose: (file: File) => void }) {
+  const t = useT()
   const [isDragging, setIsDragging] = useState(false)
 
   const choose = (file: File | null | undefined): void => {
@@ -239,6 +246,8 @@ function FilePicker({ onChoose }: { onChoose: (file: File) => void }) {
 
 /** The "how do I get it" help, in the plate language, as a pinned card. */
 function HowToPlate() {
+  const t = useT()
+
   return (
     <details className={`${PLATE} -rotate-[0.6deg] group p-6 sm:p-7`}>
       <span aria-hidden="true" className={`${PIN} left-5`} />
@@ -276,17 +285,19 @@ function ProblemSection({
   problem: UploadProblem
   onChoose: (file: File) => void
 }) {
+  const t = useT()
+
   return (
     <ScreenField number="02" meta={t.upload.errorMeta}>
       <section data-testid={problemTestId(problem)} className="flex flex-col">
         <h1 className="mt-6 font-display text-[clamp(40px,6vw,56px)] uppercase leading-[0.98]">
-          {problemTitle(problem)}
+          {problemTitle(problem, t)}
         </h1>
         <p
           className="mt-4 max-w-[60ch] text-base leading-relaxed text-fg-muted [text-wrap:pretty]"
           role="alert"
         >
-          {problemBody(problem)}
+          {problemBody(problem, t)}
         </p>
         {problem.kind !== 'unsupported' && (
           <>
@@ -305,6 +316,7 @@ function ProblemSection({
 
 export function UploadScreen() {
   const navigate = useNavigate()
+  const t = useT()
   const [file, setFile] = useState<File | null>(null)
   const [problem, setProblem] = useState<UploadProblem | null>(null)
 

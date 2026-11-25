@@ -1,14 +1,23 @@
 import { formatNumber } from '../../../../shared/format'
-import { t } from '../../../../shared/i18n'
+import { useT } from '../../../../shared/hooks'
+import type { Messages } from '../../../../shared/i18n'
 import type { YearSummary } from '../../../../core/model/year-summary'
 import { PlateHead, PlateTitle, StoryPlate } from '../story-plate'
 
 const LEVEL_CLASSES = ['bg-heat-1', 'bg-heat-2', 'bg-heat-3', 'bg-heat-4'] as const
 
-function streakRangeText(from: { month: number; day: number }, to: { month: number; day: number }) {
-  const copy = t.stories['04-constancia']
-  const fromMonth = t.months[from.month - 1] ?? ''
-  const toMonth = t.months[to.month - 1] ?? ''
+type ConstanciaCopy = Messages['stories']['04-constancia']
+
+type StreakEnd = { month: number; day: number }
+
+function streakRangeText(
+  from: StreakEnd,
+  to: StreakEnd,
+  copy: ConstanciaCopy,
+  months: readonly string[],
+): string {
+  const fromMonth = months[from.month - 1] ?? ''
+  const toMonth = months[to.month - 1] ?? ''
   return from.month === to.month
     ? `${copy.streakFrom} ${from.day} ${copy.streakTo} ${to.day} ${copy.streakDe} ${toMonth}`
     : `${copy.streakFrom} ${from.day} ${copy.streakDe} ${fromMonth} ${copy.streakTo} ${to.day} ${copy.streakDe} ${toMonth}`
@@ -24,6 +33,7 @@ function streakRangeText(from: { month: number; day: number }, to: { month: numb
  * note blocks of the plate.
  */
 export function ConstanciaStory({ summary }: { summary: YearSummary }) {
+  const t = useT()
   const copy = t.stories['04-constancia']
   const consistency = summary.consistency
   if (consistency === null) {
@@ -118,7 +128,7 @@ export function ConstanciaStory({ summary }: { summary: YearSummary }) {
               {streak.from !== null && streak.to !== null ? ',' : '.'}
             </strong>{' '}
             {streak.from !== null && streak.to !== null && (
-              <>{streakRangeText(streak.from, streak.to)}. </>
+              <>{streakRangeText(streak.from, streak.to, copy, t.months)}. </>
             )}
             {copy.streakTail}
           </span>

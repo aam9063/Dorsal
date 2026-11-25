@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { formatDuration, formatKilometres, formatNumber } from '../../../../shared/format'
-import { t } from '../../../../shared/i18n'
+import { useLocale, useT } from '../../../../shared/hooks'
+import type { Locale } from '../../../../shared/i18n'
 import type { YearSummary } from '../../../../core/model/year-summary'
 import { PlateDivider, PlateHead, PlateNote, PlateTitle, Sticker, StoryPlate } from '../story-plate'
 import { EVEREST_APEX_X, EVEREST_HEIGHT, EVEREST_WIDTH, everestFill } from './everest-geometry'
@@ -74,6 +75,16 @@ function Stat({
 }
 
 /**
+ * The percent sign spacing follows the locale: Spanish separates it from the
+ * number (85 %), English attaches it (85%); the Spanish rendering is
+ * unchanged, and the digits always come from `formatNumber`'s locale grouping.
+ */
+function percentText(share: number, locale: Locale): string {
+  const number = formatNumber(share, locale)
+  return locale === 'en' ? `${number}%` : `${number} %`
+}
+
+/**
  * Story 02 (BRIEF §6): the numbers, on the plate of the W2 artboard
  * (design/redesign-2026/03-objeto-dorsal/02-numeros.html) — numbered band,
  * centred hero with the equivalence as a sticker on the plate edge, dashed
@@ -83,6 +94,8 @@ function Stat({
  * fictional and replaced by the real ones.
  */
 export function NumerosStory({ summary }: { summary: YearSummary }) {
+  const t = useT()
+  const locale = useLocale()
   const copy = t.stories['02-numeros']
   const { totals } = summary
   const laps = Math.round(totals.trackLaps)
@@ -175,8 +188,7 @@ export function NumerosStory({ summary }: { summary: YearSummary }) {
           aria-label={[
             copy.sportSplitAriaLead,
             ...totals.bySport.map((row) => {
-              const share = Math.round(row.share * 100)
-              return `${t.sports[row.sport]} ${formatNumber(share)} %`
+              return `${t.sports[row.sport]} ${percentText(Math.round(row.share * 100), locale)}`
             }),
           ].join(' ')}
           className="mt-2 flex flex-col gap-2"
@@ -193,7 +205,7 @@ export function NumerosStory({ summary }: { summary: YearSummary }) {
                   <span className="block h-full bg-orange-text" style={{ width: `${share}%` }} />
                 </span>
                 <span className="text-right font-mono text-[11px] tabular-nums text-label-ink">
-                  {formatNumber(share)} %
+                  {percentText(share, locale)}
                 </span>
               </li>
             )

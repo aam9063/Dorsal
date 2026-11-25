@@ -4,7 +4,7 @@ import {
   formatKilometres,
   formatNumber,
 } from '../../../../shared/format'
-import { t } from '../../../../shared/i18n'
+import { useT } from '../../../../shared/hooks'
 import type { YearSummary } from '../../../../core/model/year-summary'
 import { PlateHead, PlateTitle, StoryPlate } from '../story-plate'
 
@@ -19,6 +19,7 @@ import { PlateHead, PlateTitle, StoryPlate } from '../story-plate'
  * retirement sticker on every item flagged for this season's 800 km.
  */
 export function MaterialStory({ summary }: { summary: YearSummary }) {
+  const t = useT()
   const copy = t.stories['06-material']
   const gear = summary.gear
   if (gear === null || gear.star === null) {

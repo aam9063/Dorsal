@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { readThemePreference, writeThemePreference } from './storage'
+import {
+  readLanguagePreference,
+  readThemePreference,
+  writeLanguagePreference,
+  writeThemePreference,
+} from './storage'
 
 interface FakeStorage {
   touched: string[]
@@ -89,6 +94,65 @@ describe('theme storage', () => {
     expect(readThemePreference()).toBe('system')
     expect(() => {
       writeThemePreference('dark')
+    }).not.toThrow()
+  })
+})
+
+describe('language storage', () => {
+  it('reports no stored language when nothing is stored', () => {
+    installFakeStorage()
+
+    expect(readLanguagePreference()).toBeNull()
+  })
+
+  it('reads back the stored language', () => {
+    installFakeStorage({ 'dorsal.lang': 'en' })
+
+    expect(readLanguagePreference()).toBe('en')
+  })
+
+  it('ignores a stored language that is not offered', () => {
+    installFakeStorage({ 'dorsal.lang': 'fr' })
+
+    expect(readLanguagePreference()).toBeNull()
+  })
+
+  it('writes only the language key', () => {
+    const storage = installFakeStorage()
+    writeLanguagePreference('en')
+
+    expect(storage.touched).toEqual(['dorsal.lang'])
+    expect(readLanguagePreference()).toBe('en')
+  })
+
+  it('never touches a key other than the two interface preferences', () => {
+    const storage = installFakeStorage()
+    writeThemePreference('dark')
+    writeLanguagePreference('en')
+    writeThemePreference('system')
+    writeLanguagePreference('es')
+    readThemePreference()
+    readLanguagePreference()
+
+    expect(new Set(storage.touched)).toEqual(new Set(['dorsal.theme', 'dorsal.lang']))
+  })
+
+  it('degrades when storage throws', () => {
+    vi.stubGlobal('localStorage', {
+      getItem: () => {
+        throw new Error('blocked')
+      },
+      setItem: () => {
+        throw new Error('blocked')
+      },
+      removeItem: () => {
+        throw new Error('blocked')
+      },
+    })
+
+    expect(readLanguagePreference()).toBeNull()
+    expect(() => {
+      writeLanguagePreference('en')
     }).not.toThrow()
   })
 })
