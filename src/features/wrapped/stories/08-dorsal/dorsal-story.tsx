@@ -8,8 +8,7 @@ import {
   shareOrDownloadSeasonCard,
 } from '../../../share'
 import type { YearSummary } from '../../../../core/model/year-summary'
-import { t } from '../../../../shared/i18n'
-import { useFitScale } from '../../../../shared/hooks'
+import { useFitScale, useT } from '../../../../shared/hooks'
 import { useSeasonName } from '../01-portada/season-name'
 import { cycleCardSelection, type CardSelection } from './card-selection'
 
@@ -28,6 +27,7 @@ import { cycleCardSelection, type CardSelection } from './card-selection'
  * bounded by a hairline and the hard offset shadow on the action chip.
  */
 export function DorsalStory({ summary }: { summary: YearSummary }) {
+  const t = useT()
   const copy = t.stories['08-dorsal']
   const name = useSeasonName()
   const trimmedName = name.trim()

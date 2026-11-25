@@ -1,5 +1,5 @@
 import { formatNumber } from '../../../../shared/format'
-import { t } from '../../../../shared/i18n'
+import { useT } from '../../../../shared/hooks'
 import type { YearSummary } from '../../../../core/model/year-summary'
 import { PlateHead, StoryPlate } from '../story-plate'
 
@@ -9,23 +9,16 @@ const HEIGHT = 260
 const BASELINE = 250
 const TOP = 20
 
-function monthName(month: number): string {
-  return t.months[month - 1] ?? ''
-}
-
-function monthAbbreviation(month: number): string {
-  return t.monthsAbbr[month - 1] ?? ''
-}
-
 /**
  * Story 03 (BRIEF §6), on its bone plate, shown only when `summary.monthlyProfile`
- * exists. The silhouette is drawn from the monthly distances — no fixed path (the
- * W3 artboard's idea, data-driven geometry): twelve points, the peak marked as a
- * "Puerto HC", the valley as a circle, both named in text below the chart. Ink
- * and the paper-range accent carry the figure on bone.
+ * exists. The months come from the active locale's copy; the `useT()` closures
+ * read the month names at render time (odd/tasks/i18n-english.md T3).
  */
 export function PerfilStory({ summary }: { summary: YearSummary }) {
+  const t = useT()
   const copy = t.stories['03-perfil']
+  const monthName = (month: number): string => t.months[month - 1] ?? ''
+  const monthAbbreviation = (month: number): string => t.monthsAbbr[month - 1] ?? ''
   const profile = summary.monthlyProfile
   if (profile === null) {
     return null
