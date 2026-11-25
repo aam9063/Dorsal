@@ -79,7 +79,7 @@ export const en: Messages = {
     previewsMeta: 'What you will see · Your season, stage by stage',
     privacyMeta: 'Privacy · No servers',
     faqMeta: 'Questions · The essentials',
-    title: 'Your whole year, on one Dorsal.',
+    title: 'Your sporting year, on one Dorsal.',
     subtitle:
       'Upload the activities.csv from your Strava account export and we return your 2026 told like a race: your kilometers, your stage profile, your streaks and a race card ready to share. No account, no subscription.',
     cta: 'Upload my activities.csv',
