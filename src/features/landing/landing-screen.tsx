@@ -374,12 +374,12 @@ function LandingPreviews() {
         label={t.landing.previews.listAriaLabel}
         className="-mx-5 px-5 pb-3 sm:-mx-8 sm:px-8"
       >
-        <ul className="flex w-max gap-5">
+        <ul className="flex w-max gap-5 lg:grid lg:w-full lg:grid-cols-4">
           {t.landing.previews.items.map((item, index) => (
             <li
               key={item.number}
               data-anim-card
-              className={`${PLATE} ${PLATE_ROTATIONS[index % 4]} flex h-[320px] w-[190px] shrink-0 flex-col justify-between gap-5 p-5`}
+              className={`${PLATE} ${PLATE_ROTATIONS[index % 4]} flex h-[320px] w-[190px] shrink-0 flex-col justify-between gap-5 p-5 lg:w-auto`}
             >
               <div className="flex items-start justify-between gap-2">
                 <span className="font-mono text-xs text-label-ink">{item.number}</span>
