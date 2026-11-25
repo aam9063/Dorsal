@@ -1,5 +1,6 @@
 import { archetypePeakSentence, t } from '../../../../shared/i18n'
 import type { YearSummary } from '../../../../core/model/year-summary'
+import { PlateHead, PlateTitle, StoryPlate } from '../story-plate'
 import {
   CLOCK_CENTER,
   CLOCK_SIZE,
@@ -30,14 +31,15 @@ function hourText(hour: number): string {
 }
 
 /**
- * Story 05 (BRIEF §6), shown only when `summary.archetype` exists. The
- * headline is the archetype's own name, never the rule id, and the secondary
- * trait appears as a supporting line (odd/tasks/h10-stories-05-07.md,
+ * Story 05 (BRIEF §6), on its bone plate, shown only when `summary.archetype`
+ * exists. The headline is the archetype's own name, never the rule id, and the
+ * secondary trait appears as a supporting line (odd/tasks/h10-stories-05-07.md,
  * decision 1). The 24-hour distribution is a radial chart like the W5
  * artboard's clock, built from `startHours`; the spoke length carries the
  * information, hours without starts draw nothing, and the sentence below the
  * clock is the one place that names the peak hour in text (decision 2), so no
- * colour is required.
+ * colour is required. The primary archetype keeps the sticker treatment; the
+ * secondary one is a flat outlined chip.
  */
 export function ArquetipoStory({ summary }: { summary: YearSummary }) {
   const copy = t.stories['05-arquetipo']
@@ -56,20 +58,28 @@ export function ArquetipoStory({ summary }: { summary: YearSummary }) {
   const secondaryName = copy.archetypeNames[archetype.secondary]
 
   return (
-    <div data-testid="story-05-arquetipo" className="rounded-panel bg-accent p-6 text-ink">
-      <p className="font-mono text-[13px] uppercase tracking-[0.14em]">{copy.title}</p>
+    <StoryPlate testId="story-05-arquetipo" className="gap-4">
+      <PlateHead number="05" />
+      <PlateTitle>{copy.title}</PlateTitle>
 
-      <div className="mt-5 flex flex-col gap-1">
-        <span className="text-[17px]">{copy.lead}</span>
-        <h1 data-testid="arquetipo-name" className="font-display text-5xl uppercase leading-[0.95]">
+      <div className="flex flex-col gap-1 text-center">
+        <span className="text-[13.5px] text-body-ink [text-wrap:pretty]">{copy.lead}</span>
+        <h3
+          data-testid="arquetipo-name"
+          className="font-display text-[36px] uppercase leading-[0.95] text-text-ink"
+        >
           {primaryName}
-        </h1>
-        <span data-testid="arquetipo-secondary" className="pt-1 text-[15px] leading-snug">
-          {copy.secondaryLead} <strong>{secondaryName}</strong>
+        </h3>
+        <span
+          data-testid="arquetipo-secondary"
+          className="pt-1 text-[13.5px] leading-snug text-body-ink [text-wrap:pretty]"
+        >
+          {copy.secondaryLead}{' '}
+          <strong className="font-semibold text-text-ink">{secondaryName}</strong>
         </span>
       </div>
 
-      <figure className="mt-5 flex flex-col gap-2">
+      <figure className="flex flex-col gap-2">
         <svg
           data-testid="arquetipo-clock"
           viewBox={`0 0 ${CLOCK_SIZE} ${CLOCK_SIZE}`}
@@ -98,22 +108,25 @@ export function ArquetipoStory({ summary }: { summary: YearSummary }) {
             ))}
           </g>
         </svg>
-        <figcaption data-testid="arquetipo-peak-hour" className="text-[15px] leading-relaxed">
+        <figcaption
+          data-testid="arquetipo-peak-hour"
+          className="text-[13.5px] leading-relaxed text-body-ink [text-wrap:pretty]"
+        >
           {archetypePeakSentence(peakSharePct, peakText)}
         </figcaption>
       </figure>
 
-      <div className="mt-5 flex flex-wrap gap-2">
+      <div className="mt-auto flex flex-wrap justify-center gap-2">
         <span
           data-testid="arquetipo-primary-chip"
-          className="rounded-pill bg-ink px-3.5 py-2 text-[13px] font-semibold text-orange"
+          className="rotate-[2deg] rounded-pill bg-accent px-3.5 py-2 text-[13px] font-bold text-ink shadow-[0_4px_9px_rgba(0,0,0,0.35)]"
         >
           {primaryName}
         </span>
-        <span className="rounded-pill border-[1.5px] border-ink px-3.5 py-2 text-[13px] font-semibold">
+        <span className="rounded-pill border-[1.5px] border-ink px-3.5 py-2 text-[13px] font-semibold text-text-ink">
           {secondaryName}
         </span>
       </div>
-    </div>
+    </StoryPlate>
   )
 }

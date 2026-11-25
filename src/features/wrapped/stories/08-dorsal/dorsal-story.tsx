@@ -22,6 +22,10 @@ import { cycleCardSelection, type CardSelection } from './card-selection'
  * onClick, and it exists because the story is a fixed-height mobile screen two
  * 1080×1920 cards cannot fit at once. Each PNG is painted on demand when the
  * button is pressed, so opening the story draws nothing (h11 decision 6).
+ *
+ * In the object language of the redesign this story is the meta stage: the one
+ * full-accent field, like the landing's privacy strip, with the meta label
+ * bounded by a hairline and the hard offset shadow on the action chip.
  */
 export function DorsalStory({ summary }: { summary: YearSummary }) {
   const copy = t.stories['08-dorsal']
@@ -59,9 +63,11 @@ export function DorsalStory({ summary }: { summary: YearSummary }) {
   return (
     <div
       data-testid="story-08-dorsal"
-      className="flex min-h-0 w-full flex-col gap-2 self-stretch rounded-panel bg-accent p-5 text-ink"
+      className="flex min-h-0 w-full flex-col gap-2 self-stretch rounded-[6px] bg-accent p-5 text-ink shadow-[0_26px_50px_rgba(0,0,0,0.55)]"
     >
-      <p className="shrink-0 font-mono text-xs uppercase tracking-[0.14em]">{copy.eyebrow}</p>
+      <p className="shrink-0 border-b-2 border-dashed border-ink/50 pb-2 font-mono text-[11px] uppercase tracking-[0.14em]">
+        {copy.eyebrow}
+      </p>
 
       {/* The player clips anything taller than the screen, so the card scrolls
           inside its own slot instead of disappearing behind the chrome. It opts
@@ -70,7 +76,7 @@ export function DorsalStory({ summary }: { summary: YearSummary }) {
           window, so it is scaled to fit instead of scrolled or clipped. */}
       <div
         ref={slotRef}
-        className="flex min-h-0 max-h-[62dvh] flex-1 items-start justify-center overflow-hidden rounded-chip py-1"
+        className="flex min-h-0 max-h-[52dvh] flex-1 items-start justify-center overflow-hidden rounded-chip py-1"
       >
         <div ref={designRef} className="origin-top" style={{ transform: `scale(${scale})` }}>
           {isDorsal ? (
@@ -118,7 +124,7 @@ export function DorsalStory({ summary }: { summary: YearSummary }) {
           data-testid="share-download"
           aria-busy={busy}
           disabled={busy}
-          className="pointer-events-auto inline-flex min-h-14 items-center justify-center rounded-pill bg-ink font-sans text-base font-bold text-accent aria-busy:opacity-70"
+          className="pointer-events-auto inline-flex min-h-14 items-center justify-center rounded-chip bg-ink font-mono text-[13px] font-bold uppercase tracking-[0.1em] text-bone shadow-[4px_4px_0_var(--color-bone)] transition-shadow hover:shadow-[5px_5px_0_var(--color-bone)] aria-busy:opacity-70"
           onClick={() => {
             setBusy(true)
             const action = isDorsal
@@ -135,7 +141,7 @@ export function DorsalStory({ summary }: { summary: YearSummary }) {
         >
           {label}
         </button>
-        <p className="text-center text-xs text-ink">{hint}</p>
+        <p className="text-center text-[12px] text-ink [text-wrap:pretty]">{hint}</p>
       </div>
     </div>
   )

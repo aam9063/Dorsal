@@ -17,11 +17,28 @@ export interface PlayerProps {
 }
 
 /**
+ * Chip controls of the object language: dashed bone-outline pills over the ink
+ * field (design/redesign-2026/03-objeto-dorsal/02-numeros.html, `.zone`).
+ */
+const ZONE_CHIP =
+  'inline-flex min-h-11 items-center gap-1.5 rounded-pill border-[1.5px] border-dashed border-bone-soft px-3.5 text-[13px] font-semibold text-bone transition-colors hover:border-solid disabled:opacity-40'
+
+const ICON_CHIP =
+  'inline-flex size-11 items-center justify-center rounded-pill border-[1.5px] border-dashed border-bone-soft text-bone transition-colors hover:border-solid'
+
+const RIBBON =
+  'inline-flex shrink-0 -rotate-2 items-center rounded-pill bg-accent px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-ink shadow-[0_6px_12px_rgba(0,0,0,0.4)]'
+
+/**
  * The story player of BRIEF §7: progress bars for the available stories, tap
  * zones, hold-to-pause, keyboard and close. Every input goes through
  * `reducePlayer`, so tap, keyboard and automatic advance cannot drift apart.
  * Progress bars are derived, one per available story, so an omitted story
  * leaves no gap.
+ *
+ * The chrome follows the 02-numeros artboard: the stage ribbon and the close
+ * chip over the ink field up top, the progress strip and the dashed zone chips
+ * below the stage, with the visible back button keeping the H-11 contract.
  */
 export function Player({ stories, summary, renderStory, onClose }: PlayerProps) {
   const available = availableStories(stories, summary)
@@ -128,32 +145,17 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
       ref={rootRef}
       tabIndex={-1}
       onKeyDown={onKeyDown}
-      className="fixed inset-0 z-50 flex flex-col bg-bg outline-none"
+      className="fixed inset-0 z-50 flex flex-col bg-ink text-bone outline-none"
     >
-      <div className="flex items-center gap-4 px-5 pt-5 sm:px-8">
-        <button
-          type="button"
-          data-testid="player-back"
-          aria-label={t.player.zonePrevious}
-          disabled={index === 0}
-          onClick={goPrevious}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-pill border border-line text-fg-muted disabled:opacity-40"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M15 5 L8 12 L15 19"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+      <div className="flex items-center gap-3 px-5 pt-4 sm:px-8">
+        <span data-testid="player-stage-ribbon" aria-hidden="true" className={RIBBON}>
+          {`${t.landing.previews.stageTag} ${index + 1} / ${count}`}
+        </span>
         <div
           data-testid="player-progress"
           role="group"
           aria-label={t.player.progressLabel}
-          className="flex flex-1 gap-1.5"
+          className="ml-auto flex min-w-0 flex-1 justify-end gap-1.5"
         >
           {available.map((barStory, barIndex) => {
             const isPast = barIndex < index
@@ -163,12 +165,12 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
               <div
                 key={barStory.id}
                 data-testid={`player-progress-bar-${barStory.id}`}
-                className="h-1 flex-1 overflow-hidden rounded-pill bg-fg/15"
+                className="h-1 flex-1 max-w-16 overflow-hidden rounded-pill bg-dim"
               >
                 {(isPast || isCurrent) && (
                   <motion.div
                     key={`${barStory.id}-${index}`}
-                    className="h-full origin-left bg-accent"
+                    className={`h-full origin-left ${isPast ? 'bg-bone-soft' : 'bg-accent'}`}
                     initial={{ scaleX: animates ? 0 : 1 }}
                     animate={{ scaleX: 1 }}
                     transition={
@@ -192,7 +194,7 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
           onClick={() => {
             send('close')
           }}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-pill border border-line text-fg-muted"
+          className={ICON_CHIP}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path
@@ -205,7 +207,7 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
         </button>
       </div>
       <div
-        className="relative flex flex-1 touch-pan-y items-center justify-center overflow-hidden px-8"
+        className="relative flex min-h-0 flex-1 touch-pan-y items-center justify-center overflow-hidden px-5 py-3 sm:px-8"
         onPointerDown={holdStarted}
         onPointerUp={holdEnded}
         onPointerCancel={holdEnded}
@@ -223,20 +225,11 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
             // back zones underneath. An interactive element inside a story opts
             // back in with `pointer-events-auto`, which is how the portada's name
             // field stays tappable.
-            className="pointer-events-none relative z-20 max-w-md"
+            className="pointer-events-none relative z-20 flex max-h-full max-w-md flex-col justify-center"
           >
             {renderStory(story, summary)}
           </motion.div>
         </AnimatePresence>
-        {(state.index === 0 || reducedMotion) && (
-          <p
-            data-testid="player-hint"
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-6 z-30 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-fg-subtle"
-          >
-            {t.player.tapHint}
-          </p>
-        )}
         <button
           type="button"
           data-testid="player-zone-previous"
@@ -256,6 +249,57 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
           className="absolute inset-y-0 right-0 z-10 min-h-11 w-1/2 cursor-pointer"
         />
       </div>
+      <nav className="flex flex-col gap-2 px-5 pb-4 pt-1 sm:px-8">
+        {(index === 0 || reducedMotion) && (
+          <p
+            data-testid="player-hint"
+            aria-hidden="true"
+            className="self-center text-center font-mono text-[11px] uppercase tracking-[0.14em] text-bone-soft"
+          >
+            {t.player.tapHint}
+          </p>
+        )}
+        <div className="flex items-center justify-between gap-3">
+          <button
+            type="button"
+            data-testid="player-back"
+            aria-label={t.player.zonePrevious}
+            disabled={index === 0}
+            onClick={goPrevious}
+            className={ZONE_CHIP}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M15 5 L8 12 L15 19"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {t.player.zonePrevious}
+          </button>
+          <button
+            type="button"
+            data-testid="player-next"
+            aria-label={t.player.zoneNext}
+            disabled={index === count - 1}
+            onClick={goNext}
+            className={ZONE_CHIP}
+          >
+            {t.player.zoneNext}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M9 5 L16 12 L9 19"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </nav>
     </section>
   )
 }
