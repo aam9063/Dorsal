@@ -47,6 +47,29 @@ describe('spanish copy', () => {
     expect(es.landing.steps.items[1].body).toContain('activities.csv')
   })
 
+  it('keeps the editorial spine and the numbered section headers of the redesigned landing', () => {
+    const meta = [
+      es.landing.spineLabel,
+      es.landing.heroMeta,
+      es.landing.stepsMeta,
+      es.landing.previewsMeta,
+      es.landing.privacyMeta,
+      es.landing.faqMeta,
+    ]
+    for (const label of meta) {
+      expect(label.trim().length).toBeGreaterThan(0)
+      expect(label).toContain('·')
+    }
+    expect(es.landing.spineLabel).toBe('Dorsal · Temporada 2026')
+    expect(es.landing.heroMeta).toBe('Objeto · Dorsal de temporada')
+    expect(es.landing.stepsMeta).toBe('Cómo funciona · Tres pasos')
+    expect(es.landing.previewsMeta).toBe('Lo que vas a ver · Tu temporada, por etapas')
+    expect(es.landing.privacyMeta).toBe('Privacidad · Sin servidores')
+    expect(es.landing.faqMeta).toBe('Preguntas · Lo esencial')
+    expect(es.landing.previews.stageTag).toBe('Etapa')
+    expect(es.landing.previews.stageTag).not.toMatch(/\d/) // the number renders next to it
+  })
+
   it('explains taking the CSV out of the zip instead of uploading the zip', () => {
     const unzipAnswer = es.landing.faq.items.find((item) => item.answer.includes('.zip'))
     expect(unzipAnswer).toBeDefined()

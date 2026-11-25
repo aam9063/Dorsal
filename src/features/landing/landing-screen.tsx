@@ -140,24 +140,23 @@ function ExampleBibCard() {
 
         <div className="my-3.5 border-t-2 border-dashed border-bone-soft" />
 
-        <div className="grid grid-cols-3 gap-2 text-center">
-          {t.landing.card.stats.map((stat) => (
+        <div className="grid grid-cols-4 gap-2 text-center">
+          {[
+            ...t.landing.card.stats,
+            { value: t.landing.card.streakValue, label: t.landing.card.streakLabel },
+          ].map((stat) => (
             <div key={stat.label} className="flex flex-col gap-0.5">
               <span className="font-display text-[21px] leading-tight" data-anim-counter>
                 {stat.value}
               </span>
-              <span className="text-[11px] text-label-ink">{stat.label}</span>
+              <span className="text-[11px] leading-tight text-label-ink">{stat.label}</span>
             </div>
           ))}
         </div>
 
-        <span className="absolute -right-6 bottom-[70px] inline-flex rotate-[6deg] items-center gap-2 rounded-pill bg-accent px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-ink shadow-[0_6px_14px_rgba(15,16,13,0.4)]">
+        <span className="absolute -bottom-6 right-5 inline-flex rotate-[6deg] items-center gap-2 rounded-pill bg-accent px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-ink shadow-[0_6px_14px_rgba(15,16,13,0.4)]">
           <span data-anim-counter>{t.landing.card.everestValue}</span>
           {t.landing.card.everestLabel}
-        </span>
-        <span className="absolute -bottom-6 left-5 inline-flex -rotate-[3deg] items-center gap-2 rounded-pill border border-accent-on-bone bg-bone px-4 py-2 font-mono text-[11px] uppercase tracking-[0.1em] text-ink">
-          {t.landing.card.streakLabel}
-          <span className="font-bold">{t.landing.card.streakValue}</span>
         </span>
       </div>
     </div>
