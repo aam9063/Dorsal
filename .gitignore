@@ -41,3 +41,6 @@ fixtures/generated/
 # Impeccable design skill, regenerated with `npx impeccable install`
 .agents/
 .codex/
+
+# Screenshots captured for the launch video, not part of the app
+public/img/
