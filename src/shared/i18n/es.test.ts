@@ -77,6 +77,10 @@ describe('spanish copy', () => {
     expect(es.processing.errorMeta).toBe('Error · Revisa el archivo')
   })
 
+  it('carries the numbered-band metadata of the redesigned result screen', () => {
+    expect(es.result.meta).toBe('Resultado · Temporada 2026')
+  })
+
   it('explains taking the CSV out of the zip instead of uploading the zip', () => {
     const unzipAnswer = es.landing.faq.items.find((item) => item.answer.includes('.zip'))
     expect(unzipAnswer).toBeDefined()
