@@ -97,4 +97,15 @@
     width: 0;
     height: 0;
   }
+
+  /**
+   * `scrollbar-color` and `scrollbar-width` inherit, so the accent bar above
+   * would also paint on every scrolling pane inside the app — the story player
+   * has one, and it showed as a stray orange line in the middle of every story.
+   * The accent belongs to the page's own scrollbar and nowhere else.
+   */
+  :where(body, body *) {
+    scrollbar-color: auto;
+    scrollbar-width: auto;
+  }
 }
