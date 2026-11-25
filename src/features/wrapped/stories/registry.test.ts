@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { buildYearSummary } from '../../../core/metrics/build-year-summary'
 import type { YearSummary } from '../../../core/model/year-summary'
 import { availableStories, type StoryDefinition, STORIES } from './registry'
+import { AUTO_ADVANCE_BASE_MS } from './registry'
 
 function summaryWith(overrides: Partial<YearSummary['availability']>): YearSummary {
   const summary = buildYearSummary([])
@@ -81,6 +82,23 @@ describe('story registry', () => {
     expect(withoutHeartbeats.map((story) => story.id)).not.toContain('07-latidos')
     const withHeartbeats = availableStories(STORIES, summaryWith({ heartbeats: true }))
     expect(withHeartbeats.map((story) => story.id)).toContain('07-latidos')
+  })
+
+  it('gives every story an explicit reading budget, as large as the baseline or larger', () => {
+    for (const story of STORIES) {
+      expect(story.autoAdvanceMs).toBeGreaterThanOrEqual(AUTO_ADVANCE_BASE_MS)
+    }
+  })
+
+  it('keeps the portada on the 7000 ms base pinned by e2e/player.spec.ts', () => {
+    const portada = STORIES.find((story) => story.id === '01-portada')
+    expect(portada?.autoAdvanceMs).toBe(AUTO_ADVANCE_BASE_MS)
+  })
+
+  it('gives the densest screen the largest budget, not the base', () => {
+    const budgets = STORIES.map((story) => story.autoAdvanceMs ?? 0)
+    const numeros = STORIES.find((story) => story.id === '02-numeros')
+    expect(numeros?.autoAdvanceMs).toBe(Math.max(...budgets))
   })
 
   it('keeps the registry in story order', () => {

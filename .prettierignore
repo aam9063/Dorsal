@@ -16,3 +16,11 @@ BRIEF.md
 # Generated and static, with no Prettier parser to infer.
 public/robots.txt
 public/sitemap.xml
+
+# Local design tooling installed by `npx impeccable install`, never tracked
+.agents/
+.codex/
+
+# Design artboards: self-contained HTML owned by the design skill. Prettier's
+# HTML printer would rewrite whitespace that carries the artboard's layout.
+design/

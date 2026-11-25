@@ -3,11 +3,8 @@ import { AnimatePresence, motion } from 'motion/react'
 import type { YearSummary } from '../../../core/model/year-summary'
 import { useAutoAdvance, useFocusOnMount, usePrefersReducedMotion } from '../../../shared/hooks'
 import { t } from '../../../shared/i18n'
-import { availableStories, type StoryDefinition } from '../stories/registry'
+import { availableStories, AUTO_ADVANCE_BASE_MS, type StoryDefinition } from '../stories/registry'
 import { clampIndex, initialPlayerState, reducePlayer, type PlayerInput } from './player-machine'
-
-/** The automatic advance of BRIEF §7. */
-const AUTO_ADVANCE_MS = 7000
 
 /** A pointer held longer than this is a pause gesture, not a tap. */
 const TAP_MAX_MS = 300
@@ -34,6 +31,7 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
   // mount, and an out-of-range index must show the last story, not nothing
   // (review of H-08). Every render read below uses this clamped index.
   const index = clampIndex(state.index, count)
+  const story = available[index]
   const reducedMotion = usePrefersReducedMotion()
   const directionRef = useRef<'forward' | 'back'>('forward')
   const pressedAtRef = useRef<number | null>(null)
@@ -61,7 +59,7 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
 
   useAutoAdvance({
     enabled: !state.paused && count > 1 && index < count - 1,
-    delayMs: AUTO_ADVANCE_MS,
+    delayMs: story?.autoAdvanceMs ?? AUTO_ADVANCE_BASE_MS,
     resetKey: index,
     onAdvance: goNext,
   })
@@ -69,7 +67,6 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
   if (count === 0) {
     return null
   }
-  const story = available[index]
   if (story === undefined) {
     return null
   }
@@ -134,6 +131,24 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
       className="fixed inset-0 z-50 flex flex-col bg-bg outline-none"
     >
       <div className="flex items-center gap-4 px-5 pt-5 sm:px-8">
+        <button
+          type="button"
+          data-testid="player-back"
+          aria-label={t.player.zonePrevious}
+          disabled={index === 0}
+          onClick={goPrevious}
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-pill border border-line text-fg-muted disabled:opacity-40"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M15 5 L8 12 L15 19"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
         <div
           data-testid="player-progress"
           role="group"
@@ -158,7 +173,10 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
                     animate={{ scaleX: 1 }}
                     transition={
                       animates
-                        ? { duration: AUTO_ADVANCE_MS / 1000, ease: 'linear' }
+                        ? {
+                            duration: (barStory.autoAdvanceMs ?? AUTO_ADVANCE_BASE_MS) / 1000,
+                            ease: 'linear',
+                          }
                         : { duration: 0 }
                     }
                   />
@@ -174,9 +192,16 @@ export function Player({ stories, summary, renderStory, onClose }: PlayerProps) 
           onClick={() => {
             send('close')
           }}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-pill border border-line text-2xl leading-none text-fg-muted"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-pill border border-line text-fg-muted"
         >
-          ×
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M6 6 L18 18 M18 6 L6 18"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+          </svg>
         </button>
       </div>
       <div

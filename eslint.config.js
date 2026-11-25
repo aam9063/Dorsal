@@ -189,6 +189,9 @@ export default [
       'coverage/**',
       'playwright-report/**',
       'test-results/**',
+      // Local design tooling installed by `npx impeccable install`, never tracked.
+      '.agents/**',
+      '.codex/**',
       'fixtures/generated/**',
       'Strava Wrapped 2026-project/**',
     ],
