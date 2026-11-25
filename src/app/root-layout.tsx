@@ -43,13 +43,20 @@ export function RootLayout() {
       >
         {copy.a11y.skipToContent}
       </a>
-      <header className="flex items-center justify-between gap-4 px-5 pt-5 sm:px-8">
-        {isLanding ? <span aria-hidden="true" /> : <BrandHome />}
-        <div className="flex shrink-0 items-center gap-2">
-          <LanguageToggle />
-          <ThemeToggle />
-        </div>
-      </header>
+      {/* The landing draws its own full header, brand and preference strip
+          included, so this one steps aside there entirely on phones it would
+          stack a second row above the brand and its toggles could never be
+          in that single row. Every other screen gets this strip, because
+          without it there is no way back to the start of the flow. */}
+      {!isLanding && (
+        <header className="flex items-center justify-between gap-4 px-5 pt-5 sm:px-8">
+          <BrandHome />
+          <div className="flex shrink-0 items-center gap-2">
+            <LanguageToggle />
+            <ThemeToggle />
+          </div>
+        </header>
+      )}
       <main id="contenido" className="flex-1">
         <Outlet />
       </main>
