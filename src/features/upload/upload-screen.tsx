@@ -159,7 +159,7 @@ function ProblemSection({
   return (
     <section data-testid={problemTestId(problem)} className={SECTION_CLASS}>
       <h1 className="text-5xl">{problemTitle(problem)}</h1>
-      <p className="text-base text-fg-muted" role="alert">
+      <p className="text-base text-fg-muted [text-wrap:pretty]" role="alert">
         {problemBody(problem)}
       </p>
       {problem.kind !== 'unsupported' && (
@@ -224,11 +224,8 @@ export function UploadScreen() {
 
   return (
     <section data-testid="upload-root" className={SECTION_CLASS}>
-      <p className="font-mono text-xs uppercase tracking-[0.14em] text-fg-subtle">
-        {t.brand.tagline}
-      </p>
       <h1 className="text-5xl">{t.upload.title}</h1>
-      <p className="text-base text-fg-muted">{t.upload.subtitle}</p>
+      <p className="text-base text-fg-muted [text-wrap:pretty]">{t.upload.subtitle}</p>
       <details className="rounded-panel border border-line bg-surface p-4">
         <summary className="cursor-pointer font-semibold">{t.upload.howto.title}</summary>
         <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-fg-muted">

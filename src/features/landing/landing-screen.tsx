@@ -100,7 +100,7 @@ function ExampleBibCard() {
       className="hidden flex-col items-center gap-6 lg:flex lg:min-w-[320px] lg:flex-[1_1_420px]"
       data-anim-hero
     >
-      <div aria-hidden="true" className="relative my-14 w-full max-w-[390px]">
+      <div aria-hidden="true" className="relative my-20 w-full max-w-[390px]">
         <div className="relative w-full -rotate-4 rounded-panel bg-bone px-6 pb-6 pt-5 text-ink shadow-[0_30px_70px_rgba(15,16,13,0.35)]">
           <span className="absolute left-3.5 top-3.5 size-3 rounded-full bg-bg" />
           <span className="absolute right-3.5 top-3.5 size-3 rounded-full bg-bg" />
@@ -133,13 +133,13 @@ function ExampleBibCard() {
           </div>
         </div>
 
-        <div className="absolute -left-2 top-2 flex rotate-3 items-center gap-2 rounded-pill border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-fg">
+        <div className="absolute -top-9 left-4 flex rotate-3 items-center gap-2 rounded-pill border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-fg">
           <span className="font-display text-lg text-accent-text" data-anim-counter>
             {t.landing.card.everestValue}
           </span>
           {t.landing.card.everestLabel}
         </div>
-        <div className="absolute -right-2 -bottom-2 flex -rotate-2 items-center gap-2 rounded-pill border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-fg">
+        <div className="absolute -bottom-9 right-4 flex -rotate-2 items-center gap-2 rounded-pill border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-fg">
           {t.landing.card.streakLabel}
           <span className="font-display text-lg text-accent-text" data-anim-counter>
             {t.landing.card.streakValue}
@@ -160,12 +160,6 @@ function LandingHero() {
       className={`${SECTION_WIDTH} flex-row flex-wrap items-center gap-16 pb-28 pt-16`}
     >
       <div className="flex min-w-0 flex-1 basis-[500px] flex-col gap-7">
-        <p
-          className="font-mono text-[13px] uppercase tracking-[0.14em] text-accent-text"
-          data-anim-hero
-        >
-          {t.landing.eyebrow}
-        </p>
         <h1
           className="font-display text-[clamp(60px,8vw,116px)] uppercase leading-[0.94]"
           data-anim-hero
@@ -207,13 +201,12 @@ function LandingSteps() {
     <section id="como" aria-labelledby="como-title" className="w-full scroll-mt-6 bg-bone text-ink">
       <div className={`${SECTION_WIDTH} gap-[52px] py-24 sm:py-26`} data-anim-section>
         <div className="flex max-w-[720px] flex-col gap-4">
-          <p className="font-mono text-[13px] uppercase tracking-[0.14em] text-label-ink">
-            {t.landing.steps.eyebrow}
-          </p>
           <h2 id="como-title" className={HEADING_SIZE}>
             {t.landing.steps.title}
           </h2>
-          <p className="text-lg leading-relaxed text-body-ink">{t.landing.steps.description}</p>
+          <p className="text-lg leading-relaxed text-body-ink [text-wrap:pretty]">
+            {t.landing.steps.description}
+          </p>
         </div>
         <div className="flex flex-wrap gap-6">
           {t.landing.steps.items.map((item, index) => (
@@ -228,7 +221,7 @@ function LandingSteps() {
               </span>
               <h3 className="text-2xl font-bold">{item.title}</h3>
               <p
-                className={`text-base leading-relaxed ${
+                className={`text-base leading-relaxed [text-wrap:pretty] ${
                   index === 2 ? 'text-ink' : 'text-body-ink'
                 }`}
               >
@@ -354,14 +347,11 @@ function LandingPreviews() {
     >
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex max-w-[640px] flex-col gap-4">
-          <p className="font-mono text-[13px] uppercase tracking-[0.14em] text-accent-text">
-            {t.landing.previews.eyebrow}
-          </p>
           <h2 id="historias-title" className={HEADING_SIZE}>
             {t.landing.previews.title}
           </h2>
         </div>
-        <p className="max-w-[340px] text-base leading-relaxed text-fg-subtle">
+        <p className="max-w-[340px] text-base leading-relaxed text-fg-subtle [text-wrap:pretty]">
           {t.landing.previews.description}
         </p>
       </div>
@@ -443,7 +433,7 @@ function LandingPrivacyStrip() {
               className="flex min-w-0 flex-1 basis-[260px] flex-col gap-2.5 border-t-2 border-ink pt-5"
             >
               <h3 className="text-xl font-bold">{item.title}</h3>
-              <p className="text-base leading-relaxed text-ink">{item.body}</p>
+              <p className="text-base leading-relaxed text-ink [text-wrap:pretty]">{item.body}</p>
             </div>
           ))}
         </div>
@@ -461,9 +451,6 @@ function LandingFaq() {
       data-anim-section
     >
       <div className="flex min-w-0 flex-1 basis-[320px] flex-col gap-4">
-        <p className="font-mono text-[13px] uppercase tracking-[0.14em] text-accent-text">
-          {t.landing.faq.eyebrow}
-        </p>
         <h2
           id="faq-title"
           className="font-display text-[clamp(44px,5vw,64px)] uppercase leading-none"
@@ -486,7 +473,7 @@ function LandingFaq() {
                 −
               </span>
             </summary>
-            <p className="mt-3 max-w-prose text-base leading-relaxed text-fg-muted">
+            <p className="mt-3 max-w-prose text-base leading-relaxed text-fg-muted [text-wrap:pretty]">
               {item.answer}
             </p>
           </details>

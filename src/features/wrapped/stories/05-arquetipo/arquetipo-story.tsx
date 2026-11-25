@@ -1,13 +1,16 @@
 import { archetypePeakSentence, t } from '../../../../shared/i18n'
 import type { YearSummary } from '../../../../core/model/year-summary'
+import {
+  CLOCK_CENTER,
+  CLOCK_SIZE,
+  CENTER_RADIUS,
+  HOUR_LABELS,
+  SPOKE_BASE_REACH,
+  activeSpokes,
+} from './clock-geometry'
 
-/** Clock geometry, in the viewBox coordinates of the W5 artboard. */
-const CLOCK_SIZE = 300
-const CLOCK_CENTER = 150
-const SPOKE_BASE_Y = 96
-const SPOKE_MIN_LENGTH = 3
-const SPOKE_MAX_LENGTH = 76
-const CENTER_RADIUS = 44
+/** The base of every spoke sits this far above the centre, as on the W5 artboard. */
+const SPOKE_BASE_Y = CLOCK_CENTER - SPOKE_BASE_REACH
 
 function peakHourOf(startHours: readonly number[]): { hour: number; count: number } {
   let hour = 0
@@ -31,9 +34,10 @@ function hourText(hour: number): string {
  * headline is the archetype's own name, never the rule id, and the secondary
  * trait appears as a supporting line (odd/tasks/h10-stories-05-07.md,
  * decision 1). The 24-hour distribution is a radial chart like the W5
- * artboard's clock, built from `startHours` with the peak hour in its centre;
- * the spoke length carries the information and the sentence below the clock
- * names the peak hour in text (decision 2), so no colour is required.
+ * artboard's clock, built from `startHours`; the spoke length carries the
+ * information, hours without starts draw nothing, and the sentence below the
+ * clock is the one place that names the peak hour in text (decision 2), so no
+ * colour is required.
  */
 export function ArquetipoStory({ summary }: { summary: YearSummary }) {
   const copy = t.stories['05-arquetipo']
@@ -45,7 +49,6 @@ export function ArquetipoStory({ summary }: { summary: YearSummary }) {
   const totalStarts = archetype.startHours.reduce((sum, count) => sum + count, 0)
   const peak = peakHourOf(archetype.startHours)
   const peakSharePct = totalStarts === 0 ? 0 : Math.round((peak.count / totalStarts) * 100)
-  const maxCount = Math.max(...archetype.startHours)
   const peakText = hourText(peak.hour)
 
   const spokenClock = `${copy.distributionLabel}. ${archetypePeakSentence(peakSharePct, peakText)}`
@@ -75,56 +78,24 @@ export function ArquetipoStory({ summary }: { summary: YearSummary }) {
           className="w-full self-center"
         >
           <g className="stroke-ink" strokeWidth="8" strokeLinecap="round">
-            {archetype.startHours.map((count, hour) => (
+            {activeSpokes(archetype.startHours).map((spoke) => (
               <line
-                key={hour}
+                key={spoke.hour}
                 x1={CLOCK_CENTER}
                 y1={SPOKE_BASE_Y}
                 x2={CLOCK_CENTER}
-                y2={
-                  SPOKE_BASE_Y -
-                  (maxCount > 0
-                    ? SPOKE_MIN_LENGTH + (count / maxCount) * SPOKE_MAX_LENGTH
-                    : SPOKE_MIN_LENGTH)
-                }
-                transform={`rotate(${hour * 15} ${CLOCK_CENTER} ${CLOCK_CENTER})`}
-                strokeOpacity={count === 0 ? 0.3 : 1}
+                y2={SPOKE_BASE_Y - spoke.length}
+                transform={`rotate(${spoke.hour * 15} ${CLOCK_CENTER} ${CLOCK_CENTER})`}
               />
             ))}
           </g>
           <circle cx={CLOCK_CENTER} cy={CLOCK_CENTER} r={CENTER_RADIUS} className="fill-ink" />
-          <text
-            x={CLOCK_CENTER}
-            y={CLOCK_CENTER + 2}
-            textAnchor="middle"
-            fontSize="30"
-            className="fill-orange font-display"
-          >
-            {peakText}
-          </text>
-          <text
-            x={CLOCK_CENTER}
-            y={CLOCK_CENTER + 20}
-            textAnchor="middle"
-            fontSize="9"
-            letterSpacing="1"
-            className="fill-bone font-mono"
-          >
-            {copy.clockPeakLabel}
-          </text>
           <g fontSize="11" fontWeight="600" className="fill-ink font-mono">
-            <text x={150} y={10} textAnchor="middle">
-              0h
-            </text>
-            <text x={299} y={154} textAnchor="end">
-              6h
-            </text>
-            <text x={150} y={298} textAnchor="middle">
-              12h
-            </text>
-            <text x={1} y={154} textAnchor="start">
-              18h
-            </text>
+            {HOUR_LABELS.map((label) => (
+              <text key={label.hour} x={label.x} y={label.y} textAnchor={label.anchor}>
+                {`${String(label.hour)}h`}
+              </text>
+            ))}
           </g>
         </svg>
         <figcaption data-testid="arquetipo-peak-hour" className="text-[15px] leading-relaxed">
