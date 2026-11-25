@@ -124,6 +124,20 @@ test('the download path produces a 1080×1920 PNG, identical between runs', asyn
 })
 
 /**
+ * Downloading or sharing moves the focus out of the player section, and the
+ * player's shortcuts live in its keydown handler: a keyboard user loses
+ * Escape and the arrows exactly when they finish the story's action.
+ */
+test('after downloading a card, Escape still closes the player', async ({ page }) => {
+  const summary = await openPlayerOn(page, 'runner-es')
+  await openStory(page, storyPosition(summary, '08-dorsal'))
+
+  await downloadCard(page)
+  await page.keyboard.press('Escape')
+  await expect(page.getByTestId('player-root')).toHaveCount(0)
+})
+
+/**
  * The locale is part of the card input (odd/tasks/i18n-english.md, decision 5):
  * every locale is deterministic on its own, and a card that ignored the
  * drawn locale would paint the same bytes for English and Spanish.
