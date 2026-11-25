@@ -95,7 +95,7 @@ export function BibCardPreview({
             const height = maxMonthly > 0 ? (distanceM / maxMonthly) * 100 : 0
             return (
               <div
-                key={t.monthsAbbr[index] ?? String(index)}
+                key={`bar-${String(index)}`}
                 className={`flex-1 rounded-t ${index === peakMonth && height > 0 ? 'bg-accent' : 'bg-ink'}`}
                 style={{ height: `${height}%`, minHeight: height > 0 ? 2 : 0 }}
               />

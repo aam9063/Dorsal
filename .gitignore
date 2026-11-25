@@ -37,3 +37,10 @@ fixtures/generated/
 
 # Local agent tooling cache
 .atl/
+
+# Impeccable design skill, regenerated with `npx impeccable install`
+.agents/
+.codex/
+
+# Screenshots captured for the launch video, not part of the app
+public/img/

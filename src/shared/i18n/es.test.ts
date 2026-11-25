@@ -47,6 +47,36 @@ describe('spanish copy', () => {
     expect(es.landing.steps.items[1].body).toContain('activities.csv')
   })
 
+  it('keeps the editorial spine and the numbered section headers of the redesigned landing', () => {
+    const meta = [
+      es.landing.spineLabel,
+      es.landing.heroMeta,
+      es.landing.stepsMeta,
+      es.landing.previewsMeta,
+      es.landing.privacyMeta,
+      es.landing.faqMeta,
+    ]
+    for (const label of meta) {
+      expect(label.trim().length).toBeGreaterThan(0)
+      expect(label).toContain('·')
+    }
+    expect(es.landing.spineLabel).toBe('Dorsal · Temporada 2026')
+    expect(es.landing.heroMeta).toBe('Objeto · Dorsal de temporada')
+    expect(es.landing.stepsMeta).toBe('Cómo funciona · Tres pasos')
+    expect(es.landing.previewsMeta).toBe('Lo que vas a ver · Tu temporada, por etapas')
+    expect(es.landing.privacyMeta).toBe('Privacidad · Sin servidores')
+    expect(es.landing.faqMeta).toBe('Preguntas · Lo esencial')
+    expect(es.landing.previews.stageTag).toBe('Etapa')
+    expect(es.landing.previews.stageTag).not.toMatch(/\d/) // the number renders next to it
+  })
+
+  it('carries the numbered-band metadata of the redesigned upload and processing screens', () => {
+    expect(es.upload.meta).toBe('Subir · Tu activities.csv')
+    expect(es.upload.errorMeta).toBe('Error · Revisa el archivo')
+    expect(es.processing.meta).toBe('Procesando · En tu dispositivo')
+    expect(es.processing.errorMeta).toBe('Error · Revisa el archivo')
+  })
+
   it('explains taking the CSV out of the zip instead of uploading the zip', () => {
     const unzipAnswer = es.landing.faq.items.find((item) => item.answer.includes('.zip'))
     expect(unzipAnswer).toBeDefined()
@@ -158,6 +188,15 @@ describe('upload error copy', () => {
     const message = uploadUnsupportedMessage(['Worker', 'FileReader'])
     expect(message).toContain('Worker')
     expect(message).toContain('FileReader')
+  })
+
+  it('keeps the four documented error titles word for word through the redesign', () => {
+    const { errors } = es.upload
+    expect(errors.extensionTitle).toBe('Este archivo no es un CSV')
+    expect(errors.sizeTitle).toBe('El archivo es demasiado grande')
+    expect(errors.zipTitle).toBe('Ese es el archivo comprimido, no el CSV')
+    expect(errors.notStravaTitle).toBe('Este CSV no parece de Strava')
+    expect(errors.noSeasonTitle).toBe('Este archivo no tiene actividades de 2026')
   })
 
   it('counts the ignored corrupt rows next to the season numbers', () => {

@@ -12,10 +12,19 @@ const NAV_ITEMS = [
 
 const SECTION_WIDTH = 'mx-auto flex w-full max-w-[1200px] flex-col px-5 sm:px-8'
 const HEADING_SIZE = 'font-display text-[clamp(44px,5vw,68px)] uppercase leading-none'
+const PLATE = 'rounded-[4px] bg-bone text-ink shadow-[0_14px_30px_rgba(15,16,13,0.4)]'
+const PLATE_TAG =
+  'self-start rounded-pill border border-accent-on-bone px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.1em] text-ink'
+const PLATE_ROTATIONS = [
+  '-rotate-[1.2deg]',
+  'rotate-[0.8deg]',
+  'rotate-[1.6deg]',
+  '-rotate-[0.6deg]',
+] as const
 
 function BrandChip() {
   return (
-    <span className="inline-flex h-[26px] w-[34px] items-center justify-center rounded-[4px] bg-accent font-display text-[15px] text-ink">
+    <span className="rounded-pill border border-line px-2 py-0.5 font-mono text-xs leading-none text-fg">
       {t.brand.chip}
     </span>
   )
@@ -41,29 +50,40 @@ function UploadIcon() {
   )
 }
 
-function LockIcon() {
+/**
+ * The editorial spine's numbered header band: a display-face numeral and the
+ * section's mono metadata on the same baseline, bounded by hairline rules
+ * (odd/tasks/redesign-objeto-dorsal.md, S2).
+ */
+function SectionHeader({
+  number,
+  meta,
+  onAccent = false,
+}: {
+  number: string
+  meta: string
+  onAccent?: boolean
+}) {
+  const bounds = onAccent ? 'border-ink' : 'border-line'
+  const tone = onAccent ? 'text-ink' : 'text-accent-text'
+  const label = onAccent ? 'text-ink' : 'text-fg-subtle'
   return (
-    <svg
-      aria-hidden="true"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="5" y="11" width="14" height="9" rx="2" />
-      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
-    </svg>
+    <header className={`flex flex-wrap items-baseline gap-x-4 gap-y-1 border-y ${bounds} py-2.5`}>
+      <span
+        aria-hidden="true"
+        className={`font-display text-[clamp(34px,3vw,40px)] leading-[1.1] ${tone}`}
+      >
+        {number}
+      </span>
+      <span className={`font-mono text-xs uppercase tracking-[0.14em] ${label}`}>{meta}</span>
+    </header>
   )
 }
 
 function LandingHeader() {
   return (
     <header
-      className={`${SECTION_WIDTH} flex-row flex-wrap items-center justify-between gap-6 py-6`}
+      className={`${SECTION_WIDTH} flex-row flex-wrap items-center justify-between gap-x-6 gap-y-3 py-6`}
     >
       <Link
         to="/"
@@ -77,7 +97,7 @@ function LandingHeader() {
           <a
             key={item.href}
             href={item.href}
-            className="inline-flex min-h-11 items-center px-2 text-[15px] text-fg-muted hover:text-fg"
+            className="inline-flex min-h-11 items-center px-2 text-[15px] text-fg underline decoration-line underline-offset-4 hover:decoration-accent"
           >
             {item.label}
           </a>
@@ -85,153 +105,152 @@ function LandingHeader() {
         <Link
           to="/subir"
           data-anim-button
-          className="inline-flex min-h-11 items-center rounded-pill bg-accent px-5 font-semibold text-ink"
+          className="inline-flex min-h-11 items-center rounded-pill bg-cta-bg px-5 font-semibold text-cta-fg"
         >
           {t.landing.headerCta}
         </Link>
       </nav>
+      <p
+        aria-hidden="true"
+        className="order-last w-full text-center font-mono text-[11px] uppercase tracking-[0.3em] text-fg-subtle lg:hidden"
+      >
+        {t.landing.spineLabel}
+      </p>
     </header>
   )
 }
 
 function ExampleBibCard() {
   return (
-    <div
-      className="hidden flex-col items-center gap-6 lg:flex lg:min-w-[320px] lg:flex-[1_1_420px]"
-      data-anim-hero
-    >
-      <div aria-hidden="true" className="relative my-14 w-full max-w-[390px]">
-        <div className="relative w-full -rotate-4 rounded-panel bg-bone px-6 pb-6 pt-5 text-ink shadow-[0_30px_70px_rgba(15,16,13,0.35)]">
-          <span className="absolute left-3.5 top-3.5 size-3 rounded-full bg-bg" />
-          <span className="absolute right-3.5 top-3.5 size-3 rounded-full bg-bg" />
-          <span className="absolute bottom-3.5 left-3.5 size-3 rounded-full bg-bg" />
-          <span className="absolute bottom-3.5 right-3.5 size-3 rounded-full bg-bg" />
+    <div aria-hidden="true" className="relative my-16 w-full max-w-[470px] lg:my-0">
+      <div className="relative w-full -rotate-[2.5deg] rounded-[4px] bg-bone px-7 pb-7 pt-5 text-ink shadow-[0_34px_70px_rgba(15,16,13,0.55)]">
+        <span className="absolute left-6 top-3 size-[18px] rounded-full bg-ink shadow-[inset_3px_3px_5px_rgba(252,82,0,0.45)]" />
+        <span className="absolute right-6 top-3 size-[18px] rounded-full bg-ink shadow-[inset_3px_3px_5px_rgba(252,82,0,0.45)]" />
 
-          <div className="mx-4 flex items-center justify-between rounded-[4px] bg-accent px-2.5 py-1.5 font-mono text-xs font-semibold uppercase tracking-[0.12em]">
-            <span>{t.landing.card.seasonLabel}</span>
-            <span>{t.landing.card.kmLabel}</span>
-          </div>
+        <div className="border-b-2 border-ink pb-2.5 text-center font-mono text-[11px] uppercase tracking-[0.26em] text-label-ink">
+          {t.landing.card.seasonLabel}
+        </div>
+        <p className="mt-3 text-center font-display text-[clamp(64px,6vw,92px)] leading-none text-accent-on-bone">
+          <span data-anim-counter>{t.landing.card.km}</span>{' '}
+          <span className="font-sans text-[22px] font-bold">{t.landing.card.kmLabel}</span>
+        </p>
+        <p className="text-center font-mono text-[13px] uppercase tracking-[0.22em]">
+          {t.landing.card.name}
+        </p>
 
-          <p className="text-center font-display text-[156px] leading-[1.02]" data-anim-counter>
-            {t.landing.card.km}
-          </p>
-          <p className="text-center text-lg font-bold uppercase tracking-[0.24em]">
-            {t.landing.card.name}
-          </p>
+        <div className="my-3.5 border-t-2 border-dashed border-bone-soft" />
 
-          <div className="mt-3 grid grid-cols-3 gap-2 border-t-2 border-dashed border-ink pt-3 text-center">
-            {t.landing.card.stats.map((stat) => (
-              <div key={stat.label} className="flex flex-col gap-0.5">
-                <span className="font-display text-2xl" data-anim-counter>
-                  {stat.value}
-                </span>
-                <span className="font-mono text-[11px] uppercase tracking-[0.1em]">
-                  {stat.label}
-                </span>
-              </div>
-            ))}
-          </div>
+        <div className="grid grid-cols-4 gap-2 text-center">
+          {[
+            ...t.landing.card.stats,
+            { value: t.landing.card.streakValue, label: t.landing.card.streakLabel },
+          ].map((stat) => (
+            <div key={stat.label} className="flex flex-col gap-0.5">
+              <span className="font-display text-[21px] leading-tight" data-anim-counter>
+                {stat.value}
+              </span>
+              <span className="text-[11px] leading-tight text-label-ink">{stat.label}</span>
+            </div>
+          ))}
         </div>
 
-        <div className="absolute -left-2 top-2 flex rotate-3 items-center gap-2 rounded-pill border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-fg">
-          <span className="font-display text-lg text-accent-text" data-anim-counter>
-            {t.landing.card.everestValue}
-          </span>
+        <span className="absolute -bottom-6 right-5 inline-flex rotate-[6deg] items-center gap-2 rounded-pill bg-accent px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-ink shadow-[0_6px_14px_rgba(15,16,13,0.4)]">
+          <span data-anim-counter>{t.landing.card.everestValue}</span>
           {t.landing.card.everestLabel}
-        </div>
-        <div className="absolute -right-2 -bottom-2 flex -rotate-2 items-center gap-2 rounded-pill border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-fg">
-          {t.landing.card.streakLabel}
-          <span className="font-display text-lg text-accent-text" data-anim-counter>
-            {t.landing.card.streakValue}
-          </span>
-        </div>
+        </span>
       </div>
-      <p className="font-mono text-xs uppercase tracking-[0.14em] text-fg-subtle">
-        {t.landing.exampleLabel}
-      </p>
     </div>
   )
 }
 
 function LandingHero() {
   return (
-    <section
-      id="top"
-      className={`${SECTION_WIDTH} flex-row flex-wrap items-center gap-16 pb-28 pt-16`}
-    >
-      <div className="flex min-w-0 flex-1 basis-[500px] flex-col gap-7">
-        <p
-          className="font-mono text-[13px] uppercase tracking-[0.14em] text-accent-text"
-          data-anim-hero
-        >
-          {t.landing.eyebrow}
-        </p>
-        <h1
-          className="font-display text-[clamp(60px,8vw,116px)] uppercase leading-[0.94]"
-          data-anim-hero
-        >
-          {t.landing.title}
-        </h1>
-        <p className="max-w-[540px] text-[19px] leading-relaxed text-fg-muted" data-anim-hero>
-          {t.landing.subtitle}
-        </p>
-        <div className="flex flex-wrap items-center gap-4" data-anim-hero>
-          <Link
-            to="/subir"
-            data-testid="landing-cta"
-            data-anim-button
-            className="inline-flex min-h-14 items-center gap-3 rounded-pill bg-accent px-7 text-[17px] font-bold text-ink"
-          >
-            <UploadIcon />
-            {t.landing.cta}
-          </Link>
-          <a
-            href="#como"
-            className="inline-flex min-h-14 items-center rounded-pill border border-line px-6 text-[17px] font-medium text-fg"
-          >
-            {t.landing.secondary}
-          </a>
+    <section id="top" className={`${SECTION_WIDTH} pb-24 pt-12 sm:pt-16`}>
+      <div className="lg:grid lg:grid-cols-[44px_minmax(0,1fr)_minmax(0,1fr)] lg:gap-10">
+        <div aria-hidden="true" className="hidden lg:block lg:border-r lg:border-line lg:pt-6">
+          <span className="block rotate-180 whitespace-nowrap pr-3 text-right font-mono text-[11px] uppercase tracking-[0.3em] text-fg-subtle [writing-mode:vertical-rl]">
+            {t.landing.spineLabel}
+          </span>
         </div>
-        <p className="flex items-center gap-2.5 text-sm text-fg-subtle" data-anim-hero>
-          <LockIcon />
-          {t.landing.privacyNote}
-        </p>
+
+        <div className="flex min-w-0 flex-col">
+          <SectionHeader number="01" meta={t.landing.heroMeta} />
+          <h1
+            className="mt-6 font-display text-[clamp(56px,6vw,88px)] uppercase leading-[0.94]"
+            data-anim-hero
+          >
+            {t.landing.title}
+          </h1>
+          <p
+            className="mt-5 max-w-[56ch] text-base leading-relaxed text-fg-muted [text-wrap:pretty]"
+            data-anim-hero
+          >
+            {t.landing.subtitle}
+          </p>
+          <div
+            className="mt-8 flex max-w-[56ch] flex-wrap items-center gap-4 lg:mt-auto lg:pt-8"
+            data-anim-hero
+          >
+            <Link
+              to="/subir"
+              data-testid="landing-cta"
+              data-anim-button
+              data-impeccable-ignore="hard-offset-shadow"
+              className="inline-flex min-h-14 items-center gap-2.5 rounded-chip bg-bone px-7 text-[17px] font-bold text-ink shadow-[4px_4px_0_var(--color-orange)] transition-shadow hover:shadow-[6px_6px_0_var(--color-orange)] active:shadow-[2px_2px_0_var(--color-orange)]"
+            >
+              <UploadIcon />
+              {t.landing.cta}
+            </Link>
+            <a
+              href="#como"
+              className="inline-flex min-h-14 items-center text-[15px] font-semibold text-fg underline decoration-line underline-offset-4 hover:decoration-accent"
+            >
+              {t.landing.secondary}
+            </a>
+          </div>
+          <p
+            className="mt-5 max-w-[56ch] border-t border-dashed border-line pt-3 text-[13.5px] text-fg-muted [text-wrap:pretty]"
+            data-anim-hero
+          >
+            {t.landing.privacyNote}
+          </p>
+        </div>
+
+        <div className="mt-12 hidden lg:flex lg:flex-col lg:items-center lg:pt-16" data-anim-hero>
+          <ExampleBibCard />
+          <p className="mt-14 text-center font-mono text-xs uppercase tracking-[0.14em] text-fg-subtle">
+            {t.landing.exampleLabel}
+          </p>
+        </div>
       </div>
-      <ExampleBibCard />
     </section>
   )
 }
 
 function LandingSteps() {
   return (
-    <section id="como" aria-labelledby="como-title" className="w-full scroll-mt-6 bg-bone text-ink">
-      <div className={`${SECTION_WIDTH} gap-[52px] py-24 sm:py-26`} data-anim-section>
-        <div className="flex max-w-[720px] flex-col gap-4">
-          <p className="font-mono text-[13px] uppercase tracking-[0.14em] text-label-ink">
-            {t.landing.steps.eyebrow}
-          </p>
+    <section id="como" aria-labelledby="como-title" className="w-full scroll-mt-6">
+      <div className={`${SECTION_WIDTH} gap-8 py-24 sm:py-26`} data-anim-section>
+        <SectionHeader number="02" meta={t.landing.stepsMeta} />
+        <div className="flex max-w-[720px] flex-col gap-4 pt-2">
           <h2 id="como-title" className={HEADING_SIZE}>
             {t.landing.steps.title}
           </h2>
-          <p className="text-lg leading-relaxed text-body-ink">{t.landing.steps.description}</p>
+          <p className="text-lg leading-relaxed text-fg-muted [text-wrap:pretty]">
+            {t.landing.steps.description}
+          </p>
         </div>
-        <div className="flex flex-wrap gap-6">
+        <div className="flex flex-wrap gap-6 pt-4">
           {t.landing.steps.items.map((item, index) => (
             <article
               key={item.title}
-              className={`flex min-w-0 flex-1 basis-[300px] flex-col gap-4 rounded-card p-[30px] ${
-                index === 2 ? 'bg-accent' : 'border-2 border-ink'
-              }`}
+              className={`${PLATE} ${PLATE_ROTATIONS[index]} flex min-w-0 flex-1 basis-[300px] flex-col gap-3 p-7`}
             >
-              <span className="self-start rounded-[6px] bg-ink px-3 py-1 font-display text-[28px] text-accent">
+              <span className="self-start font-display text-[28px] leading-none text-accent-on-bone">
                 {String(index + 1).padStart(2, '0')}
               </span>
               <h3 className="text-2xl font-bold">{item.title}</h3>
-              <p
-                className={`text-base leading-relaxed ${
-                  index === 2 ? 'text-ink' : 'text-body-ink'
-                }`}
-              >
+              <p className="text-base leading-relaxed text-body-ink [text-wrap:pretty]">
                 {item.body}
               </p>
             </article>
@@ -250,28 +269,17 @@ const HEAT_PATTERN = [
 
 const HEAT_CLASSES = ['bg-heat-1', 'bg-heat-2', 'bg-heat-3', 'bg-heat-4'] as const
 
-const CARD_VARIANTS = [
-  'raised',
-  'bone',
-  'bone',
-  'raised',
-  'accent',
-  'bone',
-  'bone',
-  'accent',
-] as const
-
 function StoryArt({ index }: { index: number }) {
   if (index === 0) {
     return (
-      <p className="font-display text-[56px] leading-none text-fg" aria-hidden="true">
+      <p className="font-display text-[56px] leading-none text-ink" aria-hidden="true">
         {t.landing.previews.yearArt}
       </p>
     )
   }
   if (index === 1) {
     return (
-      <p className="font-display text-[64px] leading-none text-accent-text" aria-hidden="true">
+      <p className="font-display text-[64px] leading-none text-accent-on-bone" aria-hidden="true">
         {t.landing.card.km}
       </p>
     )
@@ -337,7 +345,7 @@ function StoryArt({ index }: { index: number }) {
   return (
     <span
       aria-hidden="true"
-      className="mx-auto flex h-[90px] w-[120px] -rotate-4 items-center justify-center rounded-lg bg-bone font-display text-[40px] text-ink"
+      className="mx-auto flex h-[90px] w-[120px] -rotate-4 items-center justify-center rounded-[4px] bg-surface-strong font-display text-[40px] text-ink"
     >
       {t.landing.card.km}
     </span>
@@ -349,19 +357,15 @@ function LandingPreviews() {
     <section
       id="historias"
       aria-labelledby="historias-title"
-      className={`${SECTION_WIDTH} gap-10 py-24 sm:py-26`}
+      className={`${SECTION_WIDTH} gap-8 py-24 sm:py-26`}
       data-anim-section
     >
-      <div className="flex flex-wrap items-end justify-between gap-6">
-        <div className="flex max-w-[640px] flex-col gap-4">
-          <p className="font-mono text-[13px] uppercase tracking-[0.14em] text-accent-text">
-            {t.landing.previews.eyebrow}
-          </p>
-          <h2 id="historias-title" className={HEADING_SIZE}>
-            {t.landing.previews.title}
-          </h2>
-        </div>
-        <p className="max-w-[340px] text-base leading-relaxed text-fg-subtle">
+      <SectionHeader number="03" meta={t.landing.previewsMeta} />
+      <div className="flex flex-wrap items-end justify-between gap-6 pt-2">
+        <h2 id="historias-title" className={`${HEADING_SIZE} max-w-[640px]`}>
+          {t.landing.previews.title}
+        </h2>
+        <p className="max-w-[340px] text-base leading-relaxed text-fg-subtle [text-wrap:pretty]">
           {t.landing.previews.description}
         </p>
       </div>
@@ -370,52 +374,28 @@ function LandingPreviews() {
         label={t.landing.previews.listAriaLabel}
         className="-mx-5 px-5 pb-3 sm:-mx-8 sm:px-8"
       >
-        <ul className="flex w-max gap-5">
-          {t.landing.previews.items.map((item, index) => {
-            const variant = CARD_VARIANTS[index]
-            return (
-              <li
-                key={item.number}
-                data-anim-card
-                className={`flex h-[320px] w-[180px] shrink-0 flex-col justify-between gap-6 rounded-card p-5 ${
-                  variant === 'raised'
-                    ? 'border border-line bg-surface text-fg'
-                    : variant === 'bone'
-                      ? 'bg-bone text-ink'
-                      : 'bg-accent text-ink'
-                }`}
-              >
-                <span
-                  className={`font-mono text-xs ${
-                    variant === 'raised'
-                      ? 'text-fg-subtle'
-                      : variant === 'bone'
-                        ? 'text-label-ink'
-                        : 'text-ink'
-                  }`}
-                >
-                  {item.number}
+        <ul className="flex w-max gap-5 lg:grid lg:w-full lg:grid-cols-4">
+          {t.landing.previews.items.map((item, index) => (
+            <li
+              key={item.number}
+              data-anim-card
+              className={`${PLATE} ${PLATE_ROTATIONS[index % 4]} flex h-[320px] w-[190px] shrink-0 flex-col justify-between gap-5 p-5 lg:w-auto`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <span className="font-mono text-xs text-label-ink">{item.number}</span>
+                <span className={PLATE_TAG}>
+                  {t.landing.previews.stageTag} {index + 1}
                 </span>
-                <StoryArt index={index} />
-                <span className="flex flex-col gap-1.5">
-                  <span className="font-display text-[26px] uppercase leading-[1.05]">
-                    {item.title}
-                  </span>
-                  <span
-                    className={`text-[13px] leading-snug ${
-                      variant === 'raised'
-                        ? 'text-fg-muted'
-                        : variant === 'bone'
-                          ? 'text-body-ink'
-                          : 'text-ink'
-                    }`}
-                  >
-                    {item.description}
-                  </span>
+              </div>
+              <StoryArt index={index} />
+              <span className="flex flex-col gap-1.5">
+                <span className="font-display text-[22px] uppercase leading-[1.05]">
+                  {item.title}
                 </span>
-              </li>
-            )
-          })}
+                <span className="text-[13px] leading-snug text-body-ink">{item.description}</span>
+              </span>
+            </li>
+          ))}
         </ul>
       </ScrollRow>
     </section>
@@ -429,21 +409,24 @@ function LandingPrivacyStrip() {
       aria-labelledby="privacidad-title"
       className="w-full scroll-mt-6 bg-accent text-ink"
     >
-      <div className={`${SECTION_WIDTH} gap-12 py-24 sm:py-26`} data-anim-section>
+      <div className={`${SECTION_WIDTH} gap-8 py-24 sm:py-26`} data-anim-section>
+        <SectionHeader number="04" meta={t.landing.privacyMeta} onAccent />
         <h2
           id="privacidad-title"
           className="max-w-[900px] font-display text-[clamp(48px,6vw,88px)] uppercase leading-[0.96]"
         >
           {t.landing.privacyStrip.title}
         </h2>
-        <div className="flex flex-wrap gap-8">
-          {t.landing.privacyStrip.items.map((item) => (
+        <div className="flex flex-wrap gap-6 pt-2">
+          {t.landing.privacyStrip.items.map((item, index) => (
             <div
               key={item.title}
-              className="flex min-w-0 flex-1 basis-[260px] flex-col gap-2.5 border-t-2 border-ink pt-5"
+              className={`${PLATE} ${PLATE_ROTATIONS[index]} flex min-w-0 flex-1 basis-[260px] flex-col gap-2.5 p-6`}
             >
               <h3 className="text-xl font-bold">{item.title}</h3>
-              <p className="text-base leading-relaxed text-ink">{item.body}</p>
+              <p className="text-base leading-relaxed text-body-ink [text-wrap:pretty]">
+                {item.body}
+              </p>
             </div>
           ))}
         </div>
@@ -457,40 +440,38 @@ function LandingFaq() {
     <section
       id="faq"
       aria-labelledby="faq-title"
-      className={`${SECTION_WIDTH} flex-row flex-wrap gap-12 py-24 sm:py-26`}
+      className={`${SECTION_WIDTH} gap-10 py-24 sm:py-26`}
       data-anim-section
     >
-      <div className="flex min-w-0 flex-1 basis-[320px] flex-col gap-4">
-        <p className="font-mono text-[13px] uppercase tracking-[0.14em] text-accent-text">
-          {t.landing.faq.eyebrow}
-        </p>
+      <SectionHeader number="05" meta={t.landing.faqMeta} />
+      <div className="flex min-w-0 flex-col gap-4 pt-2 lg:flex-row lg:gap-12">
         <h2
           id="faq-title"
-          className="font-display text-[clamp(44px,5vw,64px)] uppercase leading-none"
+          className="font-display text-[clamp(44px,5vw,64px)] uppercase leading-none lg:min-w-0 lg:flex-[1_1_320px]"
         >
           {t.landing.faq.title}
         </h2>
-      </div>
-      <div className="flex min-w-0 flex-[999_1_560px] flex-col">
-        {t.landing.faq.items.map((item) => (
-          <details key={item.question} className="group border-b border-line py-5">
-            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-6 text-xl font-semibold [&::-webkit-details-marker]:hidden">
-              {item.question}
-              <span aria-hidden="true" className="font-mono text-fg-subtle group-open:hidden">
-                +
-              </span>
-              <span
-                aria-hidden="true"
-                className="hidden font-mono text-fg-subtle group-open:inline"
-              >
-                −
-              </span>
-            </summary>
-            <p className="mt-3 max-w-prose text-base leading-relaxed text-fg-muted">
-              {item.answer}
-            </p>
-          </details>
-        ))}
+        <div className="flex min-w-0 flex-[999_1_560px] flex-col">
+          {t.landing.faq.items.map((item) => (
+            <details key={item.question} className="group border-b border-line py-5">
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-6 text-xl font-semibold [&::-webkit-details-marker]:hidden">
+                {item.question}
+                <span aria-hidden="true" className="font-mono text-fg-subtle group-open:hidden">
+                  +
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="hidden font-mono text-fg-subtle group-open:inline"
+                >
+                  −
+                </span>
+              </summary>
+              <p className="mt-3 max-w-prose text-base leading-relaxed text-fg-muted [text-wrap:pretty]">
+                {item.answer}
+              </p>
+            </details>
+          ))}
+        </div>
       </div>
     </section>
   )
@@ -505,14 +486,15 @@ function LandingFooter() {
 
   return (
     <footer className="border-t border-line">
-      <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-8 text-sm text-fg-subtle sm:px-8">
+      <div className="mx-auto flex w-full max-w-[1200px] flex-wrap items-center justify-between gap-4 px-5 py-8 text-sm text-fg-subtle sm:px-8">
         <p className="flex items-center gap-2.5">
           <BrandChip />
           <span className="font-display text-lg uppercase tracking-[0.05em] text-fg">
             {t.brand.name}
           </span>
         </p>
-        <p>{t.landing.footer.madeWith}</p>
+        <p className="text-[12px]">{t.footer.disclaimer}</p>
+        <p className="text-[12px]">{t.landing.footer.madeWith}</p>
         <nav aria-label={t.landing.footer.navAriaLabel} className="flex flex-wrap gap-2">
           {links.map((link) =>
             link.href.startsWith('/') ? (

@@ -1,17 +1,95 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 import { t, uploadNoSeasonMessage, uploadUnsupportedMessage } from '../../shared/i18n'
 import type { AnalyzeReadStats, YearSummary } from '../../worker/client'
 import { ProcessingScreen, handOffSeasonSummary } from '../processing'
 import { quickValidate } from './quick-validation'
 
-const SECTION_CLASS = 'mx-auto flex w-full max-w-2xl flex-col gap-6 px-5 py-10 sm:px-8'
+const PLATE = 'relative rounded-[4px] bg-bone text-ink shadow-[0_16px_34px_rgba(15,16,13,0.4)]'
+const PIN =
+  'absolute top-3 size-[18px] rounded-full bg-ink shadow-[inset_3px_3px_5px_rgba(252,82,0,0.45)]'
 
 /**
- * Every state the upload screen renders itself. The two worker failures with
- * their own copy (`zipInsteadOfCsv`, `notStrava`) render on the processing
- * screen, still at `/subir` (odd/tasks/h06-upload-errors.md, T3).
+ * The primary action of the screen: the only accent-filled control (design
+ * notes of 03-objeto-dorsal, rule 1), with a hard offset shadow.
  */
+const CTA_CHIP =
+  'inline-flex min-h-11 items-center rounded-chip bg-accent px-6 py-3 font-mono text-[13px] font-bold uppercase tracking-[0.1em] text-ink shadow-[4px_4px_0_var(--color-ink)] transition-shadow hover:shadow-[6px_6px_0_var(--color-ink)] active:shadow-[2px_2px_0_var(--color-ink)]'
+
+/**
+ * The editorial spine's numbered header band: display numeral and mono metadata
+ * on the same baseline between two hairlines (odd/tasks/redesign-objeto-dorsal.md, S2).
+ */
+function SectionHeader({
+  number,
+  meta,
+  spineLabel,
+}: {
+  number: string
+  meta: string
+  /** Mono spine label trailing inside the band at narrow widths. */
+  spineLabel?: string
+}) {
+  return (
+    <header className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-y border-line py-2.5">
+      <span
+        aria-hidden="true"
+        className="font-display text-[clamp(34px,3vw,40px)] leading-[1.1] text-accent-text"
+      >
+        {number}
+      </span>
+      <span className="font-mono text-xs uppercase tracking-[0.14em] text-fg-subtle">{meta}</span>
+      {spineLabel !== undefined && (
+        <span
+          aria-hidden="true"
+          className="ml-auto hidden font-mono text-[11px] uppercase tracking-[0.3em] text-fg-subtle min-[480px]:inline lg:hidden"
+        >
+          {spineLabel}
+        </span>
+      )}
+    </header>
+  )
+}
+
+function SpineColumn() {
+  return (
+    <div aria-hidden="true" className="hidden lg:block lg:border-r lg:border-line lg:pt-6">
+      <span className="block rotate-180 whitespace-nowrap pr-3 text-right font-mono text-[11px] uppercase tracking-[0.3em] text-fg-subtle [writing-mode:vertical-rl]">
+        {t.landing.spineLabel}
+      </span>
+    </div>
+  )
+}
+
+/**
+ * Screen shell of the object language: rotated spine at desktop, in-band mono
+ * label at narrow widths (odd/tasks/redesign-objeto-dorsal.md, decision 3).
+ */
+function ScreenField({
+  number,
+  meta,
+  testId,
+  children,
+}: {
+  number: string
+  meta: string
+  testId?: string
+  children: ReactNode
+}) {
+  return (
+    <div
+      data-testid={testId}
+      className="mx-auto flex w-full max-w-[720px] flex-col px-5 py-10 sm:px-8 sm:py-14 lg:grid lg:grid-cols-[44px_minmax(0,1fr)] lg:gap-8"
+    >
+      <SpineColumn />
+      <div className="flex min-w-0 flex-col">
+        <SectionHeader number={number} meta={meta} spineLabel={t.landing.spineLabel} />
+        {children}
+      </div>
+    </div>
+  )
+}
+
 type UploadProblem =
   | { kind: 'unsupported'; missing: readonly string[] }
   | { kind: 'extension' }
@@ -73,10 +151,11 @@ function problemBody(problem: UploadProblem): string {
 }
 
 /**
- * The whole area is the control: a dashed drop zone that opens the file explorer
- * when clicked and reacts while a file is dragged over it. The input stays
- * `sr-only` inside the label, so the keyboard finds it, the pointer lands
- * anywhere in the zone, and there is only one focusable thing.
+ * The whole area is the control: a bone plate with punched pins, whose dashed
+ * inner zone opens the file explorer when clicked and reacts while a file is
+ * dragged over it. The input stays `sr-only` inside the label, so the keyboard
+ * finds it, the pointer lands anywhere in the zone, and there is only one
+ * focusable thing.
  */
 function FilePicker({ onChoose }: { onChoose: (file: File) => void }) {
   const [isDragging, setIsDragging] = useState(false)
@@ -108,44 +187,84 @@ function FilePicker({ onChoose }: { onChoose: (file: File) => void }) {
         setIsDragging(false)
         choose(event.dataTransfer.files.item(0))
       }}
-      className={`flex min-h-[240px] cursor-pointer flex-col items-center justify-center gap-4 rounded-card border-2 border-dashed p-8 text-center transition-colors focus-within:border-accent focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent ${
-        isDragging ? 'border-accent bg-surface' : 'border-line bg-surface hover:border-accent'
-      }`}
+      className={`${PLATE} -rotate-[0.8deg] flex cursor-pointer p-4 transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent`}
     >
+      <span aria-hidden="true" className={`${PIN} left-6`} />
+      <span aria-hidden="true" className={`${PIN} right-6`} />
       <span
-        aria-hidden="true"
-        className={`flex h-14 w-14 items-center justify-center rounded-pill border-2 border-dashed transition-colors ${
-          isDragging ? 'border-accent text-accent-text' : 'border-line text-fg-muted'
+        className={`flex min-h-[240px] w-full flex-col items-center justify-center gap-5 rounded-card border-2 border-dashed p-8 text-center transition-colors ${
+          isDragging ? 'border-accent bg-bone-muted' : 'border-bone-soft'
         }`}
       >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          className="h-6 w-6"
+        <span
+          aria-hidden="true"
+          className={`flex h-14 w-14 items-center justify-center rounded-pill border-2 border-dashed transition-colors ${
+            isDragging ? 'border-accent text-accent-on-bone' : 'border-bone-soft text-body-ink'
+          }`}
         >
-          <path d="M12 16V4m0 0L7 9m5-5 5 5" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" strokeLinecap="round" />
-        </svg>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            className="h-6 w-6"
+          >
+            <path d="M12 16V4m0 0L7 9m5-5 5 5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" strokeLinecap="round" />
+          </svg>
+        </span>
+        <span data-impeccable-ignore="hard-offset-shadow" className={CTA_CHIP}>
+          {t.upload.pickFile}
+        </span>
+        <span className="font-mono text-xs uppercase tracking-[0.14em] text-label-ink">
+          {t.upload.dropHere}
+        </span>
+        <input
+          id="upload-file"
+          data-testid="upload-input"
+          type="file"
+          accept=".csv"
+          className="sr-only"
+          onChange={(event) => {
+            const file = event.target.files?.[0]
+            event.target.value = ''
+            choose(file)
+          }}
+        />
       </span>
-      <span className="text-base font-semibold text-fg">{t.upload.pickFile}</span>
-      <span className="font-mono text-xs uppercase tracking-[0.14em] text-fg-subtle">
-        {t.upload.dropHere}
-      </span>
-      <input
-        id="upload-file"
-        data-testid="upload-input"
-        type="file"
-        accept=".csv"
-        className="sr-only"
-        onChange={(event) => {
-          const file = event.target.files?.[0]
-          event.target.value = ''
-          choose(file)
-        }}
-      />
     </label>
+  )
+}
+
+/** The "how do I get it" help, in the plate language, as a pinned card. */
+function HowToPlate() {
+  return (
+    <details className={`${PLATE} -rotate-[0.6deg] group p-6 sm:p-7`}>
+      <span aria-hidden="true" className={`${PIN} left-5`} />
+      <span aria-hidden="true" className={`${PIN} right-5`} />
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 pr-4 font-display text-[22px] uppercase leading-tight [&::-webkit-details-marker]:hidden">
+        {t.upload.howto.title}
+        <span aria-hidden="true" className="font-mono text-fg-subtle group-open:hidden">
+          +
+        </span>
+        <span aria-hidden="true" className="hidden font-mono text-fg-subtle group-open:inline">
+          −
+        </span>
+      </summary>
+      <ol className="mt-4 flex flex-col gap-3 border-t-2 border-dashed border-bone-soft pt-4">
+        {t.upload.howto.steps.map((step, index) => (
+          <li
+            key={step}
+            className="flex gap-3 text-[15px] leading-relaxed text-body-ink [text-wrap:pretty]"
+          >
+            <span aria-hidden="true" className="mt-0.5 font-mono text-xs text-label-ink">
+              {String(index + 1).padStart(2, '0')}
+            </span>
+            <span>{step}</span>
+          </li>
+        ))}
+      </ol>
+    </details>
   )
 }
 
@@ -157,18 +276,29 @@ function ProblemSection({
   onChoose: (file: File) => void
 }) {
   return (
-    <section data-testid={problemTestId(problem)} className={SECTION_CLASS}>
-      <h1 className="text-5xl">{problemTitle(problem)}</h1>
-      <p className="text-base text-fg-muted" role="alert">
-        {problemBody(problem)}
-      </p>
-      {problem.kind !== 'unsupported' && (
-        <>
-          <p className="text-sm text-fg-subtle">{t.upload.retry}</p>
-          <FilePicker onChoose={onChoose} />
-        </>
-      )}
-    </section>
+    <ScreenField number="02" meta={t.upload.errorMeta}>
+      <section data-testid={problemTestId(problem)} className="flex flex-col">
+        <h1 className="mt-6 font-display text-[clamp(40px,6vw,56px)] uppercase leading-[0.98]">
+          {problemTitle(problem)}
+        </h1>
+        <p
+          className="mt-4 max-w-[60ch] text-base leading-relaxed text-fg-muted [text-wrap:pretty]"
+          role="alert"
+        >
+          {problemBody(problem)}
+        </p>
+        {problem.kind !== 'unsupported' && (
+          <>
+            <p className="mt-8 font-mono text-xs uppercase tracking-[0.14em] text-accent-text">
+              {t.upload.retry}
+            </p>
+            <div className="mt-4">
+              <FilePicker onChoose={onChoose} />
+            </div>
+          </>
+        )}
+      </section>
+    </ScreenField>
   )
 }
 
@@ -223,24 +353,25 @@ export function UploadScreen() {
   }
 
   return (
-    <section data-testid="upload-root" className={SECTION_CLASS}>
-      <p className="font-mono text-xs uppercase tracking-[0.14em] text-fg-subtle">
-        {t.brand.tagline}
+    <ScreenField number="01" meta={t.upload.meta} testId="upload-root">
+      <h1 className="mt-6 font-display text-[clamp(44px,6vw,60px)] uppercase leading-[0.98]">
+        {t.upload.title}
+      </h1>
+      <p className="mt-4 text-base leading-relaxed text-fg-muted [text-wrap:pretty]">
+        {t.upload.subtitle}
       </p>
-      <h1 className="text-5xl">{t.upload.title}</h1>
-      <p className="text-base text-fg-muted">{t.upload.subtitle}</p>
-      <details className="rounded-panel border border-line bg-surface p-4">
-        <summary className="cursor-pointer font-semibold">{t.upload.howto.title}</summary>
-        <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-fg-muted">
-          {t.upload.howto.steps.map((step) => (
-            <li key={step}>{step}</li>
-          ))}
-        </ol>
-      </details>
-      <FilePicker onChoose={choose} />
-      <p className="text-sm text-fg-subtle" data-testid="upload-hint">
+      <div className="mt-8">
+        <FilePicker onChoose={choose} />
+      </div>
+      <p
+        className="mt-5 border-t border-dashed border-line pt-3 text-sm text-fg-subtle [text-wrap:pretty]"
+        data-testid="upload-hint"
+      >
         {t.upload.hint}
       </p>
-    </section>
+      <div className="mt-10">
+        <HowToPlate />
+      </div>
+    </ScreenField>
   )
 }

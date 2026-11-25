@@ -2,20 +2,51 @@ import type { ReactNode } from 'react'
 import { formatDuration, formatKilometres, formatNumber } from '../../../../shared/format'
 import { t } from '../../../../shared/i18n'
 import type { YearSummary } from '../../../../core/model/year-summary'
+import { EVEREST_APEX_X, EVEREST_HEIGHT, EVEREST_WIDTH, everestFill } from './everest-geometry'
 
-/** Triangle mark of the Everest equivalence, following the W2 artboard. */
-function EverestMark({ fraction }: { fraction: number }) {
-  const width = fraction * 26
-  const edgeY = width <= 13 ? (22 * (13 - width)) / 13 : ((width - 13) * 22) / 13
+/**
+ * One whole Everest of the W2 artboard, in the same orange as the text next
+ * to the equivalence: the bright accent drops to the 3:1 graphics floor.
+ */
+function EverestMark() {
   return (
     <svg
-      width={Math.max(width, 1)}
-      height={22}
-      viewBox={`0 0 ${width.toFixed(2)} 22`}
+      width={EVEREST_WIDTH}
+      height={EVEREST_HEIGHT}
+      viewBox={`0 0 ${EVEREST_WIDTH} ${EVEREST_HEIGHT}`}
       aria-hidden="true"
-      className="fill-accent"
+      className="fill-accent-text"
     >
-      <path d={`M0 22 L13 0 L${width.toFixed(2)} ${edgeY.toFixed(2)} L${width.toFixed(2)} 22 Z`} />
+      <path d={`M0 ${EVEREST_HEIGHT} L${EVEREST_APEX_X} 0 L${EVEREST_WIDTH} ${EVEREST_HEIGHT} Z`} />
+    </svg>
+  )
+}
+
+/**
+ * The fractional Everest: the same full mountain, outlined, with the lower
+ * `fraction` share filled — a stub beside a whole one read as a second one.
+ */
+function EverestFractionMark({ fraction }: { fraction: number }) {
+  const fill = everestFill(fraction)
+  const points = `${fill.leftX.toFixed(2)} ${fill.topY.toFixed(2)} L${fill.rightX.toFixed(2)} ${fill.topY.toFixed(2)}`
+  return (
+    <svg
+      width={EVEREST_WIDTH}
+      height={EVEREST_HEIGHT}
+      viewBox={`0 0 ${EVEREST_WIDTH} ${EVEREST_HEIGHT}`}
+      aria-hidden="true"
+      className="text-accent-text"
+    >
+      <path
+        d={`M0 ${EVEREST_HEIGHT} L${EVEREST_APEX_X} 0 L${EVEREST_WIDTH} ${EVEREST_HEIGHT} Z`}
+        className="fill-none stroke-accent-text"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d={`M${points} L${EVEREST_WIDTH} ${EVEREST_HEIGHT} L0 ${EVEREST_HEIGHT} Z`}
+        className="fill-accent-text"
+      />
     </svg>
   )
 }
@@ -113,9 +144,9 @@ export function NumerosStory({ summary }: { summary: YearSummary }) {
             className="flex items-end gap-[3px]"
           >
             {Array.from({ length: wholeEverests }, (_, index) => (
-              <EverestMark key={index} fraction={1} />
+              <EverestMark key={index} />
             ))}
-            {everestFraction >= 0.05 && <EverestMark fraction={everestFraction} />}
+            {everestFraction >= 0.05 && <EverestFractionMark fraction={everestFraction} />}
           </span>
         </div>
         <p className="col-span-2 text-right font-display text-2xl uppercase text-accent-text">

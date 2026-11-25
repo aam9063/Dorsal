@@ -241,7 +241,7 @@ La historia 06 sustituye a "Tu firma" del diseño: esa historia necesitaba los f
 ## 7. Diseño y UX
 
 - Fuente de verdad visual: el canvas enlazado arriba. Tokens: tinta `#0F100D`, hueso `#F2F0E9`, blanco `#FFFFFF`, naranja `#FC5200`, naranja texto `#C23F00`. Tipografías: Anton (display), Inter (texto), JetBrains Mono (etiquetas y datos).
-- **Reproductor de historias:** tocar a la derecha avanza y a la izquierda retrocede, mantener pulsado pausa, flechas del teclado, barras de progreso arriba, botón cerrar. Avance automático cada 7 s salvo con `prefers-reduced-motion`.
+- **Reproductor de historias:** tocar a la derecha avanza y a la izquierda retrocede, mantener pulsado pausa, flechas del teclado, barras de progreso arriba, botón cerrar. Avance automático con un presupuesto de tiempo por historia (7 s de base, más en las pantallas con más texto), salvo con `prefers-reduced-motion`.
 - Accesibilidad: contraste AA, objetivos táctiles ≥ 44 px, navegación completa por teclado, `aria-label` en botones de icono y texto alternativo en cada gráfico. axe sin violaciones serias ni críticas.
 - Estados de error con copy propio: no es un CSV, el CSV no es de Strava (faltan columnas), han subido el `.zip` en vez del CSV (se explica cómo sacar el CSV), sin actividades en 2026, filas corruptas (se ignoran y se avisa), navegador sin soporte.
 - Rendimiento (gama media, objetivo inicial que H-12 ajusta): CSV de 10.000 actividades procesado en menos de 2 s sin bloquear la UI; historias a 60 fps.

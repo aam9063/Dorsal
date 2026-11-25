@@ -1,4 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react'
+import { useHorizontalWheel } from '../hooks'
 
 interface ScrollRowProps {
   /** Accessible name of the scrollable region. */
@@ -27,6 +28,7 @@ const FULL: Thumb = { widthPercent: 100, offsetPercent: 0 }
 export function ScrollRow({ label, testId, children, className }: ScrollRowProps) {
   const viewportRef = useRef<HTMLDivElement>(null)
   const [thumb, setThumb] = useState<Thumb>(FULL)
+  useHorizontalWheel(viewportRef)
 
   const measure = (): void => {
     const viewport = viewportRef.current
@@ -76,7 +78,7 @@ export function ScrollRow({ label, testId, children, className }: ScrollRowProps
       <div
         aria-hidden="true"
         data-testid="scroll-row-track"
-        className="mt-2 h-[3px] w-full overflow-hidden rounded-pill bg-line opacity-0 transition-opacity duration-200 group-hover/scroll-row:opacity-100 group-focus-within/scroll-row:opacity-100"
+        className={`mt-2 h-[3px] w-full overflow-hidden rounded-pill bg-line transition-opacity duration-200 group-hover/scroll-row:opacity-100 group-focus-within/scroll-row:opacity-100 ${thumb.widthPercent < 100 ? 'opacity-70' : 'opacity-0'}`}
       >
         <div
           data-testid="scroll-row-thumb"

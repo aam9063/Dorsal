@@ -55,7 +55,16 @@ export const es = {
     navPrivacy: 'Privacidad',
     navFaq: 'Preguntas',
     headerCta: 'Crear mi Dorsal',
+    // Still read by scripts/og-image (generated-asset copy); never rendered as
+    // a kicker above a heading on the landing (odd/tasks/redesign-objeto-dorsal.md, S6).
     eyebrow: 'Resumen deportivo 2026 · Gratis',
+    // Editorial spine and numbered header bands of the redesign.
+    spineLabel: 'Dorsal · Temporada 2026',
+    heroMeta: 'Objeto · Dorsal de temporada',
+    stepsMeta: 'Cómo funciona · Tres pasos',
+    previewsMeta: 'Lo que vas a ver · Tu temporada, por etapas',
+    privacyMeta: 'Privacidad · Sin servidores',
+    faqMeta: 'Preguntas · Lo esencial',
     title: 'Tu año entero, en un dorsal.',
     subtitle:
       'Sube el activities.csv de la exportación de tu cuenta de Strava y te devolvemos tu 2026 contado como una carrera: tus kilómetros, tu perfil de etapa, tus rachas y un dorsal listo para compartir. Sin registro ni suscripción.',
@@ -79,7 +88,6 @@ export const es = {
       streakValue: '23 días',
     },
     steps: {
-      eyebrow: 'Cómo funciona',
       title: 'Tres pasos. Cero cuentas.',
       description:
         'No hace falta registrarse ni conectar nada. Solo el archivo que Strava ya te da gratis.',
@@ -99,11 +107,11 @@ export const es = {
       ],
     },
     previews: {
-      eyebrow: 'Lo que vas a ver',
       title: 'Tu temporada, por etapas.',
       description:
         'Cada historia sale de tus datos reales. Si no corres, no hablamos de ritmos: se adapta a tu deporte.',
       listAriaLabel: 'Las ocho historias de tu temporada',
+      stageTag: 'Etapa',
       yearArt: '2026',
       archetypeArt: '¿Quién eres?',
       materialArt: '842 km',
@@ -160,8 +168,7 @@ export const es = {
       ],
     },
     faq: {
-      eyebrow: 'Preguntas',
-      title: 'Lo que todo el mundo pregunta',
+      title: 'Antes de subir tu archivo',
       items: [
         {
           question: '¿Qué archivo tengo que subir?',
@@ -205,6 +212,8 @@ export const es = {
   upload: {
     title: 'Sube tu archivo de Strava',
     subtitle: 'Solo necesitamos un archivo: activities.csv.',
+    meta: 'Subir · Tu activities.csv',
+    errorMeta: 'Error · Revisa el archivo',
     howto: {
       title: '¿Aún no tienes el archivo?',
       steps: [
@@ -239,6 +248,8 @@ export const es = {
   },
   processing: {
     title: 'Preparando tu temporada…',
+    meta: 'Procesando · En tu dispositivo',
+    errorMeta: 'Error · Revisa el archivo',
     phaseReading: 'Leyendo tu archivo…',
     phaseComputing: 'Calculando tus números…',
     phaseDone: 'Listo',

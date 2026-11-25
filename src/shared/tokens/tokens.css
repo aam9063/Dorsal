@@ -39,6 +39,10 @@
   --dorsal-line: #d3d1c7;
   --dorsal-accent: #fc5200;
   --dorsal-accent-text: #c23f00;
+  /* The header CTA is filled orange in both themes; only its label follows the
+     mode, so each pair stays AA: 5.77:1 light, 4.60:1 dark. */
+  --dorsal-cta-bg: #fc5200;
+  --dorsal-cta-fg: #0f100d;
   /* Orange that is legible on bone, the surface that never changes with the theme. */
   --dorsal-accent-on-bone: #c23f00;
   --dorsal-heat-1: #eceae2;
@@ -61,6 +65,8 @@
     --dorsal-line: #34362e;
     --dorsal-accent: #fc5200;
     --dorsal-accent-text: #fc5200;
+    --dorsal-cta-bg: #c23f00;
+    --dorsal-cta-fg: #f2f0e9;
     --dorsal-heat-1: #24261f;
     --dorsal-heat-2: #6b2a0e;
     --dorsal-heat-3: #b83d07;
@@ -81,6 +87,8 @@
   --dorsal-line: #34362e;
   --dorsal-accent: #fc5200;
   --dorsal-accent-text: #fc5200;
+  --dorsal-cta-bg: #c23f00;
+  --dorsal-cta-fg: #f2f0e9;
   --dorsal-heat-1: #24261f;
   --dorsal-heat-2: #6b2a0e;
   --dorsal-heat-3: #b83d07;
@@ -104,7 +112,10 @@
   --color-fg-subtle: var(--dorsal-fg-subtle);
   --color-line: var(--dorsal-line);
   --color-accent: var(--dorsal-accent);
+  --color-cta-bg: var(--dorsal-cta-bg);
+  --color-cta-fg: var(--dorsal-cta-fg);
   --color-accent-text: var(--dorsal-accent-text);
+  --color-accent-on-bone: var(--dorsal-accent-on-bone);
   --color-heat-1: var(--dorsal-heat-1);
   --color-heat-2: var(--dorsal-heat-2);
   --color-heat-3: var(--dorsal-heat-3);

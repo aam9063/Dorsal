@@ -100,7 +100,7 @@ export function LatidosStory({ summary }: { summary: YearSummary }) {
       <p data-testid="latidos-coverage" className="mt-4 text-[15px] leading-relaxed text-fg-muted">
         {heartbeatCoverageSentence(coveragePct)}
       </p>
-      <p className="mt-2 text-xs leading-relaxed text-fg-subtle">{copy.estimateNote}</p>
+      <p className="mt-2 text-[15px] leading-relaxed text-fg-muted">{copy.estimateNote}</p>
     </div>
   )
 }
