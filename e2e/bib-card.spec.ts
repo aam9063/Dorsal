@@ -4,7 +4,7 @@ import { expect, test, type Page } from '@playwright/test'
 import { readActivities } from '../src/core/export-reader'
 import { buildYearSummary } from '../src/core/metrics/build-year-summary'
 import type { YearSummary } from '../src/core/model/year-summary'
-import { t } from '../src/shared/i18n'
+import { messages, t } from '../src/shared/i18n'
 import { availableStories, STORIES } from '../src/features/wrapped/stories/registry'
 import { BIB_CARD_FILE_NAME, SEASON_CARD_FILE_NAME } from '../src/features/share/bib-card-io'
 
@@ -273,24 +273,24 @@ async function selectCarnet(page: Page): Promise<void> {
 }
 
 /**
- * Switches the language through the selector and walks back to story 08: the
- * user closes the player with Escape, changes the language on the landing —
- * whose header is clickable, unlike the result screen under its reveal band —
- * and climbs the flow again with the same fixture.
+ * Switches the language in place on the result screen and climbs back to
+ * story 08: after the player is closed, the header with the language selector
+ * is reachable on every route — the player is the only full-screen modal and
+ * it hides the header by design while it is open.
  */
 async function reopenStoryInLocale(
   page: Page,
   summary: YearSummary,
   locale: 'es' | 'en',
 ): Promise<void> {
-  await page.keyboard.press('Escape')
+  await page.getByTestId('player-close').click()
+  await expect(page.getByTestId('player-root')).toHaveCount(0)
   await expect(page.getByTestId('result-root')).toBeVisible()
-  await page.goto('/')
   await page.getByTestId(`lang-option-${locale}`).click()
   await expect(page.locator('html')).toHaveAttribute('lang', locale)
-  await page.goto('/subir')
-  await page.getByTestId('upload-input').setInputFiles(fixture('runner-es'))
-  await expect(page.getByTestId('result-root')).toBeVisible()
+  await expect(page.getByTestId('result-total-distance').locator('..').locator('dt')).toHaveText(
+    messages[locale].result.kilometres,
+  )
   await page.getByTestId('result-open-player').click()
   await expect(page.getByTestId('player-root')).toBeVisible()
   await page.keyboard.press('Space')
