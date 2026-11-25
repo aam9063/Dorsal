@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dorsal · Dirección 03 · Objeto dorsal · Etapa 02 · Los números</title>
+<style>
+  :root {
+    --font-display: 'Anton', 'Impact', 'Haettenschweiler', 'Arial Narrow Bold', sans-serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+    --ink: #0f100d; --bone: #f2f0e9; --orange: #fc5200; --accent-text: #c23f00;
+    --text-ink: #1a1b16; --body-ink: #4a4b44; --label-ink: #5e5f58;
+    --line-light: #d3d1c7; --bone-muted: #e2e0d6; --bone-soft: #c9c8bf;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: var(--font-sans); background: var(--ink); color: var(--bone); }
+  .board { width: 390px; height: 844px; margin: 0 auto; background: var(--ink); display: flex; flex-direction: column; overflow: hidden; }
+  h2 { font-family: var(--font-display); font-weight: 400; line-height: .95; }
+  .m { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--bone-soft); }
+  .m--plate { color: var(--label-ink); }
+  .m--stamp { color: var(--accent-text); }
+  :is(a, button):focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+  main { flex: 1; display: flex; flex-direction: column; padding: 20px 16px 12px; min-height: 0; overflow: hidden; }
+
+  .stage-strip { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .stage-strip .ribbon { background: var(--orange); color: var(--ink); font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; padding: 5px 12px; border-radius: 999px; transform: rotate(-2deg); }
+
+  .bib { flex: 1; min-height: 0; background: var(--bone); color: var(--text-ink); border-radius: 6px; padding: 18px 20px 16px; position: relative; box-shadow: 0 26px 50px rgba(0,0,0,.55); display: flex; flex-direction: column; }
+  .pin { position: absolute; width: 15px; height: 15px; border-radius: 999px; background: var(--ink); box-shadow: inset 2.5px 2.5px 4px rgba(252,82,0,.45); top: 10px; }
+  .pin.p1 { left: 18px; }
+  .pin.p2 { right: 18px; }
+
+  .plate-head { display: flex; align-items: baseline; gap: 10px; margin: 10px 0 2px; padding: 6px 0 4px; border-top: 1px solid var(--line-light); border-bottom: 1px solid var(--line-light); }
+  .plate-head .num { font-family: var(--font-display); font-weight: 400; font-size: 34px; line-height: 1.1; color: var(--accent-text); }
+  .bib h2 { text-align: center; font-size: 26px; margin: 10px 0 0; }
+  .bib .intro { text-align: center; font-size: 13.5px; color: var(--body-ink); }
+  .bib .hero { text-align: center; font-family: var(--font-display); font-size: 78px; line-height: .95; color: var(--accent-text); margin-top: 4px; }
+  .bib .hero-unit { display: block; text-align: center; font-family: var(--font-display); font-weight: 400; font-size: 23px; letter-spacing: .01em; }
+
+  .divider { border-top: 2px dashed var(--bone-soft); margin: 12px 0 10px; position: relative; }
+  .divider::after { content: ""; position: absolute; left: 50%; top: -7px; width: 12px; height: 12px; border-radius: 999px; background: var(--ink); transform: translateX(-50%); }
+
+  .stamps { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+  .stamps .s b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 27px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .stamps .s b small { font-family: var(--font-mono); font-size: 13px; font-weight: 700; }
+  .stamps .s span { font-size: 11px; color: var(--label-ink); }
+
+  .laps-note { margin-top: 10px; background: var(--bone-muted); border-radius: 10px; padding: 9px 12px; font-size: 12.5px; line-height: 1.5; color: var(--body-ink); }
+  .laps-note b { color: var(--text-ink); font-variant-numeric: tabular-nums; }
+  .laps-note .stamp-mark { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--label-ink); display: block; margin-bottom: 2px; }
+
+  .bar-stamp { margin-top: auto; padding-top: 12px; border-top: 2px solid var(--ink); }
+  .bar-stamp .caption { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .bar-stamp ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 9px; }
+  .bar-stamp li { display: grid; grid-template-columns: 92px 1fr 44px; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text-ink); }
+  .bar-stamp .track { height: 10px; border-radius: 999px; background: var(--bone-soft); overflow: hidden; box-shadow: inset 1px 1px 2px rgba(15,16,13,.18); }
+  .bar-stamp .fill { display: block; height: 100%; background: var(--accent-text); }
+  .bar-stamp .pct { font-family: var(--font-mono); font-size: 11px; font-variant-numeric: tabular-nums; text-align: right; color: var(--label-ink); }
+
+  .sticker { position: absolute; top: 150px; right: -10px; background: var(--orange); color: var(--ink); font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 6px 12px; border-radius: 999px; transform: rotate(5deg); box-shadow: 0 6px 12px rgba(0,0,0,.4); }
+
+  .chrome { background: var(--ink); padding: 10px 14px 14px; display: grid; gap: 8px; }
+  .chrome .progress { display: flex; gap: 5px; }
+  .chrome .progress span { flex: 1; height: 4px; border-radius: 999px; background: #2c2e26; }
+  .chrome .progress span[aria-current="step"] { background: var(--orange); }
+  .chrome .progress span.done { background: var(--bone-soft); }
+  .chrome .row { display: flex; justify-content: space-between; align-items: center; }
+  .chrome .zone { color: var(--bone); text-decoration: none; font-size: 13px; font-weight: 600; padding: 7px 11px; border-radius: 999px; border: 1.5px dashed var(--bone-soft); }
+  .chrome .zone:hover { border-style: solid; }
+  .chrome .help { font-size: 12px; color: var(--bone-soft); text-align: center; }
+</style>
+</head>
+<body>
+<div class="board">
+  <main>
+    <div class="stage-strip">
+      <span class="ribbon">Etapa 02 / 08</span>
+    </div>
+
+    <section class="bib" aria-labelledby="numeros-title">
+      <span class="pin p1" aria-hidden="true"></span>
+      <span class="pin p2" aria-hidden="true"></span>
+      <header class="plate-head">
+        <span class="num" aria-hidden="true">02</span>
+        <span class="m m--plate">Dorsal · Temporada 2026</span>
+      </header>
+      <h2 id="numeros-title">Los números</h2>
+      <p class="intro">Este año has recorrido</p>
+      <div class="hero">3214</div>
+      <span class="hero-unit">kilómetros</span>
+      <span class="sticker">4,7× Everest</span>
+
+      <div class="divider" aria-hidden="true"></div>
+
+      <div class="stamps">
+        <div class="s"><b>287 <small>h</small></b><span>En movimiento</span></div>
+        <div class="s"><b>412</b><span>Actividades</span></div>
+        <div class="s"><b>312</b><span>Días activos</span></div>
+        <div class="s"><b>41.380 <small>m</small></b><span>Desnivel positivo</span></div>
+      </div>
+
+      <p class="laps-note"><span class="stamp-mark">Vuelta a la pista · Temporada 2026</span>Son <b>8.035</b> vueltas a una pista de 400 metros. Por calle 1, sin saltarte ninguna.</p>
+
+      <div class="bar-stamp">
+        <div class="caption"><span class="m m--stamp">Reparto por deporte</span><span class="m m--plate">Tiempo en movimiento</span></div>
+        <ul role="img" aria-label="Reparto del tiempo en movimiento por deporte: Carrera a pie 72 %, Bici 21 %, Natación 7 %">
+          <li><span>Carrera a pie</span><span class="track"><span class="fill" style="width:72%"></span></span><span class="pct">72 %</span></li>
+          <li><span>Bici</span><span class="track"><span class="fill" style="width:21%"></span></span><span class="pct">21 %</span></li>
+          <li><span>Natación</span><span class="track"><span class="fill" style="width:7%"></span></span><span class="pct">7 %</span></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <nav class="chrome" aria-label="Progreso de las historias">
+    <div class="progress" role="list" aria-label="Progreso de las historias">
+      <span class="done" role="listitem" aria-label="Historia 1"></span>
+      <span role="listitem" aria-label="Historia 2" aria-current="step"></span>
+      <span role="listitem" aria-label="Historia 3"></span>
+      <span role="listitem" aria-label="Historia 4"></span>
+      <span role="listitem" aria-label="Historia 5"></span>
+      <span role="listitem" aria-label="Historia 6"></span>
+      <span role="listitem" aria-label="Historia 7"></span>
+      <span role="listitem" aria-label="Historia 8"></span>
+    </div>
+    <div class="row">
+      <a class="zone" href="#">‹ Anterior</a>
+      <span class="help">Toca la pantalla para avanzar</span>
+      <a class="zone" href="#">Siguiente ›</a>
+    </div>
+  </nav>
+</div>
+</body>
+</html>

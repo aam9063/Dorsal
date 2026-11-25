@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dorsal · Dirección 02 · Telemetría · Consola</title>
+<style>
+  :root {
+    --font-display: 'Anton', 'Impact', 'Haettenschweiler', 'Arial Narrow Bold', sans-serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+    --ink: #0f100d; --bone: #f2f0e9; --orange: #fc5200; --accent-text: #fc5200;
+    --fg-muted: #c9c8bf; --fg-subtle: #9a9b91; --line: #34362e;
+    --raised: #1c1d18; --panel: #161712; --dim: #2c2e26;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: var(--font-sans); background: var(--ink); color: var(--bone); }
+  .board { width: 1440px; height: 900px; margin: 0 auto; display: flex; flex-direction: column; background: var(--ink); }
+  h1 { font-family: var(--font-display); font-weight: 400; line-height: .95; text-wrap: balance; }
+  .m { font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--fg-subtle); }
+  .m--accent { color: var(--accent-text); }
+  .num { font-variant-numeric: tabular-nums; }
+  :is(a, button):focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+  .statusbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 56px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  .statusbar .brand { display: flex; align-items: baseline; gap: 10px; text-decoration: none; }
+  .statusbar .brand strong { font-family: var(--font-display); font-weight: 400; font-size: 24px; }
+  .statusbar .brand span { font-family: var(--font-mono); font-size: 11px; color: var(--ink); background: var(--orange); border-radius: 999px; padding: 2px 9px; font-weight: 700; }
+  .statusbar nav { display: flex; gap: 8px; }
+  .statusbar nav a { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-muted); text-decoration: none; padding: 9px 14px; border-radius: 999px; border: 1px solid var(--line); }
+  .statusbar nav a:hover { border-color: var(--orange); color: var(--bone); }
+  .btn-start { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; background: var(--orange); color: var(--ink); font-weight: 700; padding: 12px 22px; border-radius: 999px; text-decoration: none; border: 0; }
+  .btn-start:hover { background: var(--bone); }
+
+  .console { flex: 1; display: grid; grid-template-columns: 1.25fr 1fr; min-height: 0; }
+  .main-instrument { padding: 40px 48px 28px 56px; display: flex; flex-direction: column; border-right: 1px solid var(--line); min-height: 0; }
+  .main-instrument .lead-row { display: flex; gap: 16px; align-items: baseline; }
+  .main-instrument h1 { font-size: 74px; margin: 18px 0 16px; }
+  .main-instrument h1 em { font-style: normal; color: var(--accent-text); }
+  .main-instrument .lede { font-size: 16px; line-height: 1.6; color: var(--fg-muted); max-width: 56ch; }
+
+  .port { margin-top: auto; background: var(--raised); border: 1px solid var(--line); border-radius: 14px; padding: 20px 24px; display: grid; gap: 10px; }
+  .port .dropzone { border: 2px dashed var(--dim); border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .port .dropzone:hover { border-color: var(--orange); }
+  .port .file { font-family: var(--font-mono); font-size: 15px; color: var(--bone); }
+  .port .hint { font-size: 12.5px; color: var(--fg-subtle); }
+  .port .btn-primary { background: var(--orange); color: var(--ink); font-weight: 700; font-size: 15px; padding: 13px 26px; border-radius: 999px; border: 0; cursor: pointer; text-decoration: none; display: inline-block; }
+  .port .btn-primary:hover { background: var(--bone); }
+  .port .btn-primary:focus-visible { outline: 2px solid var(--bone); outline-offset: 2px; }
+  .port .privacy { font-size: 13px; color: var(--fg-muted); }
+
+  .telemetry { padding: 0; display: grid; grid-template-rows: auto auto 1fr; min-height: 0; }
+  .gauge { padding: 26px 32px; border-bottom: 1px solid var(--line); display: flex; gap: 24px; align-items: center; }
+  .gauge .value { font-family: var(--font-display); font-size: 64px; line-height: 1; color: var(--accent-text); }
+  .gauge svg { flex: none; }
+  .readout-grid { display: grid; grid-template-columns: 1fr 1fr; }
+  .readout { padding: 22px 32px; border-bottom: 1px solid var(--line); display: grid; align-content: start; gap: 6px; }
+  .readout .value { font-family: var(--font-display); font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .readout .sub { font-size: 12.5px; color: var(--fg-subtle); }
+  .log { padding: 20px 32px; display: grid; align-content: start; gap: 10px; overflow: hidden; }
+  .log .entry { display: flex; gap: 14px; align-items: baseline; border-bottom: 1px solid var(--line); padding-bottom: 9px; }
+  .log .entry .idx { font-family: var(--font-mono); font-size: 11px; color: var(--fg-subtle); min-width: 30px; }
+  .log .entry .t { font-size: 14px; color: var(--bone); font-weight: 500; }
+  .log .entry .d { font-size: 12.5px; color: var(--fg-subtle); }
+
+  .strip { border-top: 1px solid var(--line); background: var(--panel); padding: 14px 56px; display: flex; gap: 40px; align-items: center; }
+  .strip .item { display: flex; flex-direction: column; gap: 3px; }
+  .strip .item b { font-size: 14px; color: var(--bone); font-weight: 600; }
+  .strip .item span { font-size: 12px; color: var(--fg-subtle); }
+</style>
+</head>
+<body>
+<main class="board">
+  <header class="statusbar">
+    <a class="brand" href="#"><strong>Dorsal</strong><span>26</span></a>
+    <nav aria-label="Principal">
+      <a href="#">Funcionamiento</a>
+      <a href="#">Privacidad</a>
+      <a href="#">Preguntas</a>
+    </nav>
+    <a class="btn-start" href="#">Crear mi Dorsal</a>
+  </header>
+
+  <div class="console">
+    <section class="main-instrument" aria-labelledby="console-title">
+      <div class="lead-row">
+        <span class="m m--accent" id="console-eyebrow">Resumen deportivo 2026 · Gratis</span>
+      </div>
+      <h1 id="console-title">Tu año entero,<br>régimen <em>a régimen</em>.</h1>
+      <p class="lede">Sube el activities.csv de la exportación de tu cuenta de Strava y te devolvemos tu 2026 contado como una carrera: tus kilómetros, tu perfil de etapa, tus rachas y un dorsal listo para compartir. Sin registro ni suscripción.</p>
+
+      <div class="port">
+        <div class="dropzone">
+          <div>
+            <div class="file num">activities.csv</div>
+            <div class="hint">Solo aceptamos activities.csv, de hasta 50 MB. Elegir o arrastrar.</div>
+          </div>
+          <button type="button" class="btn-primary">Subir mi activities.csv</button>
+        </div>
+        <p class="privacy">Se procesa en tu navegador. Tu archivo no sale de tu dispositivo.<br>
+          <a href="#" style="color:var(--fg-subtle)">¿Cómo lo descargo?</a></p>
+      </div>
+    </section>
+
+    <aside class="telemetry" aria-label="Ejemplo de taquímetro con los datos de la temporada">
+      <div class="gauge">
+        <svg width="120" height="70" viewBox="0 0 120 70" role="img" aria-label="Medidor de temporada al 74 %">
+          <path d="M8 66 A52 52 0 0 1 112 66" fill="none" stroke="#2c2e26" stroke-width="10" stroke-linecap="round"/>
+          <path d="M8 66 A52 52 0 0 1 87 21" fill="none" stroke="#fc5200" stroke-width="10" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <div class="m">Temporada 2026</div>
+          <div class="value num">3214 km</div>
+          <div class="m">Javier A. · 412 actividades</div>
+        </div>
+      </div>
+      <div class="readout-grid">
+        <div class="readout">
+          <span class="m">En movimiento</span>
+          <span class="value num">287 h</span>
+          <span class="sub">Tiempo total en movimiento</span>
+        </div>
+        <div class="readout">
+          <span class="m">Desnivel</span>
+          <span class="value num">41.380 m</span>
+          <span class="sub">Equivalen a 4,7 Everest</span>
+        </div>
+        <div class="readout">
+          <span class="m">Días activos</span>
+          <span class="value num">312</span>
+          <span class="sub">De 365 · racha de 23 días</span>
+        </div>
+        <div class="readout">
+          <span class="m">Etapas</span>
+          <span class="value num">8</span>
+          <span class="sub">Historias sobre tus datos</span>
+        </div>
+      </div>
+      <div class="log">
+        <div class="entry"><span class="idx num">01</span><span class="t">La portada</span><span class="d">Tu número de temporada</span></div>
+        <div class="entry"><span class="idx num">02</span><span class="t">Los números</span><span class="d">Kilómetros y Everests</span></div>
+        <div class="entry"><span class="idx num">03</span><span class="t">El perfil de tu año</span><span class="d">Meses como una etapa de montaña</span></div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="strip">
+    <div class="item"><b>Todo pasa en tu navegador</b><span>Al cerrar la pestaña no queda nada.</span></div>
+    <div class="item"><b>Sin registro ni email</b><span>No pedimos cuenta ni permisos. Solo el archivo.</span></div>
+    <div class="item"><b>Solo 2026</b><span>Leemos tu historial entero y descartamos el resto.</span></div>
+  </div>
+</main>
+</body>
+</html>

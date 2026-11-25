@@ -2,11 +2,11 @@ import type { ReactNode } from 'react'
 import { formatDuration, formatKilometres, formatNumber } from '../../../../shared/format'
 import { t } from '../../../../shared/i18n'
 import type { YearSummary } from '../../../../core/model/year-summary'
+import { PlateDivider, PlateHead, PlateNote, PlateTitle, Sticker, StoryPlate } from '../story-plate'
 import { EVEREST_APEX_X, EVEREST_HEIGHT, EVEREST_WIDTH, everestFill } from './everest-geometry'
 
 /**
- * One whole Everest of the W2 artboard, in the same orange as the text next
- * to the equivalence: the bright accent drops to the 3:1 graphics floor.
+ * One whole Everest, in the paper-range accent text that clears 3:1 on bone.
  */
 function EverestMark() {
   return (
@@ -15,7 +15,7 @@ function EverestMark() {
       height={EVEREST_HEIGHT}
       viewBox={`0 0 ${EVEREST_WIDTH} ${EVEREST_HEIGHT}`}
       aria-hidden="true"
-      className="fill-accent-text"
+      className="fill-accent-on-bone"
     >
       <path d={`M0 ${EVEREST_HEIGHT} L${EVEREST_APEX_X} 0 L${EVEREST_WIDTH} ${EVEREST_HEIGHT} Z`} />
     </svg>
@@ -35,17 +35,17 @@ function EverestFractionMark({ fraction }: { fraction: number }) {
       height={EVEREST_HEIGHT}
       viewBox={`0 0 ${EVEREST_WIDTH} ${EVEREST_HEIGHT}`}
       aria-hidden="true"
-      className="text-accent-text"
+      className="text-accent-on-bone"
     >
       <path
         d={`M0 ${EVEREST_HEIGHT} L${EVEREST_APEX_X} 0 L${EVEREST_WIDTH} ${EVEREST_HEIGHT} Z`}
-        className="fill-none stroke-accent-text"
+        className="fill-none stroke-accent-on-bone"
         strokeWidth="2"
         strokeLinejoin="round"
       />
       <path
         d={`M${points} L${EVEREST_WIDTH} ${EVEREST_HEIGHT} L0 ${EVEREST_HEIGHT} Z`}
-        className="fill-accent-text"
+        className="fill-accent-on-bone"
       />
     </svg>
   )
@@ -55,30 +55,32 @@ function Stat({
   testId,
   value,
   label,
-  children,
+  extra,
 }: {
   testId?: string
   value: ReactNode
   label: string
-  children?: ReactNode
+  extra?: ReactNode
 }) {
   return (
-    <div className="flex flex-col gap-1 border-t-2 border-line pt-3">
-      <span data-testid={testId} className="font-display text-4xl leading-none">
+    <div className="flex flex-col gap-1 border-t-2 border-line-light pt-2">
+      <span data-testid={testId} className="font-display text-[27px] leading-none">
         {value}
       </span>
-      <span className="text-[13px] text-fg-subtle">{label}</span>
-      {children}
+      <span className="text-[11px] text-label-ink">{label}</span>
+      {extra}
     </div>
   )
 }
 
 /**
- * Story 02 (BRIEF §6): distance, moving time, activities, active days,
- * elevation, the track-lap and Everest equivalences and the per-sport time
+ * Story 02 (BRIEF §6): the numbers, on the plate of the W2 artboard
+ * (design/redesign-2026/03-objeto-dorsal/02-numeros.html) — numbered band,
+ * centred hero with the equivalence as a sticker on the plate edge, dashed
+ * divider with a punched hole, the stamps grid, the laps note and the sport
  * split, all straight from `summary.totals` — the story never recomputes
- * (odd/tasks/h08-stories-01-04.md, decision 1). Composition follows the W2
- * artboard; the artboard's numbers are fictional and replaced by the real ones.
+ * (odd/tasks/h08-stories-01-04.md, decision 1). The artboard's numbers are
+ * fictional and replaced by the real ones.
  */
 export function NumerosStory({ summary }: { summary: YearSummary }) {
   const copy = t.stories['02-numeros']
@@ -89,32 +91,34 @@ export function NumerosStory({ summary }: { summary: YearSummary }) {
   const everestFraction = totals.everests - wholeEverests
 
   return (
-    <div data-testid="story-02-numeros" className="flex w-full flex-col gap-6">
-      <p className="font-mono text-xs uppercase tracking-[0.14em] text-fg-subtle">{copy.title}</p>
+    <StoryPlate testId="story-02-numeros">
+      <PlateHead number="02" />
+      <PlateTitle>{copy.title}</PlateTitle>
 
-      <div className="flex flex-col">
-        <span className="text-[17px] text-fg-muted">{copy.intro}</span>
+      <div className="relative mt-2 flex flex-col items-center gap-1 text-center">
+        <span className="text-[13.5px] text-body-ink [text-wrap:pretty]">{copy.intro}</span>
         <span
           data-testid="numeros-distance"
-          className="font-display text-8xl leading-none text-accent-text"
+          className="font-display text-[clamp(56px,18vw,78px)] leading-[0.95] text-accent-on-bone"
         >
           {formatKilometres(totals.distanceM)}
         </span>
-        <span className="font-display text-3xl uppercase leading-tight">
+        <span className="font-display text-[22px] uppercase leading-none">
           {copy.kilometresLabel}
         </span>
       </div>
 
-      <p className="rounded-panel bg-surface p-4 text-[15px] leading-relaxed text-fg-muted">
-        {copy.lapsLead}{' '}
-        <strong className="text-fg">
-          <span data-testid="numeros-laps">{formatNumber(laps)}</span>{' '}
-          {laps === 1 ? copy.lapsUnitSingular : copy.lapsUnit}
-        </strong>{' '}
-        {copy.lapsTail}
-      </p>
+      <div className="relative self-end pr-1">
+        <Sticker className="static translate-x-1 -rotate-[4deg]">
+          {'= '}
+          <span data-testid="numeros-everests">{formatNumber(everests)}</span>
+          {` ${copy.everestUnit}`}
+        </Sticker>
+      </div>
 
-      <div className="grid grid-cols-2 gap-x-3 gap-y-5">
+      <PlateDivider />
+
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
         <Stat
           testId="numeros-moving-time"
           value={formatDuration(totals.movingTimeS)}
@@ -124,19 +128,20 @@ export function NumerosStory({ summary }: { summary: YearSummary }) {
           testId="numeros-activities"
           value={formatNumber(totals.activityCount)}
           label={copy.activitiesLabel}
-        >
-          <span className="text-[13px] text-fg-subtle">
-            <span data-testid="numeros-active-days">{formatNumber(totals.activeDays)}</span>{' '}
-            {copy.activeDaysSuffix}
-          </span>
-        </Stat>
-        <div className="col-span-2 flex items-end justify-between gap-3 border-t-2 border-line pt-3">
-          <div className="flex flex-col gap-1">
-            <span className="font-display text-4xl leading-none">
-              <span data-testid="numeros-elevation">{formatNumber(totals.elevationGainM)}</span>{' '}
-              <span className="text-2xl">m</span>
+          extra={
+            <span className="text-[11px] text-label-ink">
+              <span data-testid="numeros-active-days">{formatNumber(totals.activeDays)}</span>{' '}
+              {copy.activeDaysSuffix}
             </span>
-            <span className="text-[13px] text-fg-subtle">{copy.elevationLabel}</span>
+          }
+        />
+        <div className="col-span-2 flex items-end justify-between gap-3 border-t-2 border-line-light pt-2">
+          <div className="flex flex-col gap-1">
+            <span className="font-display text-[27px] leading-none">
+              <span data-testid="numeros-elevation">{formatNumber(totals.elevationGainM)}</span>{' '}
+              <span className="text-[18px]">m</span>
+            </span>
+            <span className="text-[11px] text-label-ink">{copy.elevationLabel}</span>
           </div>
           <span
             role="img"
@@ -149,13 +154,19 @@ export function NumerosStory({ summary }: { summary: YearSummary }) {
             {everestFraction >= 0.05 && <EverestFractionMark fraction={everestFraction} />}
           </span>
         </div>
-        <p className="col-span-2 text-right font-display text-2xl uppercase text-accent-text">
-          = <span data-testid="numeros-everests">{formatNumber(everests)}</span> {copy.everestUnit}
-        </p>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <p className="font-mono text-xs uppercase tracking-[0.14em] text-fg-subtle">
+      <PlateNote>
+        {copy.lapsLead}{' '}
+        <strong className="font-semibold text-text-ink">
+          <span data-testid="numeros-laps">{formatNumber(laps)}</span>{' '}
+          {laps === 1 ? copy.lapsUnitSingular : copy.lapsUnit}
+        </strong>{' '}
+        {copy.lapsTail}
+      </PlateNote>
+
+      <div className="mt-auto border-t-2 border-ink pt-2.5">
+        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-accent-on-bone">
           {copy.sportSplitTitle}
         </p>
         <ul
@@ -168,17 +179,20 @@ export function NumerosStory({ summary }: { summary: YearSummary }) {
               return `${t.sports[row.sport]} ${formatNumber(share)} %`
             }),
           ].join(' ')}
-          className="flex flex-col gap-2"
+          className="mt-2 flex flex-col gap-2"
         >
           {totals.bySport.map((row) => {
             const share = Math.round(row.share * 100)
             return (
-              <li key={row.sport} className="flex items-center gap-3">
-                <span className="min-w-[7rem] text-sm text-fg">{t.sports[row.sport]}</span>
-                <span className="h-2 flex-1 overflow-hidden rounded-pill bg-surface-dim">
-                  <span className="block h-full bg-accent" style={{ width: `${share}%` }} />
+              <li
+                key={row.sport}
+                className="grid grid-cols-[92px_minmax(0,1fr)_44px] items-center gap-2 text-[13px] text-text-ink"
+              >
+                <span className="min-w-0 truncate">{t.sports[row.sport]}</span>
+                <span className="h-2.5 min-w-0 overflow-hidden rounded-pill bg-bone-soft shadow-[inset_1px_1px_2px_rgba(15,16,13,0.18)]">
+                  <span className="block h-full bg-orange-text" style={{ width: `${share}%` }} />
                 </span>
-                <span className="w-14 text-right font-mono text-xs tabular-nums text-fg-muted">
+                <span className="text-right font-mono text-[11px] tabular-nums text-label-ink">
                   {formatNumber(share)} %
                 </span>
               </li>
@@ -186,6 +200,6 @@ export function NumerosStory({ summary }: { summary: YearSummary }) {
           })}
         </ul>
       </div>
-    </div>
+    </StoryPlate>
   )
 }

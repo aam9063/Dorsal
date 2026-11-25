@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dorsal · Dirección 02 · Telemetría · Etapa 07 · El año en latidos</title>
+<style>
+  :root {
+    --font-display: 'Anton', 'Impact', 'Haettenschweiler', 'Arial Narrow Bold', sans-serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+    --ink: #0f100d; --bone: #f2f0e9; --orange: #fc5200; --accent-text: #fc5200;
+    --fg-muted: #c9c8bf; --fg-subtle: #9a9b91; --line: #34362e;
+    --raised: #1c1d18; --panel: #161712; --dim: #2c2e26;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: var(--font-sans); background: var(--ink); color: var(--bone); }
+  .board { width: 390px; height: 844px; margin: 0 auto; background: var(--ink); display: flex; flex-direction: column; overflow: hidden; }
+  h2 { font-family: var(--font-display); font-weight: 400; line-height: .95; }
+  .m { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--fg-subtle); }
+  .num { font-variant-numeric: tabular-nums; }
+  :is(a, button):focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+  main { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+
+  .module-title { padding: 18px 20px 12px; display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--line); background: var(--panel); }
+  .module-title .folio { font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted); }
+
+  .hero-readout { padding: 20px 20px 18px; border-bottom: 1px solid var(--line); }
+  .hero-readout .lead { font-size: 15px; color: var(--fg-muted); }
+  .hero-readout .beats { font-family: var(--font-display); font-size: 104px; line-height: .92; color: var(--accent-text); font-variant-numeric: tabular-nums; letter-spacing: .01em; }
+  .hero-readout .unit { font-family: var(--font-display); font-size: 30px; letter-spacing: .02em; }
+  .hero-readout .note { margin-top: 8px; font-size: 12.5px; color: var(--fg-subtle); line-height: 1.5; }
+
+  .trace { padding: 16px 20px; border-bottom: 1px solid var(--line); }
+  .trace .label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .trace .live { color: var(--accent-text); font-weight: 700; }
+
+  .instruments { flex: 1; display: grid; grid-template-rows: auto auto auto; align-content: start; min-height: 0; }
+  .inst { border-bottom: 1px solid var(--line); padding: 14px 20px; display: grid; grid-template-columns: 128px 1fr; gap: 6px 14px; align-items: center; }
+  .inst .value { font-family: var(--font-display); font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .inst .value small { font-size: 20px; font-family: var(--font-mono); font-weight: 700; }
+  .inst .value--accent { color: var(--accent-text); }
+  .inst .desc { font-size: 13.5px; line-height: 1.45; color: var(--fg-muted); }
+  .inst .scale { grid-column: 1 / -1; height: 6px; border-radius: 999px; background: var(--dim); overflow: hidden; }
+  .inst .scale .fill { display: block; height: 100%; background: var(--orange); border-radius: 999px; }
+  .inst .ticks { grid-column: 1 / -1; display: flex; justify-content: space-between; }
+
+  .chrome { background: var(--panel); border-top: 1px solid var(--line); padding: 10px 16px 14px; display: grid; gap: 8px; }
+  .progress { display: flex; gap: 5px; }
+  .progress span { flex: 1; height: 4px; border-radius: 999px; background: var(--dim); }
+  .progress span[aria-current="step"] { background: var(--orange); }
+  .progress span.done { background: var(--fg-subtle); }
+  .chrome .row { display: flex; justify-content: space-between; align-items: center; }
+  .chrome .zone { color: var(--bone); text-decoration: none; font-size: 13px; font-weight: 600; padding: 6px 10px; border-radius: 999px; }
+  .chrome .zone:hover { background: var(--dim); }
+  .chrome .help { font-size: 12px; color: var(--fg-subtle); text-align: center; }
+</style>
+</head>
+<body>
+<div class="board">
+  <main aria-labelledby="latidos-title">
+    <div class="module-title">
+      <h2 id="latidos-title" style="font-size:26px">El año en latidos</h2>
+      <span class="folio">Etapa 07 · 07/08</span>
+    </div>
+
+    <section class="hero-readout">
+      <span class="lead">Entrenando, tu corazón latió</span>
+      <span class="beats num">9,14</span>
+      <span class="unit">millones de veces</span>
+      <p class="note num">Estimado con la frecuencia cardiaca media de cada actividad y su tiempo en movimiento. Cubriste con pulso el 85 % de tu tiempo en movimiento.</p>
+    </section>
+
+    <div class="trace" aria-hidden="true">
+      <div class="label-row">
+        <span class="m">Señal de la temporada</span>
+        <span class="m live">● Pico 188 ppm</span>
+      </div>
+      <svg viewBox="0 0 350 84" width="100%" fill="none">
+        <path d="M0 54 H42 L48 46 L54 54 H68 L76 12 L84 82 L90 54 H126 L132 46 L138 54 H152 L160 4 L168 84 L176 54 H212 L218 46 L224 54 H240 L246 12 L254 82 L260 54 H296 L302 46 L308 54 H350" stroke="#f2f0e9" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="160" cy="4" r="5" fill="#fc5200" stroke="#f2f0e9" stroke-width="2.5"/>
+      </svg>
+    </div>
+
+    <section class="instruments" aria-label="Equivalentes y pico del año">
+      <div class="inst">
+        <span class="value num">97 días</span>
+        <span class="desc num">es lo que late un corazón en reposo para llegar a esa cifra.</span>
+        <div class="scale"><span class="fill" style="width:26%"></span></div>
+      </div>
+      <div class="inst">
+        <span class="value num value--accent">188 <small>ppm</small></span>
+        <span class="desc num">tu pico del año, el 24 de octubre.</span>
+        <div class="scale"><span class="fill" style="width:96%"></span></div>
+        <div class="ticks">
+          <span class="m num">60 reposo</span>
+          <span class="m num">196 máx.</span>
+        </div>
+      </div>
+      <div class="inst" style="border-bottom:0">
+        <span class="value num">85 %</span>
+        <span class="desc">de tus salidas este año se midieron con pulso.</span>
+        <div class="scale"><span class="fill" style="width:85%"></span></div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="chrome" aria-label="Progreso de las historias">
+    <div class="progress" role="list" aria-label="Progreso de las historias">
+      <span class="done" role="listitem" aria-label="Historia 1"></span>
+      <span class="done" role="listitem" aria-label="Historia 2"></span>
+      <span class="done" role="listitem" aria-label="Historia 3"></span>
+      <span class="done" role="listitem" aria-label="Historia 4"></span>
+      <span class="done" role="listitem" aria-label="Historia 5"></span>
+      <span class="done" role="listitem" aria-label="Historia 6"></span>
+      <span role="listitem" aria-label="Historia 7" aria-current="step"></span>
+      <span role="listitem" aria-label="Historia 8"></span>
+    </div>
+    <div class="row">
+      <a class="zone" href="#">‹ Anterior</a>
+      <span class="help">Toca la pantalla para avanzar</span>
+      <a class="zone" href="#">Siguiente ›</a>
+    </div>
+  </nav>
+</div>
+</body>
+</html>

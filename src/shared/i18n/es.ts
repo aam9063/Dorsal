@@ -264,6 +264,7 @@ export const es = {
   },
   result: {
     title: 'Tu temporada 2026',
+    meta: 'Resultado · Temporada 2026',
     subtitle: 'Aquí irán las ocho historias y tu dorsal.',
     kilometres: 'Kilómetros',
     movingTime: 'Tiempo en movimiento',

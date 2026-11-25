@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dorsal · Sistema de diseño</title>
+<style>
+  :root {
+    --font-display: 'Anton', 'Impact', 'Haettenschweiler', 'Arial Narrow Bold', sans-serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+    --color-ink: #0f100d;
+    --color-bone: #f2f0e9;
+    --color-orange: #fc5200;
+    --color-orange-text: #c23f00;
+    --color-raised: #1c1d18;
+    --color-panel: #161712;
+    --color-dim: #2c2e26;
+    --color-line-dark: #34362e;
+    --color-line-light: #d3d1c7;
+    --color-bone-dim: #d3d1c7;
+    --color-bone-muted: #e2e0d6;
+    --color-bone-soft: #c9c8bf;
+    --color-bone-faint: #9a9b91;
+    --color-body-ink: #4a4b44;
+    --color-label-ink: #5e5f58;
+    --color-text-ink: #1a1b16;
+
+    --radius-pill: 999px;
+    --radius-card: 18px;
+    --radius-panel: 14px;
+    --radius-chip: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: var(--font-sans); background: var(--color-bone); color: var(--color-ink); }
+  .board { width: 1440px; margin: 0 auto; padding: 56px 64px 96px; }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 400; line-height: 0.95; text-wrap: balance; }
+  .meta { font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-label-ink); }
+  .board-title { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 2px solid var(--color-line-light); padding-bottom: 20px; margin-bottom: 40px; }
+  .board-title h1 { font-size: 72px; }
+  section { margin-bottom: 56px; }
+  section > h2 { font-size: 40px; }
+  section > .meta { display: block; margin: 6px 0 20px; }
+  .swatch-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px; }
+  .swatch { border: 1px solid var(--color-line-light); border-radius: var(--radius-chip); overflow: hidden; background: #fff; }
+  .swatch .chip { height: 84px; }
+  .swatch dl { padding: 10px 12px 12px; }
+  .swatch dt { font-family: var(--font-mono); font-size: 11px; }
+  .swatch dd { font-size: 12px; color: var(--color-body-ink); }
+  .type-row { display: flex; align-items: baseline; gap: 24px; border-top: 1px solid var(--color-line-light); padding: 16px 0; }
+  .type-row .meta { flex: 0 0 180px; }
+  .t-hero { font-family: var(--font-display); font-size: 96px; line-height: .95; }
+  .t-h2 { font-family: var(--font-display); font-size: 48px; line-height: .95; }
+  .t-lead { font-size: 17px; color: var(--color-body-ink); max-width: 60ch; }
+  .t-body { font-size: 16px; color: var(--color-body-ink); max-width: 60ch; }
+  .t-mono { font-family: var(--font-mono); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-label-ink); }
+  .spec-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+  .spec-card { background: #fff; border: 1px solid var(--color-line-light); border-radius: var(--radius-chip); padding: 20px; }
+  .radius-samples { display: flex; gap: 16px; align-items: end; }
+  .radius-samples > div { display: grid; justify-items: center; gap: 6px; }
+  .r-pill { width: 120px; height: 44px; background: var(--color-bone-muted); border-radius: 999px; }
+  .r-card { width: 96px; height: 96px; background: var(--color-bone-muted); border-radius: 18px; }
+  .r-panel { width: 96px; height: 96px; background: var(--color-bone-muted); border-radius: 14px; }
+  .r-chip { width: 96px; height: 96px; background: var(--color-bone-muted); border-radius: 10px; }
+  .spacing { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .spacing i { display: block; height: 16px; background: var(--color-orange); }
+  .spacing .meta { flex: 0 0 64px; }
+  .spacing code { font-family: var(--font-mono); font-size: 12px; color: var(--color-body-ink); }
+  .comp-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+  .comp-card { background: #fff; border: 1px solid var(--color-line-light); border-radius: var(--radius-chip); padding: 24px; display: grid; gap: 14px; align-content: start; }
+  .btn-primary { display: inline-flex; align-items: center; gap: 10px; background: var(--color-ink); color: var(--color-bone); font-weight: 600; font-size: 15px; padding: 13px 22px; border-radius: var(--radius-pill); border: 0; cursor: pointer; }
+  .btn-primary:hover { background: var(--color-orange); color: var(--color-ink); }
+  .btn-secondary { display: inline-flex; align-items: center; background: transparent; color: var(--color-text-ink); font-weight: 600; font-size: 15px; padding: 12px 20px; border-radius: var(--radius-pill); border: 2px solid var(--color-ink); cursor: pointer; }
+  .btn-primary:focus-visible, .btn-secondary:focus-visible, .link-btn:focus-visible { outline: 2px solid var(--color-orange); outline-offset: 2px; }
+  .chip-state { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: var(--radius-chip); background: var(--color-bone-muted); color: var(--color-text-ink); border: 0; cursor: pointer; }
+  .chip-state[aria-pressed="true"] { background: var(--color-ink); color: var(--color-bone); }
+  .chip-state .dot { width: 10px; height: 10px; border-radius: 999px; background: var(--color-orange); }
+  .stat { border-top: 2px solid var(--color-line-light); padding-top: 12px; }
+  .stat .value { font-family: var(--font-display); font-size: 40px; line-height: 1; }
+  .stat .label { font-size: 13px; color: var(--color-label-ink); margin-top: 4px; }
+  .plate { background: var(--color-bone); border-radius: var(--radius-card); box-shadow: 0 30px 70px rgba(15,16,13,.35); padding: 22px; display: grid; gap: 10px; justify-items: center; }
+  .plate .km { font-family: var(--font-display); font-size: 64px; color: var(--color-orange-text); line-height: 1; }
+  .plate .name { font-family: var(--font-mono); font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--color-text-ink); }
+  .plate .season { font-size: 13px; color: var(--color-body-ink); }
+  .share-bar { display: grid; grid-template-columns: 96px 1fr 52px; align-items: center; gap: 10px; font-size: 14px; }
+  .share-bar .track { height: 8px; border-radius: var(--radius-pill); background: var(--color-line-light); overflow: hidden; }
+  .share-bar .fill { display: block; height: 100%; background: var(--color-orange-text); border-radius: var(--radius-pill); }
+  .share-bar .pct { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12px; text-align: right; color: var(--color-body-ink); }
+  .dark-panel { background: var(--color-ink); color: var(--color-bone); border-radius: var(--radius-panel); padding: 24px; display: grid; gap: 16px; }
+  .dark-panel .meta { color: var(--color-bone-faint); }
+  .hairline-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .hairline-table th { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-label-ink); text-align: left; padding: 0 16px 8px 0; border-bottom: 1px solid var(--color-line-light); }
+  .hairline-table td { padding: 8px 16px 8px 0; border-bottom: 1px solid var(--color-line-light); color: var(--color-body-ink); }
+  .hairline-table td strong { color: var(--color-text-ink); font-variant-numeric: tabular-nums; }
+  .rule-note { font-size: 14px; color: var(--color-body-ink); max-width: 72ch; }
+  a.link-btn { color: var(--color-text-ink); font-weight: 600; font-size: 15px; padding: 2px; }
+</style>
+</head>
+<body>
+<main class="board">
+  <div class="board-title">
+    <div>
+      <h1>Todo tu año,<br>en un dorsal.</h1>
+    </div>
+    <p class="meta" style="text-align:right">Dorsal · Sistema de diseño<br>Tokens de src/shared/tokens/tokens.css</p>
+  </div>
+
+  <section aria-labelledby="sec-colors">
+    <h2 id="sec-colors" style="font-size:40px">Colores</h2>
+    <span class="meta">16 marcas · temas claro y oscuro · contraste verificado por par de uso</span>
+    <div class="swatch-grid">
+      <div class="swatch"><div class="chip" style="background:#0f100d"></div><dl><dt>--color-ink</dt><dd>#0f100d · texto y fondo oscuro</dd></dl></div>
+      <div class="swatch"><div class="chip" style="background:#f2f0e9"></div><dl><dt>--color-bone</dt><dd>#f2f0e9 · papel claro</dd></dl></div>
+      <div class="swatch"><div class="chip" style="background:#fc5200"></div><dl><dt>--color-orange</dt><dd>#fc5200 · gráficos y acento</dd></dl></div>
+      <div class="swatch"><div class="chip" style="background:#c23f00"></div><dl><dt>--color-orange-text</dt><dd>#c23f00 · acento como texto sobre bone</dd></dl></div>
+      <div class="swatch"><div class="chip" style="background:#1c1d18"></div><dl><dt>--color-raised</dt><dd>#1c1d18 · superficie elevada</dd></dl></div>
+      <div class="swatch"><div class="chip" style="background:#161712"></div><dl><dt>--color-panel</dt><dd>#161712 · panel oscuro</dd></dl></div>
+      <div class="swatch"><div class="chip" style="background:#2c2e26"></div><dl><dt>--color-dim</dt><dd>#2c2e26 · panel atenuado</dd></dl></div>
+      <div class="swatch"><div class="chip" style="background:#34362e"></div><dl><dt>--color-line-dark</dt><dd>#34362e · filete en oscuro</dd></dl></div>
+      <div class="swatch"><div class="chip" style="background:#d3d1c7"></div><dl><dt>--color-bone-dim</dt><dd>#d3d1c7 · hueso atenuado y filete</dd></dl></div>
+      <div class="swatch"><div class="chip" style="background:#e2e0d6"></div><dl><dt>--color-bone-muted</dt><dd>#e2e0d6 · hueso medio</dd></dl></div>
+      <div class="swatch"><div class="chip" style="background:#c9c8bf"></div><dl><dt>--color-bone-soft</dt><dd>#c9c8bf · hueso suave</dd></dl></div>
+      <div class="swatch"><div class="chip" style="background:#9a9b91"></div><dl><dt>--color-bone-faint</dt><dd>#9a9b91 · hueso tenue</dd></dl></div>
+      <div class="swatch"><div class="chip" style="background:#4a4b44"></div><dl><dt>--color-body-ink</dt><dd>#4a4b44 · texto de lectura</dd></dl></div>
+      <div class="swatch"><div class="chip" style="background:#5e5f58"></div><dl><dt>--color-label-ink</dt><dd>#5e5f58 · etiquetas</dd></dl></div>
+      <div class="swatch"><div class="chip" style="background:#1a1b16"></div><dl><dt>--color-text-ink</dt><dd>#1a1b16 · texto sobre bone</dd></dl></div>
+      <div class="swatch"><div class="chip" style="background:#ffffff"></div><dl><dt>--dorsal-bg (claro)</dt><dd>#ffffff · fondo de página</dd></dl></div>
+    </div>
+    <div class="spec-card" style="margin-top:20px">
+      <span class="meta">Escala de calor (heat-1 → heat-4), tokens reales del tema</span>
+      <div style="display:flex; gap:4px; margin-top:12px">
+        <div style="flex:1;height:48px;background:#eceae2;border-radius:10px"></div>
+        <div style="flex:1;height:48px;background:#fdcbb3;border-radius:10px"></div>
+        <div style="flex:1;height:48px;background:#fd8a55;border-radius:10px"></div>
+        <div style="flex:1;height:48px;background:#fc5200;border-radius:10px"></div>
+      </div>
+      <p class="rule-note" style="margin-top:12px">--dorsal-heat-1 <code>#eceae2</code>, --dorsal-heat-2 <code>#fdcbb3</code>, --dorsal-heat-3 <code>#fd8a55</code>, --dorsal-heat-4 <code>#fc5200</code>. Regla fija: sobrequalidades de hueso, el texto acento es siempre <code>--color-orange-text</code> <code>#c23f00</code>; el naranja vivo <code>#fc5200</code> solo funciona como gráfico ≥ 3:1.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="sec-type">
+    <h2 id="sec-type" style="font-size:40px">Tipografía</h2>
+    <span class="meta">Anton → Impact (local) · Inter → system-ui · JetBrains Mono → ui-monospace</span>
+    <div class="type-row"><span class="meta">display 96</span><span class="t-hero">412 actividades</span></div>
+    <div class="type-row"><span class="meta">display 48</span><span class="t-h2">Tu temporada 2026</span></div>
+    <div class="type-row"><span class="meta">lead 17</span><span class="t-lead">Sube el activities.csv de la exportación de tu cuenta y te devolvemos tu 2026 contado como una carrera: kilómetros, perfil de etapa, rachas y un dorsal para compartir.</span></div>
+    <div class="type-row"><span class="meta">body 16</span><span class="t-body">El archivo se lee y se calcula en tu dispositivo. Al cerrar la pestaña no queda nada.</span></div>
+    <div class="type-row"><span class="meta">mono 13 · caps</span><span class="t-mono">Etapa 02 · Los números</span></div>
+  </section>
+
+  <section aria-labelledby="sec-specs">
+    <h2 id="sec-specs" style="font-size:40px">Espaciado, radios y sombras</h2>
+    <span class="meta">Espaciado: escala por defecto de Tailwind v4 (no hay tokens propios) · radios: 4 tokens del tema</span>
+    <div class="spec-grid">
+      <div class="spec-card">
+        <span class="meta">Espaciado (por defecto de Tailwind)</span>
+        <div style="margin-top:12px">
+          <div class="spacing"><span class="meta">4 px</span><i style="width:4px"></i><code>step 1 · 0.25rem</code></div>
+          <div class="spacing"><span class="meta">8 px</span><i style="width:8px"></i><code>step 2 · 0.5rem</code></div>
+          <div class="spacing"><span class="meta">16 px</span><i style="width:16px"></i><code>step 4 · 1rem</code></div>
+          <div class="spacing"><span class="meta">24 px</span><i style="width:24px"></i><code>step 6 · 1.5rem</code></div>
+          <div class="spacing"><span class="meta">32 px</span><i style="width:32px"></i><code>step 8 · 2rem</code></div>
+        </div>
+      </div>
+      <div class="spec-card">
+        <span class="meta">Radios</span>
+        <div class="radius-samples" style="margin-top:16px">
+          <div><div class="r-pill"></div><code>--radius-pill</code></div>
+          <div><div class="r-card"></div><code>18px</code></div>
+          <div><div class="r-panel"></div><code>14px</code></div>
+          <div><div class="r-chip"></div><code>10px</code></div>
+        </div>
+      </div>
+      <div class="spec-card">
+        <span class="meta">Sombras observadas en el código</span>
+        <div style="margin-top:16px; border-radius:18px; background:var(--color-bone); box-shadow:0 30px 70px rgba(15,16,13,.35); padding:18px">
+          <code style="font-size:12px">0 30px 70px rgba(15,16,13,.35) · landing</code>
+        </div>
+        <div style="margin-top:14px; border-radius:18px; background:var(--color-bone); box-shadow:0 20px 25px -5px rgba(15,16,13,.15),0 8px 10px -6px rgba(15,16,13,.15); padding:18px">
+          <code style="font-size:12px">shadow-xl (Tailwind) · tarjetas de dorsal</code>
+        </div>
+        <p class="rule-note" style="margin-top:10px">No hay tokens de sombra en <code>tokens.css</code>; son valores por componente. Los agujeros del dorsal se dibujan con crecientes, no con CSS.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="sec-comp">
+    <h2 id="sec-comp" style="font-size:40px">Componentes</h2>
+    <span class="meta">Botones, chips, bloques de dato, tabla de filete, barra de reparto, panel oscuro, dorsal</span>
+    <div class="comp-grid">
+      <div class="comp-card">
+        <span class="meta">Acciones</span>
+        <div style="display:flex; gap:12px; flex-wrap:wrap">
+          <button type="button" class="btn-primary">Subir mi activities.csv</button>
+          <a href="#" class="link-btn">¿Cómo lo descargo?</a>
+        </div>
+        <button type="button" class="btn-secondary">Ver las historias</button>
+        <p class="rule-note">Foco visible: <code>outline 2px accent, offset 2px</code> <span class="meta" style="letter-spacing:0">(global.css)</span>.</p>
+      </div>
+      <div class="comp-card">
+        <span class="meta">Estados</span>
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <button type="button" class="chip-state" aria-pressed="true"><span class="dot"></span>Pendiente</button>
+          <button type="button" class="chip-state" aria-pressed="false"><span class="dot"></span>Hecho</button>
+        </div>
+        <p class="rule-note">El estado no se comunica solo con color: la pastilla cambia de fondo y lleva etiqueta de texto.</p>
+      </div>
+      <div class="comp-card">
+        <span class="meta">Bloque de dato</span>
+        <div class="stat">
+          <span class="value">41.380</span>
+          <span class="label">m desnivel positivo</span>
+        </div>
+        <div class="stat">
+          <span class="value">287 h</span>
+          <span class="label">En movimiento</span>
+        </div>
+      </div>
+      <div class="comp-card">
+        <span class="meta">Tabla de filete · num. tabulares</span>
+        <table class="hairline-table">
+          <thead><tr><th>Material</th><th>Horas</th><th>Salidas</th></tr></thead>
+          <tbody>
+            <tr><td>Zapatilla de asfalto</td><td><strong>96 h</strong></td><td><strong>212</strong></td></tr>
+            <tr><td>Zapatilla de trail</td><td><strong>38 h</strong></td><td><strong>54</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="comp-card">
+        <span class="meta">Reparto por deporte</span>
+        <div class="share-bar" style="margin-bottom:10px"><span>Carrera a pie</span><span class="track"><span class="fill" style="width:72%"></span></span><span class="pct">72 %</span></div>
+        <div class="share-bar" style="margin-bottom:10px"><span>Bici</span><span class="track"><span class="fill" style="width:21%"></span></span><span class="pct">21 %</span></div>
+        <div class="share-bar"><span>Natación</span><span class="track"><span class="fill" style="width:7%"></span></span><span class="pct">7 %</span></div>
+      </div>
+      <div class="comp-card">
+        <span class="meta">Panel oscuro</span>
+        <div class="dark-panel">
+          <span class="meta">Filas leídas</span>
+          <span style="font-family:var(--font-display); font-size:44px; line-height:1">9.812</span>
+        </div>
+      </div>
+      <div class="comp-card">
+        <span class="meta">El dorsal (objeto central)</span>
+        <div class="plate">
+          <span class="season">Temporada 2026</span>
+          <span class="km">3214 km</span>
+          <span class="name">Javier A.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

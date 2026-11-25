@@ -2,18 +2,25 @@ import { MIN_SESSIONS_PER_WEEK } from '../../core/metrics/weekly-load'
 import type { YearSummary } from '../../core/model/year-summary'
 import { formatKilometres, formatNumber } from '../../shared/format'
 import { t, fulfilledWeeksSentence, powerCoverageSentence } from '../../shared/i18n'
-import { bibCardMarkRows, bibCardNameText, monthDayText } from './render-bib-card'
+import {
+  bibCardMarkRows,
+  bibCardNameText,
+  monthDayText,
+  CARD_STAGE_NUMERAL,
+} from './render-bib-card'
 import { sportIconPaths } from './sport-icons'
 
 /**
  * The carnet as the story shows it: a DOM replica of `drawSeasonCard`, so the
  * story never paints a canvas (h11 decision 6) and both cards render before
- * any PNG is requested. It mirrors the season card's panels block for block —
- * header, sport split with share bars, best week and fulfilled weeks, best
- * marks and the power evolution — and reads every string from the same helpers
- * the canvas draw uses (`bibCardNameText`, `bibCardMarkRows`, `monthDayText`,
- * `t.sports`, the format helpers and the two sentences of `src/shared/i18n/`),
- * so copy and numbers cannot drift apart between the two surfaces.
+ * any PNG is requested. It mirrors the redesigned composition block for block
+ * — punched pins, editorial spine head, title, name, the dashed tear-off with
+ * its punched hole, the sport split with its accent stamp for the most
+ * practiced sport, the weeks, the best marks and the power evolution — and
+ * reads every string from the same helpers the canvas draw uses
+ * (`bibCardNameText`, `bibCardMarkRows`, `monthDayText`, `t.sports`, the
+ * format helpers and the two sentences of `src/shared/i18n/`), so copy and
+ * numbers cannot drift apart between the two surfaces.
  */
 export function CarnetPreview({ summary, name }: { summary: YearSummary; name: string | null }) {
   const copy = t.stories['08-dorsal'].carnet
@@ -52,25 +59,43 @@ export function CarnetPreview({ summary, name }: { summary: YearSummary; name: s
       role="group"
       aria-label={copy.previewLabel}
       data-testid="carnet-preview"
-      className="relative flex w-[86%] max-w-sm flex-col gap-2.5 rounded-card bg-bone p-5 text-ink shadow-xl"
+      className="relative flex w-[86%] max-w-sm flex-col gap-2.5 rounded-[6px] bg-bone p-4 pt-2.5 text-ink shadow-xl"
     >
-      <span className="absolute left-3 top-3 h-2.5 w-2.5 rounded-pill bg-accent" />
-      <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-pill bg-accent" />
-      <span className="absolute bottom-3 left-3 h-2.5 w-2.5 rounded-pill bg-accent" />
-      <span className="absolute bottom-3 right-3 h-2.5 w-2.5 rounded-pill bg-accent" />
+      <span
+        aria-hidden="true"
+        className="absolute left-[14px] top-2.5 size-3 rounded-full bg-ink shadow-[inset_2px_2px_3px_rgba(252,82,0,0.45)]"
+      />
+      <span
+        aria-hidden="true"
+        className="absolute right-[14px] top-2.5 size-3 rounded-full bg-ink shadow-[inset_2px_2px_3px_rgba(252,82,0,0.45)]"
+      />
 
       <div data-testid="carnet-header">
-        <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-label-ink">
-          {t.stories['08-dorsal'].plateShort}
-        </div>
-        <div className="mt-1 font-display text-2xl leading-none uppercase">{copy.title}</div>
-        <div className="mt-1 text-sm font-bold uppercase tracking-[0.2em]">
+        <header className="mt-1 flex items-baseline gap-2 border-y border-line-light py-1">
+          <span aria-hidden="true" className="font-display text-lg leading-none">
+            {CARD_STAGE_NUMERAL}
+          </span>
+          <span className="font-mono text-[8px] uppercase tracking-[0.14em] text-label-ink">
+            {t.stories['08-dorsal'].plate}
+          </span>
+        </header>
+        <div className="mt-1.5 font-display text-2xl leading-none uppercase">{copy.title}</div>
+        <div className="mt-1 text-[13px] font-bold uppercase tracking-[0.2em]">
           {bibCardNameText(name)}
         </div>
       </div>
 
+      <div aria-hidden="true" className="relative border-t-2 border-dashed border-bone-soft">
+        <span className="absolute left-1/2 top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent" />
+      </div>
+
       {sports === null || sports.length === 0 ? null : (
         <div data-testid="carnet-sports" className="flex flex-col gap-1.5">
+          <div className="flex">
+            <span className="inline-flex -rotate-[2.5deg] items-center rounded-pill bg-accent px-2.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.1em] text-ink">
+              {copy.mostPracticedLabel}
+            </span>
+          </div>
           {sports.map((row, index) => (
             <div key={row.sport} className="flex items-start gap-2">
               <svg
@@ -113,11 +138,6 @@ export function CarnetPreview({ summary, name }: { summary: YearSummary; name: s
                   {' · '}
                   {formatNumber(Math.round(row.share * 100))} %
                 </div>
-                {index === 0 ? (
-                  <div className="font-mono text-[8px] uppercase tracking-[0.1em] text-label-ink">
-                    {copy.mostPracticedLabel}
-                  </div>
-                ) : null}
               </div>
             </div>
           ))}
@@ -151,7 +171,7 @@ export function CarnetPreview({ summary, name }: { summary: YearSummary; name: s
       {marks.length === 0 ? null : (
         <div data-testid="carnet-marks" className="font-mono text-[9px] uppercase tracking-[0.1em]">
           <div className="mb-1 text-label-ink">{copy.marksTitle}</div>
-          <ul className="divide-y divide-dashed divide-ink/25">
+          <ul className="divide-y divide-line-light">
             {marks.map((mark) => (
               <li key={mark.label} className="py-1">
                 <span className="block text-label-ink">{mark.label}</span>
@@ -199,7 +219,7 @@ export function CarnetPreview({ summary, name }: { summary: YearSummary; name: s
               return (
                 <div key={month} className="flex h-full flex-1 flex-col justify-end">
                   <div
-                    className={`w-full rounded-sm ${month === peakMonth && height > 0 ? 'bg-accent' : 'bg-ink'}`}
+                    className={`w-full rounded-[2px] ${month === peakMonth && height > 0 ? 'bg-accent' : 'bg-ink'}`}
                     style={{ height: `${height}%`, minHeight: height > 0 ? 2 : 0 }}
                   />
                 </div>

@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dorsal · Dirección 01 · Programa de carrera · Etapa 02 · Los números</title>
+<style>
+  :root {
+    --font-display: 'Anton', 'Impact', 'Haettenschweiler', 'Arial Narrow Bold', sans-serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+    --ink: #0f100d; --bone: #f2f0e9; --orange: #fc5200; --accent-text: #c23f00;
+    --body-ink: #4a4b44; --label-ink: #5e5f58; --text-ink: #1a1b16;
+    --line: #d3d1c7;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: var(--font-sans); background: var(--ink); }
+  .board { width: 390px; height: 844px; margin: 0 auto; background: var(--bone); color: var(--ink); display: flex; flex-direction: column; overflow: hidden; }
+  h2 { font-family: var(--font-display); font-weight: 400; line-height: .95; }
+  .m { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--label-ink); }
+  .m--accent { color: var(--accent-text); }
+  :is(a, button):focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+  article { flex: 1; padding: 22px 20px 14px; display: flex; flex-direction: column; min-height: 0; }
+
+  .story-head { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid var(--ink); padding-bottom: 10px; }
+  .story-head .folio { font-family: var(--font-mono); font-size: 12px; }
+
+  .stage-title { margin: 16px 0 4px; display: flex; align-items: baseline; gap: 10px; }
+  .stage-title .num { font-family: var(--font-display); font-size: 34px; color: var(--accent-text); line-height: 1; }
+  .stage-title h2 { font-size: 30px; }
+
+  .feature { margin-top: 10px; }
+  .feature .line1 { font-size: 15px; color: var(--body-ink); }
+  .feature .value { display: block; font-family: var(--font-display); font-size: 96px; line-height: .95; color: var(--accent-text); margin: 4px 0 2px; }
+  .feature .unit { display: block; font-family: var(--font-display); font-size: 26px; letter-spacing: .01em; }
+  .feature .track-note { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; font-size: 13.5px; line-height: 1.5; color: var(--body-ink); max-width: 38ch; }
+  .feature .track-note b { color: var(--text-ink); font-variant-numeric: tabular-nums; }
+
+  .stat-table { margin-top: 12px; width: 100%; border-collapse: collapse; }
+  .stat-table th { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--label-ink); text-align: left; padding: 6px 8px 5px 0; border-bottom: 1px solid var(--line); }
+  .stat-table th:last-child { text-align: right; }
+  .stat-table td { padding: 8px 8px 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--body-ink); vertical-align: baseline; }
+  .stat-table td.k { color: var(--text-ink); font-weight: 500; }
+  .stat-table td.v { text-align: right; font-family: var(--font-display); font-size: 21px; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .stat-table td.s { text-align: right; font-family: var(--font-mono); font-size: 11px; color: var(--label-ink); }
+
+  .everest { margin-top: auto; border-top: 2px solid var(--ink); padding-top: 12px; display: flex; align-items: end; justify-content: space-between; gap: 10px; }
+  .everest .equation { display: flex; flex-direction: column; gap: 2px; }
+  .everest .eq-value { font-family: var(--font-display); font-size: 34px; line-height: 1; color: var(--accent-text); }
+  .everest svg { flex: none; }
+
+  .split { margin-top: 14px; }
+  .split ul { list-style: none; padding: 0; display: grid; gap: 9px; margin: 10px 0 0; }
+  .split li { display: grid; grid-template-columns: 92px 1fr 44px; align-items: center; gap: 8px; font-size: 13px; color: var(--text-ink); }
+  .split .track { height: 9px; border-radius: 999px; background: var(--line); overflow: hidden; }
+  .split .fill { display: block; height: 100%; background: var(--accent-text); border-radius: 999px; }
+  .split .pct { font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; text-align: right; color: var(--label-ink); }
+
+  .chrome { background: var(--ink); color: var(--bone); padding: 10px 16px 14px; display: grid; gap: 8px; }
+  .chrome .row { display: flex; justify-content: space-between; align-items: center; }
+  .chrome .zone { color: var(--bone); text-decoration: none; font-size: 13px; font-weight: 600; padding: 6px 10px; border-radius: 999px; }
+  .chrome .zone:hover { background: var(--dim, #2c2e26); }
+  .chrome .zone:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+  .progress { display: flex; gap: 5px; }
+  .progress span { flex: 1; height: 4px; border-radius: 999px; background: #2c2e26; }
+  .progress span[aria-current="step"] { background: var(--orange); }
+  .progress span.done { background: #5e5f58; }
+</style>
+</head>
+<body>
+<div class="board">
+  <main>
+    <article aria-labelledby="numeros-title">
+      <header class="story-head">
+        <span class="m">Prog. · Temporada 2026</span>
+        <span class="folio m" aria-hidden="true">02/08</span>
+      </header>
+
+      <div class="stage-title">
+        <span class="num" aria-hidden="true">02</span>
+        <h2 id="numeros-title">Los números</h2>
+      </div>
+
+      <div class="feature">
+        <span class="line1">Este año has recorrido</span>
+        <span class="value">3214</span>
+        <span class="unit">kilómetros</span>
+        <p class="track-note">Son <b>8.035</b> vueltas a una pista de 400 metros. Por calle 1, sin saltarte ninguna.</p>
+      </div>
+
+      <table class="stat-table">
+        <thead>
+          <tr><th scope="col">Concepto</th><th scope="col" style="text-align:right">Figura</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="k">En movimiento</td><td class="v">287 h</td></tr>
+          <tr><td class="k">Días con actividad</td><td class="v">312 <span style="font-family:var(--font-sans);font-size:13px;font-weight:500;color:var(--label-ink)">de 365</span></td></tr>
+        </tbody>
+      </table>
+
+      <div class="everest">
+        <div class="equation">
+          <span class="eq-value">41.380 m</span>
+          <span class="m">De desnivel positivo</span>
+          <span class="m m--accent">= 4,7 Everest</span>
+        </div>
+        <svg width="146" height="58" viewBox="0 0 146 58" role="img" aria-label="Cuatro Everest y siete décimas: tres montañas llenas y una montaña rellena en su parte baja">
+          <path d="M0 56 L18 2 L36 56 Z" fill="#c23f00"/>
+          <path d="M38 56 L56 2 L74 56 Z" fill="#c23f00"/>
+          <path d="M76 56 L94 2 L112 56 Z" fill="#c23f00"/>
+          <path d="M114 56 L132 2 L150 56 Z" fill="none" stroke="#c23f00" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M114 56 L131.5 4.5 L144 56 Z" fill="#c23f00"/>
+        </svg>
+      </div>
+
+      <div class="split">
+        <span class="m">Reparto por deporte</span>
+        <ul role="img" aria-label="Reparto del tiempo en movimiento por deporte: Carrera a pie 72 %, Bici 21 %, Natación 7 %">
+          <li><span>Carrera a pie</span><span class="track"><span class="fill" style="width:72%"></span></span><span class="pct">72 %</span></li>
+          <li><span>Bici</span><span class="track"><span class="fill" style="width:21%"></span></span><span class="pct">21 %</span></li>
+          <li><span>Natación</span><span class="track"><span class="fill" style="width:7%"></span></span><span class="pct">7 %</span></li>
+        </ul>
+      </div>
+    </article>
+  </main>
+
+  <nav class="chrome" aria-label="Progreso de las historias">
+    <div class="progress" role="list" aria-label="Progreso de las historias">
+      <span class="done" role="listitem" aria-label="Historia 1"></span>
+      <span role="listitem" aria-label="Historia 2" aria-current="step"></span>
+      <span role="listitem" aria-label="Historia 3"></span>
+      <span role="listitem" aria-label="Historia 4"></span>
+      <span role="listitem" aria-label="Historia 5"></span>
+      <span role="listitem" aria-label="Historia 6"></span>
+      <span role="listitem" aria-label="Historia 7"></span>
+      <span role="listitem" aria-label="Historia 8"></span>
+    </div>
+    <div class="row">
+      <a class="zone" href="#">‹ Anterior</a>
+      <span class="m" style="color:#9a9b91">Toca la pantalla para avanzar</span>
+      <a class="zone" href="#">Siguiente ›</a>
+    </div>
+  </nav>
+</div>
+</body>
+</html>

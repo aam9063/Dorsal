@@ -7,7 +7,12 @@ import {
   type CardSurface,
   bibCardMarkRows,
   bibCardNameText,
+  drawCardPins,
+  drawCardSpineHead,
+  drawCardTearOff,
+  drawStickerPill,
   monthDayText,
+  pillWidth,
 } from './render-bib-card'
 import {
   SPORT_ICON_VIEWBOX,
@@ -41,7 +46,14 @@ import {
  * The draw is pure over the same `CardSurface` subset the bib card paints
  * with, every string comes from `src/shared/i18n/` and `src/shared/format.ts`.
  * No `Date`, no `Math.random`, no runtime locale: two draws from the same
- * inputs produce the same command stream.
+ * inputs produce the same command stream (odd/tasks/redesign-objeto-dorsal.md,
+ * S7).
+ *
+ * It shares the object language with the bib card: the accent field, the bone
+ * plate with its two punched pins, the editorial spine head (stage numeral
+ * and mono season label between hairline rules), the dashed tear-off with its
+ * punched hole, the accent kept for stamps and the hairline rules bounding
+ * the blocks.
  *
  * Every panel renders only when the season's data exists (`YearSummary`
  * stores each section as nullable and `availability` carries the flags), so a
@@ -69,34 +81,27 @@ const CARD_RADIUS = 40
 /** The artboard tilts the plate 3° counterclockwise, like the bib card. */
 const CARD_ROTATION = -(3 * Math.PI) / 180
 
-const HOLE_INSET = 52
-const HOLE_RADIUS = 17
-/** The dark crescent that suggests the punched hole's inset shadow. */
-const HOLE_SHADOW_RADIUS = HOLE_RADIUS - 1.5
-const HOLE_SHADOW_OFFSET = 2.5
-
 const CONTENT_X = 106
 const CONTENT_W = CARD_W - 2 * CONTENT_X
 const CONTENT_RIGHT = CONTENT_X + CONTENT_W
 
 // — Header ——————————————————————————————————————————————————————————————————
 
-const SEASON_LABEL_BASELINE = 150
-const SEASON_LABEL_SIZE = 22
-const SEASON_LABEL_LETTER_SPACING = '3px'
-
-const TITLE_BASELINE = 226
+const TITLE_BASELINE = 252
 const TITLE_SIZE = 66
 
-const NAME_BASELINE = 290
+const NAME_BASELINE = 322
 const NAME_SIZE = 44
 const NAME_SIZE_LONG = 38
 const NAME_LETTER_SPACING = '10px'
 const LONG_NAME_LENGTH = 12
 
+/** The dashed tear-off edge below the header, like the bib card's. */
+const TEAR_Y = 372
+
 // — Vertical rhythm (the constructed layout) ————————————————————————————————
 
-const BODY_TOP = 330
+const BODY_TOP = 424
 /** Fixed space between the measured bottom of one panel and the top of the next. */
 const PANEL_GAP = 64
 /** Fixed space from the plate's bottom edge to the footer baseline. */
@@ -124,8 +129,13 @@ const SPORT_FIRST_EXTRA = 24
 const SPORT_ROW_LEAD = 24
 /** Name baseline down to the counting caption baseline. */
 const SPORT_CAPTION_DROP = 22
-/** First row top down to the most-practiced tag baseline. */
-const SPORT_TAG_DROP = 70
+/** The most practiced tag moves onto the stamp pill above the panel's first row. */
+const TAG_STAMP_DROP = 28
+const TAG_STAMP_SIZE = 15
+const TAG_STAMP_LETTER_SPACING = '2px'
+const TAG_STAMP_PAD = 28
+const TAG_STAMP_H = 40
+const TAG_STAMP_ROTATION = -(2.5 * Math.PI) / 180
 const SPORT_NAME_X = CONTENT_X + 66
 const ICON_SIZE = 44
 const ICON_CENTER_OFFSET = 26
@@ -170,7 +180,6 @@ const POWER_MONTH_LABEL_SIZE = 15
 
 const NOTE_SIZE = 17
 const NOTE_LETTER_SPACING = '1px'
-const TAG_LETTER_SPACING = '2px'
 
 // — Footer ——————————————————————————————————————————————————————————————————
 
@@ -208,7 +217,8 @@ export const seasonCardGeometry = {
   sportFirstExtra: SPORT_FIRST_EXTRA,
   sportRowLead: SPORT_ROW_LEAD,
   sportCaptionDrop: SPORT_CAPTION_DROP,
-  sportTagDrop: SPORT_TAG_DROP,
+  tagStampDrop: TAG_STAMP_DROP,
+  tearY: TEAR_Y,
   powerPanelHeight: powerPanelHeight(),
   footerSize: FOOTER_SIZE,
 } as const
@@ -361,25 +371,6 @@ function setFont(
  */
 export type SeasonCardSurface = CardSurface & SportIconContext
 
-function drawHoles(surface: CardSurface): void {
-  const corners: [number, number][] = [
-    [HOLE_INSET, HOLE_INSET],
-    [CARD_W - HOLE_INSET, HOLE_INSET],
-    [HOLE_INSET, CARD_H - HOLE_INSET],
-    [CARD_W - HOLE_INSET, CARD_H - HOLE_INSET],
-  ]
-  for (const [cx, cy] of corners) {
-    surface.beginPath()
-    surface.arc(cx, cy - HOLE_SHADOW_OFFSET, HOLE_RADIUS, 0, 2 * Math.PI)
-    surface.fillStyle = CardColours.holeShadow
-    surface.fill()
-    surface.beginPath()
-    surface.arc(cx, cy, HOLE_SHADOW_RADIUS, 0, 2 * Math.PI)
-    surface.fillStyle = CardColours.accent
-    surface.fill()
-  }
-}
-
 /** The share bar of one sport row: an empty track plus the measured fill. */
 function drawShareBar(
   surface: CardSurface,
@@ -418,6 +409,21 @@ function drawSportsPanel(
   const material = t.stories['06-material']
   const maxShare = sports.reduce((acc, row) => Math.max(acc, row.share), 0)
   const iconScale = ICON_SIZE / SPORT_ICON_VIEWBOX
+
+  // The most practiced tag, stamped in accent across the panel's top edge.
+  const tagText = copy.mostPracticedLabel.toUpperCase()
+  const tagWidth = pillWidth(tagText, TAG_STAMP_SIZE, TAG_STAMP_LETTER_SPACING, TAG_STAMP_PAD)
+  drawStickerPill(
+    surface,
+    tagText,
+    CONTENT_X + tagWidth / 2,
+    panel.top - TAG_STAMP_DROP,
+    TAG_STAMP_SIZE,
+    TAG_STAMP_LETTER_SPACING,
+    TAG_STAMP_H,
+    TAG_STAMP_PAD,
+    TAG_STAMP_ROTATION,
+  )
 
   for (const [index, row] of sports.entries()) {
     const top = panel.top + index * SPORT_ROW_H + (index === 0 ? 0 : SPORT_FIRST_EXTRA)
@@ -467,13 +473,6 @@ function drawSportsPanel(
       maxShare,
       index === 0 ? CardColours.accent : CardColours.ink,
     )
-
-    if (index === 0) {
-      setFont(surface, '400', NOTE_SIZE, FONT_MONO, TAG_LETTER_SPACING)
-      surface.fillStyle = CardColours.labelInk
-      surface.textAlign = 'left'
-      surface.fillText(copy.mostPracticedLabel.toUpperCase(), SPORT_NAME_X, top + SPORT_TAG_DROP)
-    }
   }
 }
 
@@ -705,18 +704,15 @@ export function drawSeasonCard(surface: SeasonCardSurface, input: SeasonCardInpu
   roundRectPath(surface, 0, 0, CARD_W, CARD_H, CARD_RADIUS)
   surface.fillStyle = CardColours.bone
   surface.fill()
-  drawHoles(surface)
+  drawCardPins(surface)
+  drawCardSpineHead(surface, copy.plate)
 
   surface.textBaseline = 'alphabetic'
 
-  // The header: the season, the card title and the athlete's name.
-  setFont(surface, '600', SEASON_LABEL_SIZE, FONT_MONO, SEASON_LABEL_LETTER_SPACING)
-  surface.fillStyle = CardColours.labelInk
-  surface.textAlign = 'left'
-  surface.fillText(copy.plate.toUpperCase(), CONTENT_X, SEASON_LABEL_BASELINE)
-
+  // The header: the card title and the athlete's name, under the spine head.
   setFont(surface, '400', TITLE_SIZE, FONT_DISPLAY, '0px')
   surface.fillStyle = CardColours.ink
+  surface.textAlign = 'left'
   surface.fillText(copy.carnet.title.toUpperCase(), CONTENT_X, TITLE_BASELINE)
 
   setFont(
@@ -728,6 +724,8 @@ export function drawSeasonCard(surface: SeasonCardSurface, input: SeasonCardInpu
   )
   surface.fillStyle = CardColours.ink
   surface.fillText(bibCardNameText(name), CONTENT_X, NAME_BASELINE)
+
+  drawCardTearOff(surface, TEAR_Y)
 
   // The panels, stacked on the layout computed from the season's own data.
   const layout = seasonCardLayout(summary)

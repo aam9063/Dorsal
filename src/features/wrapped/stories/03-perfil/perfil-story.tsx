@@ -1,6 +1,7 @@
 import { formatNumber } from '../../../../shared/format'
 import { t } from '../../../../shared/i18n'
 import type { YearSummary } from '../../../../core/model/year-summary'
+import { PlateHead, StoryPlate } from '../story-plate'
 
 /** Geometry of the mountain silhouette, in the viewBox coordinates of the W3 artboard. */
 const WIDTH = 350
@@ -17,10 +18,11 @@ function monthAbbreviation(month: number): string {
 }
 
 /**
- * Story 03 (BRIEF §6), shown only when `summary.monthlyProfile` exists. The
- * silhouette is drawn from the monthly distances — no fixed path (the W3
- * artboard's idea, data-driven geometry): twelve points, the peak marked as a
- * "Puerto HC", the valley as a circle, both named in text below the chart.
+ * Story 03 (BRIEF §6), on its bone plate, shown only when `summary.monthlyProfile`
+ * exists. The silhouette is drawn from the monthly distances — no fixed path (the
+ * W3 artboard's idea, data-driven geometry): twelve points, the peak marked as a
+ * "Puerto HC", the valley as a circle, both named in text below the chart. Ink
+ * and the paper-range accent carry the figure on bone.
  */
 export function PerfilStory({ summary }: { summary: YearSummary }) {
   const copy = t.stories['03-perfil']
@@ -46,11 +48,14 @@ export function PerfilStory({ summary }: { summary: YearSummary }) {
   const peakKm = formatNumber(Math.round(profile.peak.distanceM / 1000))
 
   return (
-    <div data-testid="story-03-perfil" className="flex w-full flex-col gap-5">
-      <div className="flex flex-col gap-2">
-        <h1 className="font-display text-5xl uppercase leading-[0.95]">{copy.title}</h1>
-        <p className="text-[15px] leading-relaxed text-fg-muted">{copy.subtitle}</p>
-      </div>
+    <StoryPlate testId="story-03-perfil" className="gap-3">
+      <PlateHead number="03" />
+      <h2 className="text-center font-display text-[26px] uppercase leading-[0.95] [text-wrap:balance]">
+        {copy.title}
+      </h2>
+      <p className="text-center text-[13.5px] leading-relaxed text-body-ink [text-wrap:pretty]">
+        {copy.subtitle}
+      </p>
 
       <figure className="relative flex flex-col gap-2">
         <div
@@ -64,7 +69,7 @@ export function PerfilStory({ summary }: { summary: YearSummary }) {
           </span>
           <span
             data-testid="perfil-peak"
-            className="whitespace-nowrap text-xs font-semibold text-fg"
+            className="whitespace-nowrap text-xs font-semibold text-text-ink"
           >
             {copy.peakLabel} {monthName(profile.peak.month)} · {peakKm} {copy.unitKm}
           </span>
@@ -81,8 +86,8 @@ export function PerfilStory({ summary }: { summary: YearSummary }) {
           ].join(' ')}
           className="w-full"
         >
-          <path d={silhouette} className="fill-fg" />
-          <g className="stroke-fg" strokeOpacity="0.22">
+          <path d={silhouette} className="fill-ink" />
+          <g className="stroke-ink" strokeOpacity="0.22">
             {profile.months.slice(1).map((month) => (
               <line
                 key={month.month}
@@ -95,7 +100,7 @@ export function PerfilStory({ summary }: { summary: YearSummary }) {
           </g>
           <path
             d={outline}
-            className="stroke-accent"
+            className="stroke-accent-on-bone"
             fill="none"
             strokeWidth="3"
             strokeLinejoin="round"
@@ -105,14 +110,14 @@ export function PerfilStory({ summary }: { summary: YearSummary }) {
             y1={peakY}
             x2={peakX}
             y2={TOP - 10}
-            className="stroke-fg"
+            className="stroke-ink"
             strokeWidth="1.5"
           />
           <circle
             cx={peakX}
             cy={peakY}
             r="5.5"
-            className="fill-accent stroke-fg"
+            className="fill-accent stroke-ink"
             strokeWidth="2.5"
           />
           <circle
@@ -120,15 +125,17 @@ export function PerfilStory({ summary }: { summary: YearSummary }) {
             cx={valleyX}
             cy={valleyY}
             r="5.5"
-            className="fill-bg stroke-accent"
+            className="fill-bone stroke-accent-on-bone"
             strokeWidth="2.5"
           />
         </svg>
-        <div className="flex justify-between font-mono text-[11px] text-fg-subtle">
+        <div className="flex justify-between font-mono text-[11px] text-label-ink">
           {profile.months.map((month) => (
             <span
               key={month.month}
-              className={month.month === profile.peak.month ? 'font-semibold text-fg' : undefined}
+              className={
+                month.month === profile.peak.month ? 'font-semibold text-text-ink' : undefined
+              }
             >
               {monthAbbreviation(month.month)}
             </span>
@@ -137,28 +144,35 @@ export function PerfilStory({ summary }: { summary: YearSummary }) {
       </figure>
 
       <div className="flex flex-col gap-3">
-        <div className="flex items-baseline gap-3 border-t-2 border-line pt-2.5">
-          <span data-testid="perfil-valley" className="min-w-16 font-display text-2xl">
+        <div className="flex items-baseline gap-3 border-t-2 border-line-light pt-2.5">
+          <span
+            data-testid="perfil-valley"
+            className="min-w-16 font-display text-2xl text-text-ink"
+          >
             {formatNumber(Math.round(profile.valley.distanceM / 1000))} {copy.unitKm}
           </span>
-          <span className="text-sm leading-snug text-fg-muted">
-            <strong className="text-fg">
+          <span className="text-[13.5px] leading-snug text-body-ink [text-wrap:pretty]">
+            <strong className="font-semibold text-text-ink">
               {copy.valleyLabel} {monthName(profile.valley.month)}.
             </strong>{' '}
             {copy.valleyBody}
           </span>
         </div>
         {profile.comeback !== null && (
-          <div className="flex items-baseline gap-3 border-t-2 border-line pt-2.5">
-            <span data-testid="perfil-comeback" className="min-w-16 font-display text-2xl">
+          <div className="flex items-baseline gap-3 border-t-2 border-line-light pt-2.5">
+            <span
+              data-testid="perfil-comeback"
+              className="min-w-16 font-display text-2xl text-text-ink"
+            >
               ×{formatNumber(Math.round(profile.comeback * 10) / 10)}
             </span>
-            <span className="text-sm leading-snug text-fg-muted">
-              <strong className="text-fg">{copy.comebackLabel}.</strong> {copy.comebackBody}
+            <span className="text-[13.5px] leading-snug text-body-ink [text-wrap:pretty]">
+              <strong className="font-semibold text-text-ink">{copy.comebackLabel}.</strong>{' '}
+              {copy.comebackBody}
             </span>
           </div>
         )}
       </div>
-    </div>
+    </StoryPlate>
   )
 }

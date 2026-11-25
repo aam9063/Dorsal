@@ -43,10 +43,6 @@ export function RootLayout() {
       <main id="contenido" className="flex-1">
         <Outlet />
       </main>
-      <footer className="mt-12 border-t border-line px-5 py-6 text-sm text-fg-subtle sm:px-8">
-        <p>{t.privacy.banner}</p>
-        <p className="mt-1">{t.footer.disclaimer}</p>
-      </footer>
     </div>
   )
 }

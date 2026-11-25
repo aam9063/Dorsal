@@ -1,0 +1,33 @@
+{
+  "arrangement": "free",
+  "positions": {
+    "system": {
+      "x": 0,
+      "y": 215
+    },
+    "01-programa-de-carrera/01-landing.html": {
+      "x": 1594,
+      "y": 0
+    },
+    "01-programa-de-carrera/02-numeros.html": {
+      "x": 3060,
+      "y": 17
+    },
+    "02-telemetria/01-landing.html": {
+      "x": 3530,
+      "y": 17
+    },
+    "02-telemetria/02-latidos.html": {
+      "x": 5050,
+      "y": 17
+    },
+    "03-objeto-dorsal/01-landing.html": {
+      "x": 5522,
+      "y": 19
+    },
+    "03-objeto-dorsal/02-numeros.html": {
+      "x": 7040,
+      "y": 17
+    }
+  }
+}
