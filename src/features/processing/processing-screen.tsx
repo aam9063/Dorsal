@@ -1,6 +1,6 @@
-import { t } from '../../shared/i18n'
+import { useAnalysis, useT } from '../../shared/hooks'
 import { formatNumber } from '../../shared/format'
-import { useAnalysis } from '../../shared/hooks'
+import type { Messages } from '../../shared/i18n'
 import type { ReactNode } from 'react'
 import type {
   AnalyzeFailureCode,
@@ -52,6 +52,8 @@ function SectionHeader({
 }
 
 function SpineColumn() {
+  const t = useT()
+
   return (
     <div aria-hidden="true" className="hidden lg:block lg:border-r lg:border-line lg:pt-6">
       <span className="block rotate-180 whitespace-nowrap pr-3 text-right font-mono text-[11px] uppercase tracking-[0.3em] text-fg-subtle [writing-mode:vertical-rl]">
@@ -76,6 +78,8 @@ function ScreenField({
   testId?: string
   children: ReactNode
 }) {
+  const t = useT()
+
   return (
     <div
       data-testid={testId}
@@ -98,7 +102,7 @@ interface ProcessingScreenProps {
   onCancel: () => void
 }
 
-function phaseLabel(phase: AnalyzePhase): string {
+function phaseLabel(phase: AnalyzePhase, t: Messages): string {
   switch (phase) {
     case 'reading':
       return t.processing.phaseReading
@@ -109,7 +113,7 @@ function phaseLabel(phase: AnalyzePhase): string {
   }
 }
 
-function failureMessage(code: AnalyzeFailureCode | undefined): string {
+function failureMessage(code: AnalyzeFailureCode | undefined, t: Messages): string {
   return code === 'unreadable' ? t.processing.errorUnreadable : t.processing.errorGeneric
 }
 
@@ -124,6 +128,8 @@ function ErrorSection({
   body: string
   onBack: () => void
 }) {
+  const t = useT()
+
   return (
     <ScreenField number="02" meta={t.processing.errorMeta}>
       <section data-testid={testId} className="flex flex-col">
@@ -156,6 +162,8 @@ function ProcessingError({
   code: AnalyzeFailureCode | undefined
   onBack: () => void
 }) {
+  const t = useT()
+
   if (code === 'zipInsteadOfCsv') {
     return (
       <ErrorSection
@@ -180,7 +188,7 @@ function ProcessingError({
     <ErrorSection
       testId="processing-root"
       title={t.processing.errorTitle}
-      body={failureMessage(code)}
+      body={failureMessage(code, t)}
       onBack={onBack}
     />
   )
@@ -198,6 +206,8 @@ function CounterPlate({ label, value, rot }: { label: string; value: string; rot
 }
 
 export function ProcessingScreen({ file, onComplete, onCancel }: ProcessingScreenProps) {
+  const t = useT()
+
   function handleFinished(outcome: AnalyzeOutcome): void {
     if (outcome.status === 'ok') {
       onComplete(outcome.summary, outcome.stats)
@@ -226,7 +236,7 @@ export function ProcessingScreen({ file, onComplete, onCancel }: ProcessingScree
         className="mt-6 flex flex-col gap-5"
       >
         <p className="font-mono text-xs uppercase tracking-[0.14em] text-accent-text">
-          {phaseLabel(progress.phase)}
+          {phaseLabel(progress.phase, t)}
         </p>
         <div className="flex flex-wrap gap-5">
           <CounterPlate

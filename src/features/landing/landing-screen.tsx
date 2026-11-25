@@ -1,14 +1,7 @@
 import { useRef } from 'react'
 import { Link } from 'react-router'
-import { t } from '../../shared/i18n'
-import { useGsapReveal } from '../../shared/hooks'
+import { useGsapReveal, useT } from '../../shared/hooks'
 import { ScrollRow } from '../../shared/ui'
-
-const NAV_ITEMS = [
-  { href: '#como', label: t.landing.navHow },
-  { href: '#privacidad', label: t.landing.navPrivacy },
-  { href: '#faq', label: t.landing.navFaq },
-] as const
 
 const SECTION_WIDTH = 'mx-auto flex w-full max-w-[1200px] flex-col px-5 sm:px-8'
 const HEADING_SIZE = 'font-display text-[clamp(44px,5vw,68px)] uppercase leading-none'
@@ -23,6 +16,8 @@ const PLATE_ROTATIONS = [
 ] as const
 
 function BrandChip() {
+  const t = useT()
+
   return (
     <span className="rounded-pill border border-line px-2 py-0.5 font-mono text-xs leading-none text-fg">
       {t.brand.chip}
@@ -81,6 +76,13 @@ function SectionHeader({
 }
 
 function LandingHeader() {
+  const t = useT()
+  const navItems = [
+    { href: '#como', label: t.landing.navHow },
+    { href: '#privacidad', label: t.landing.navPrivacy },
+    { href: '#faq', label: t.landing.navFaq },
+  ] as const
+
   return (
     <header
       className={`${SECTION_WIDTH} flex-row flex-wrap items-center justify-between gap-x-6 gap-y-3 py-6`}
@@ -93,7 +95,7 @@ function LandingHeader() {
         {t.brand.name}
       </Link>
       <nav aria-label={t.landing.navAriaLabel} className="flex flex-wrap items-center gap-2">
-        {NAV_ITEMS.map((item) => (
+        {navItems.map((item) => (
           <a
             key={item.href}
             href={item.href}
@@ -121,6 +123,8 @@ function LandingHeader() {
 }
 
 function ExampleBibCard() {
+  const t = useT()
+
   return (
     <div aria-hidden="true" className="relative my-16 w-full max-w-[470px] lg:my-0">
       <div className="relative w-full -rotate-[2.5deg] rounded-[4px] bg-bone px-7 pb-7 pt-5 text-ink shadow-[0_34px_70px_rgba(15,16,13,0.55)]">
@@ -164,6 +168,8 @@ function ExampleBibCard() {
 }
 
 function LandingHero() {
+  const t = useT()
+
   return (
     <section id="top" className={`${SECTION_WIDTH} pb-24 pt-12 sm:pt-16`}>
       <div className="lg:grid lg:grid-cols-[44px_minmax(0,1fr)_minmax(0,1fr)] lg:gap-10">
@@ -228,6 +234,8 @@ function LandingHero() {
 }
 
 function LandingSteps() {
+  const t = useT()
+
   return (
     <section id="como" aria-labelledby="como-title" className="w-full scroll-mt-6">
       <div className={`${SECTION_WIDTH} gap-8 py-24 sm:py-26`} data-anim-section>
@@ -270,6 +278,8 @@ const HEAT_PATTERN = [
 const HEAT_CLASSES = ['bg-heat-1', 'bg-heat-2', 'bg-heat-3', 'bg-heat-4'] as const
 
 function StoryArt({ index }: { index: number }) {
+  const t = useT()
+
   if (index === 0) {
     return (
       <p className="font-display text-[56px] leading-none text-ink" aria-hidden="true">
@@ -353,6 +363,8 @@ function StoryArt({ index }: { index: number }) {
 }
 
 function LandingPreviews() {
+  const t = useT()
+
   return (
     <section
       id="historias"
@@ -403,6 +415,8 @@ function LandingPreviews() {
 }
 
 function LandingPrivacyStrip() {
+  const t = useT()
+
   return (
     <section
       id="privacidad"
@@ -436,6 +450,8 @@ function LandingPrivacyStrip() {
 }
 
 function LandingFaq() {
+  const t = useT()
+
   return (
     <section
       id="faq"
@@ -478,6 +494,7 @@ function LandingFaq() {
 }
 
 function LandingFooter() {
+  const t = useT()
   const links = [
     { href: '#como', label: t.landing.footer.howLink },
     { href: '#faq', label: t.landing.navFaq },
