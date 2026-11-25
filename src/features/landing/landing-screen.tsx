@@ -111,7 +111,7 @@ function LandingHeader() {
           text is short. The desktop navigation below replaces this row. */}
       <nav
         aria-label={t.landing.navAriaLabel}
-        className="flex items-center justify-between gap-1 px-4 pb-1 sm:px-6 lg:hidden"
+        className="mt-2 flex items-center justify-between gap-1 px-4 pb-1 sm:px-6 lg:hidden"
       >
         {navItems.map((item) => (
           <a
