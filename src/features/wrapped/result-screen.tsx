@@ -11,11 +11,12 @@ const PIN =
   'absolute top-3 size-[18px] rounded-full bg-ink shadow-[inset_3px_3px_5px_rgba(252,82,0,0.45)]'
 
 /**
- * The primary action of the screen: the only accent-filled control (design
- * notes of 03-objeto-dorsal, rule 1), with a hard offset shadow.
+ * The primary action of the screen: a bone sticker with an ink label and a hard
+ * orange offset shadow, the single primary treatment of the product
+ * (design notes of 03-objeto-dorsal, rule 1). Orange is never a fill here.
  */
 const CTA_CHIP =
-  'inline-flex min-h-11 items-center rounded-chip bg-accent px-6 py-3 font-mono text-[13px] font-bold uppercase tracking-[0.1em] text-ink shadow-[4px_4px_0_var(--color-ink)] transition-shadow hover:shadow-[6px_6px_0_var(--color-ink)] active:shadow-[2px_2px_0_var(--color-ink)]'
+  'inline-flex min-h-11 items-center rounded-chip bg-bone px-6 py-3 font-mono text-[13px] font-bold uppercase tracking-[0.1em] text-ink shadow-[4px_4px_0_var(--color-orange)] transition-shadow hover:shadow-[6px_6px_0_var(--color-orange)] active:shadow-[2px_2px_0_var(--color-orange)]'
 
 const PLATE_ROTATIONS = [
   '-rotate-[1.2deg]',
