@@ -168,7 +168,7 @@ export const es = {
       ],
     },
     faq: {
-      title: 'Lo que todo el mundo pregunta',
+      title: 'Antes de subir tu archivo',
       items: [
         {
           question: '¿Qué archivo tengo que subir?',
@@ -212,6 +212,8 @@ export const es = {
   upload: {
     title: 'Sube tu archivo de Strava',
     subtitle: 'Solo necesitamos un archivo: activities.csv.',
+    meta: 'Subir · Tu activities.csv',
+    errorMeta: 'Error · Revisa el archivo',
     howto: {
       title: '¿Aún no tienes el archivo?',
       steps: [
@@ -246,6 +248,8 @@ export const es = {
   },
   processing: {
     title: 'Preparando tu temporada…',
+    meta: 'Procesando · En tu dispositivo',
+    errorMeta: 'Error · Revisa el archivo',
     phaseReading: 'Leyendo tu archivo…',
     phaseComputing: 'Calculando tus números…',
     phaseDone: 'Listo',
