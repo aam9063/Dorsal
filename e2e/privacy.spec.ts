@@ -11,10 +11,12 @@ import { availableStories, STORIES } from '../src/features/wrapped/stories/regis
 
 /**
  * The `@privacy` enforcement of AGENTS.md 5.1, proven against the running app
- * (odd/tasks/h12-launch-hardening.md decisions 1 and 2): after the file is
+ * (odd/tasks/h12-launch-hardening.md decisions 1 and 2; storage list amended
+ * by odd/tasks/i18n-english.md, decision 4): after the file is
  * chosen, no request leaves the origin, the only worker and websocket traffic
- * is same-origin, nothing is written to browser storage except the theme
- * preference, and the export never comes back out in any request. The test
+ * is same-origin, nothing is written to browser storage except the two
+ * interface preferences — the theme and the chosen language — and the export
+ * never comes back out in any request. The test
  * observes behaviour, not the lint config, so a refactor that adds a `fetch`
  * fails here even if the ESLint rules are relaxed.
  *
@@ -26,6 +28,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const FIXTURE = path.join(ROOT, 'fixtures', 'generated', 'runner-es.csv')
 
 const THEME_KEY = 'dorsal.theme'
+const LANGUAGE_KEY = 'dorsal.lang'
 
 test.beforeAll(() => {
   if (!existsSync(FIXTURE)) {
@@ -304,15 +307,20 @@ test('the full wrapped flow writes nothing to browser storage @privacy', async (
   }
 })
 
-test('changing the theme writes only the theme preference, and nothing else @privacy', async ({
+test('changing the theme and the language writes exactly the two preferences, and nothing else @privacy', async ({
   page,
 }) => {
   await page.goto('/')
   await page.getByTestId('theme-option-dark').click()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await page.getByTestId('lang-option-en').click()
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en')
 
   const storage = await readBrowserStorage(page)
-  expect(storage.localStorage).toEqual({ [THEME_KEY]: 'dark' })
+  expect(storage.localStorage).toEqual({
+    [THEME_KEY]: 'dark',
+    [LANGUAGE_KEY]: 'en',
+  })
   expect(storage.sessionStorage).toEqual({})
   expect(storage.cookies).toBe('')
 

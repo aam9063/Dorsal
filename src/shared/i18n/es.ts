@@ -2,6 +2,23 @@ import { formatNumber } from '../format'
 
 const EMPTY = ''
 
+/**
+ * Every other locale must satisfy the shape this file defines: `es.ts` is the
+ * source of truth for the copy's structure (odd/tasks/i18n-english.md,
+ * decision 2). The widening turns the `as const` literals into plain strings
+ * so a translation is not forced to equal the Spanish text, while a missing
+ * or extra key stays a compile error through the `Messages` type.
+ */
+export type WidenMessages<T> = T extends string
+  ? string
+  : T extends readonly (infer Item)[]
+    ? readonly WidenMessages<Item>[]
+    : T extends object
+      ? { readonly [Key in keyof T]: WidenMessages<T[Key]> }
+      : T
+
+export type Messages = WidenMessages<typeof es>
+
 export const es = {
   brand: {
     name: 'Dorsal',
@@ -14,6 +31,11 @@ export const es = {
     system: 'Sistema',
     light: 'Claro',
     dark: 'Oscuro',
+  },
+  language: {
+    label: 'Idioma',
+    es: 'Español',
+    en: 'English',
   },
   privacy: {
     banner: 'Se procesa en tu navegador. Tu archivo no sale de tu dispositivo.',
