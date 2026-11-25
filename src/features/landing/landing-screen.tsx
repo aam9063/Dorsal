@@ -85,14 +85,12 @@ function LandingHeader() {
 
   return (
     <header>
-      {/* The preference strip. On phones this is the whole header's action
-          row: brand on the left and the two preference toggles on the right,
-          in one row. The brand word is visible at every width, so on a
-          390 px screen the mark is sized down around it — smaller word size,
-          tighter gaps — while every toggle button keeps its 44 px touch
-          target. At the desktop breakpoint the strip keeps the shared
-          layout's geometry. On phones the three page anchors live in the
-          footer and the hero CTA is the single visible action. */}
+      {/* The preference strip. On phones this is the header's first row:
+          brand on the left and the two preference toggles on the right.
+          The brand word is visible at every width, so on a 390 px screen the
+          mark is sized down around it — smaller word size, tighter gaps —
+          while every toggle button keeps its 44 px touch target. At the
+          desktop breakpoint the strip keeps the shared layout's geometry. */}
       <div className="flex items-center justify-between gap-2 px-5 pt-5 sm:px-8">
         <Link
           to="/"
@@ -107,6 +105,24 @@ function LandingHeader() {
           <ThemeToggle />
         </div>
       </div>
+      {/* The three page anchors on phones: a compact row directly under the
+          preference strip, visible without opening anything and keyboard
+          reachable. Each anchor keeps a 44 px tappable height even though the
+          text is short. The desktop navigation below replaces this row. */}
+      <nav
+        aria-label={t.landing.navAriaLabel}
+        className="flex items-center justify-between gap-1 px-4 pb-1 sm:px-6 lg:hidden"
+      >
+        {navItems.map((item) => (
+          <a
+            key={item.href}
+            href={item.href}
+            className="inline-flex min-h-11 items-center px-1.5 text-[13px] text-fg underline decoration-line underline-offset-4 hover:decoration-accent"
+          >
+            {item.label}
+          </a>
+        ))}
+      </nav>
       <div
         className={`${SECTION_WIDTH} hidden flex-row flex-wrap items-center justify-between gap-x-6 gap-y-3 py-6 lg:flex`}
       >
@@ -533,15 +549,6 @@ function LandingFaq() {
 
 function LandingFooter() {
   const t = useT()
-  const links = [
-    { href: '#como', label: t.landing.footer.howLink, mobileOnly: false },
-    // The landing header's page anchors move into the footer on phones; the
-    // Privacidad anchor is new to the footer (the other two already live
-    // here), so it only shows at the widths where the header drops its nav.
-    { href: '#privacidad', label: t.landing.navPrivacy, mobileOnly: true },
-    { href: '#faq', label: t.landing.navFaq, mobileOnly: false },
-    { href: '/subir', label: t.landing.footer.ctaLink, mobileOnly: false },
-  ] as const satisfies readonly { href: string; label: string; mobileOnly: boolean }[]
 
   return (
     <footer className="border-t border-line">
@@ -554,27 +561,12 @@ function LandingFooter() {
         </p>
         <p className="text-[12px]">{t.footer.disclaimer}</p>
         <p className="text-[12px]">{t.landing.footer.madeWith}</p>
+        {/* The three page anchors live only in the header, at every width;
+            the footer keeps just the upload action so no link is duplicated. */}
         <nav aria-label={t.landing.footer.navAriaLabel} className="flex flex-wrap gap-2">
-          {links.map((link) => {
-            const visibility = link.mobileOnly ? ' lg:hidden' : ''
-            return link.href.startsWith('/') ? (
-              <Link
-                key={link.href}
-                to={link.href}
-                className={`inline-flex min-h-11 items-center px-2 hover:text-fg${visibility}`}
-              >
-                {link.label}
-              </Link>
-            ) : (
-              <a
-                key={link.href}
-                href={link.href}
-                className={`inline-flex min-h-11 items-center px-2 hover:text-fg${visibility}`}
-              >
-                {link.label}
-              </a>
-            )
-          })}
+          <Link to="/subir" className="inline-flex min-h-11 items-center px-2 hover:text-fg">
+            {t.landing.footer.ctaLink}
+          </Link>
         </nav>
       </div>
     </footer>
