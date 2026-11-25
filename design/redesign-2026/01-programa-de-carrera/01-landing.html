@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dorsal · Dirección 01 · Programa de carrera · Portada</title>
+<style>
+  :root {
+    --font-display: 'Anton', 'Impact', 'Haettenschweiler', 'Arial Narrow Bold', sans-serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+    --ink: #0f100d; --bone: #f2f0e9; --orange: #fc5200; --accent-text: #c23f00;
+    --body-ink: #4a4b44; --label-ink: #5e5f58; --text-ink: #1a1b16;
+    --line: #d3d1c7;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: var(--font-sans); background: var(--bone); color: var(--ink); }
+  .board { width: 1440px; height: 900px; margin: 0 auto; display: flex; flex-direction: column; }
+  h1, h2 { font-family: var(--font-display); font-weight: 400; line-height: 0.95; text-wrap: balance; }
+  .m { font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--label-ink); }
+  .m--accent { color: var(--accent-text); }
+  a { color: inherit; }
+  :is(a, button):focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+  /* Masthead */
+  .masthead { display: flex; align-items: center; justify-content: space-between; padding: 22px 56px 18px; border-bottom: 2px solid var(--ink); }
+  .masthead .brand { display: flex; align-items: baseline; gap: 10px; text-decoration: none; }
+  .masthead .brand strong { font-family: var(--font-display); font-weight: 400; font-size: 26px; letter-spacing: .01em; }
+  .masthead .brand span { font-family: var(--font-mono); font-size: 12px; border: 1.5px solid var(--ink); border-radius: 999px; padding: 1px 8px; }
+  .masthead nav { display: flex; gap: 26px; }
+  .masthead nav a { font-size: 15px; font-weight: 500; text-decoration: none; padding: 8px 4px; border-bottom: 2px solid transparent; }
+  .masthead nav a:hover { border-bottom-color: var(--ink); }
+  .cta-top { background: var(--ink); color: var(--bone); font-weight: 600; font-size: 15px; padding: 11px 22px; border-radius: 999px; text-decoration: none; display: inline-block; }
+  .cta-top:hover { background: var(--orange); color: var(--ink); }
+
+  /* Hero: asymmetric editorial grid */
+  .hero { flex: 1; display: grid; grid-template-columns: 96px 1fr 380px 64px; min-height: 0; }
+  .rule-col { border-right: 1px solid var(--line); padding-top: 26px; }
+  .rule-col .m { writing-mode: vertical-rl; display: block; margin-left: auto; padding-right: 14px; transform: rotate(180deg); }
+  .hero-copy { padding: 40px 48px 32px 0; display: flex; flex-direction: column; }
+  .hero-copy .kicker-row { display: flex; align-items: baseline; gap: 16px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+  .hero-copy .num { font-family: var(--font-display); font-size: 40px; color: var(--accent-text); line-height: 1; }
+  .hero-copy h1 { font-size: 122px; margin: 26px 0 22px; }
+  .hero-copy h1 .accent { color: var(--accent-text); }
+  .hero-copy .lede { font-size: 17px; line-height: 1.6; color: var(--body-ink); max-width: 58ch; }
+  .hero-copy .actions { margin-top: auto; display: flex; align-items: center; gap: 20px; padding-top: 22px; }
+  .btn-primary { background: var(--ink); color: var(--bone); font-size: 16px; font-weight: 600; padding: 16px 30px; border-radius: 999px; text-decoration: none; display: inline-block; }
+  .btn-primary:hover { background: var(--orange); color: var(--ink); }
+  .btn-primary:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+  .link-secondary { font-weight: 600; font-size: 15px; border-bottom: 2px solid var(--ink); text-decoration: none; padding: 2px 0; }
+  .hero-foot { margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--line); display: flex; gap: 36px; }
+
+  .hero-side { grid-column: 3; border-left: 1px solid var(--line); padding: 36px 0 32px 44px; display: flex; flex-direction: column; gap: 18px; position: relative; }
+  .plate { align-self: center; width: 316px; background: #fff; border-radius: 18px; box-shadow: 0 30px 70px rgba(15,16,13,.35); padding: 20px 24px; transform: rotate(-2deg); display: grid; gap: 8px; }
+  .plate .season { font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--body-ink); text-align: center; }
+  .plate .km { font-family: var(--font-display); font-size: 82px; line-height: 1; color: var(--accent-text); text-align: center; }
+  .plate .km small { font-family: var(--font-sans); font-size: 20px; font-weight: 700; vertical-align: baseline; }
+  .plate .name { font-family: var(--font-mono); font-size: 13px; letter-spacing: .22em; text-transform: uppercase; color: var(--text-ink); text-align: center; }
+  .plate .stats { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 2px solid var(--ink); padding-top: 10px; gap: 8px; }
+  .plate .stats div b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 22px; }
+  .plate .stats div span { font-size: 11px; color: var(--label-ink); }
+  .stage-list { display: grid; gap: 0; border-top: 1px solid var(--line); }
+  .stage-list li { list-style: none; display: flex; align-items: baseline; gap: 12px; border-bottom: 1px solid var(--line); padding: 8px 0; font-size: 14px; color: var(--body-ink); }
+  .stage-list li b { font-family: var(--font-mono); font-size: 12px; color: var(--accent-text); font-weight: 400; min-width: 24px; }
+  .stage-list li em { font-style: normal; color: var(--text-ink); font-weight: 500; }
+  .meta-strip { margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; border-top: 2px solid var(--ink); padding-top: 14px; }
+  .meta-strip dt { font-size: 40px; font-family: var(--font-display); font-weight: 400; line-height: 1; margin: 2px 0 4px; }
+  .meta-strip dd { font-size: 12px; color: var(--label-ink); }
+
+  .programme-foot { border-top: 2px solid var(--ink); padding: 16px 56px; display: flex; justify-content: space-between; align-items: center; }
+</style>
+</head>
+<body>
+<main class="board">
+  <header class="masthead">
+    <a class="brand" href="#"><strong>Dorsal</strong><span>26</span></a>
+    <nav aria-label="Principal">
+      <a href="#">Cómo funciona</a>
+      <a href="#">Privacidad</a>
+      <a href="#">Preguntas</a>
+    </nav>
+    <a class="cta-top" href="#">Crear mi Dorsal</a>
+  </header>
+
+  <div class="hero">
+    <div class="rule-col" aria-hidden="true"><span class="m">Programa · Temporada 2026</span></div>
+
+    <section class="hero-copy" aria-labelledby="hero-title">
+      <div class="kicker-row">
+        <span class="num">01</span>
+        <span class="m m--accent">Resumen deportivo 2026 · Gratis</span>
+      </div>
+      <h1 id="hero-title">Tu año entero, en un <span class="accent">dorsal</span>.</h1>
+      <p class="lede">Sube el activities.csv de la exportación de tu cuenta de Strava y te devolvemos tu 2026 contado como una carrera: tus kilómetros, tu perfil de etapa, tus rachas y un dorsal listo para compartir. Sin registro ni suscripción.</p>
+      <div class="actions">
+        <a class="btn-primary" href="#" role="button" aria-label="Subir mi activities.csv">Subir mi activities.csv</a>
+        <a class="link-secondary" href="#">¿Cómo lo descargo?</a>
+      </div>
+      <p class="lede" style="font-size:14px">Se procesa en tu navegador. Tu archivo no sale de tu dispositivo.</p>
+      <div class="hero-foot">
+        <div><span class="m">Etapas</span><span style="display:block;font-family:var(--font-display);font-size:34px;line-height:1">Ocho</span></div>
+        <div><span class="m">Cuentas</span><span style="display:block;font-family:var(--font-display);font-size:34px;line-height:1">Cero</span></div>
+        <div><span class="m">Precio</span><span style="display:block;font-family:var(--font-display);font-size:34px;line-height:1">Gratis</span></div>
+      </div>
+    </section>
+
+    <aside class="hero-side">
+      <div class="plate" role="img" aria-label="Ejemplo de dorsal: 3214 kilómetros, Javier A.">
+        <span class="season">Dorsal · Temporada 2026</span>
+        <span class="km">3214 <small>km</small></span>
+        <span class="name">Javier A.</span>
+        <div class="stats">
+          <div><b>412</b><span>Activ.</span></div>
+          <div><b>287 h</b><span>En movimiento</span></div>
+          <div><b>41.380</b><span>m desnivel</span></div>
+        </div>
+      </div>
+      <ol class="stage-list" aria-label="Las ocho historias de tu temporada">
+        <li><b>01</b> <em>La portada</em> · tu número de temporada</li>
+        <li><b>02</b> <em>Los números</em> · kilómetros y Everests</li>
+        <li><b>03</b> <em>El perfil de tu año</em> · meses como una etapa</li>
+      </ol>
+      <dl class="meta-strip">
+        <div><dt>23</dt><dd>Días seguidos · racha más larga</dd></div>
+        <div><dt>4,7×</dt><dd>Everest de desnivel</dd></div>
+      </dl>
+      <p class="m" style="text-align:center">Temporada 2026 · Se procesa en tu dispositivo</p>
+    </aside>
+  </div>
+
+  <footer class="programme-foot">
+    <span class="m">Dorsal no está afiliado a Strava ni cuenta con su respaldo.</span>
+    <span class="m">01 / 08</span>
+  </footer>
+</main>
+</body>
+</html>

@@ -4,6 +4,7 @@ import type { YearSummary } from '../../core/model/year-summary'
 import {
   CARD_HEIGHT,
   CARD_WIDTH,
+  CARD_STAGE_NUMERAL,
   CardColours,
   bibCardGeometry,
   bibCardNumberSize,
@@ -144,6 +145,9 @@ function fullSeason(): YearSummary {
   const summary = buildYearSummary([])
   return {
     ...summary,
+    // The season's own totals: the sticker reads `totals.everests`, so the
+    // fixture carries the equivalence the card would stamp.
+    totals: { ...summary.totals, everests: 3.045 },
     bibCard: {
       number: 3214,
       distanceKm: 3214.4,
@@ -200,6 +204,37 @@ describe('bib card renderer', () => {
     }
     expect(textColours).toContain(CardColours.ink)
     expect(textColours).toContain(CardColours.labelInk)
+  })
+
+  it('prints the spine head: the stage numeral and the season label on the same baseline', () => {
+    const surface = new RecordingSurface()
+    drawBibCard(surface, { summary: fullSeason(), name: 'Lucía M.' })
+
+    const texts = surface.texts().map((text) => text.text)
+    expect(texts).toContain('08')
+    expect(texts).toContain(CARD_STAGE_NUMERAL)
+    expect(texts).toContain('DORSAL · TEMPORADA 2026')
+  })
+
+  it('stamps the everest equivalence as the one accent sticker', () => {
+    const surface = new RecordingSurface()
+    drawBibCard(surface, { summary: fullSeason(), name: 'Lucía M.' })
+
+    const texts = surface.texts().map((text) => text.text)
+    expect(texts).toContain('3× EVEREST')
+    expect(texts.filter((text) => text === '3× EVEREST').length).toBe(1)
+  })
+
+  it('omits the sticker when the season cannot prove the equivalence', () => {
+    const surface = new RecordingSurface()
+    const season = fullSeason()
+    const summary: YearSummary = {
+      ...season,
+      totals: { ...season.totals, everests: 0 },
+    }
+    drawBibCard(surface, { summary, name: null })
+
+    expect(surface.texts().map((text) => text.text)).not.toContain('3× EVEREST')
   })
 
   it('writes the bib number and the typed name onto the card', () => {

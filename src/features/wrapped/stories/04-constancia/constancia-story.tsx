@@ -1,6 +1,7 @@
 import { formatNumber } from '../../../../shared/format'
 import { t } from '../../../../shared/i18n'
 import type { YearSummary } from '../../../../core/model/year-summary'
+import { PlateHead, PlateTitle, StoryPlate } from '../story-plate'
 
 const LEVEL_CLASSES = ['bg-heat-1', 'bg-heat-2', 'bg-heat-3', 'bg-heat-4'] as const
 
@@ -14,12 +15,13 @@ function streakRangeText(from: { month: number; day: number }, to: { month: numb
 }
 
 /**
- * Story 04 (BRIEF §6): the daily heatmap in four quartile levels, the longest
- * streak with its date range and the favourite weekday, all from
- * `summary.consistency`. The grid is presentational — one `role="img"` summary
- * describes it and no cell is focusable (odd/tasks/h08-stories-01-04.md,
- * decision 3); the legend names the levels so colour never carries the
- * information alone.
+ * Story 04 (BRIEF §6), on its bone plate: the daily heatmap in four quartile
+ * levels, the longest streak with its date range and the favourite weekday, all
+ * from `summary.consistency`. The grid is presentational — one `role="img"`
+ * summary describes it and no cell is focusable
+ * (odd/tasks/h08-stories-01-04.md, decision 3); the legend names the levels so
+ * colour never carries the information alone. The streak and weekday panels are
+ * note blocks of the plate.
  */
 export function ConstanciaStory({ summary }: { summary: YearSummary }) {
   const copy = t.stories['04-constancia']
@@ -45,19 +47,22 @@ export function ConstanciaStory({ summary }: { summary: YearSummary }) {
   const weeks = consistency.favoriteWeekday.weeks
 
   return (
-    <div data-testid="story-04-constancia" className="flex w-full flex-col gap-5">
-      <p className="font-mono text-xs uppercase tracking-[0.14em] text-fg-subtle">{copy.title}</p>
+    <StoryPlate testId="story-04-constancia" className="gap-3">
+      <PlateHead number="04" />
+      <PlateTitle>{copy.title}</PlateTitle>
 
       <div className="flex flex-col gap-1">
-        <span className="text-[17px] text-fg-muted">{copy.intro}</span>
+        <span className="text-[13.5px] text-body-ink [text-wrap:pretty]">{copy.intro}</span>
         <span className="flex items-baseline gap-2.5">
           <span
             data-testid="constancia-active-days"
-            className="font-display text-8xl leading-none text-accent-text"
+            className="font-display text-[clamp(56px,17vw,76px)] leading-none text-accent-on-bone"
           >
             {formatNumber(summary.totals.activeDays)}
           </span>
-          <span className="font-display text-2xl uppercase">{copy.activeDaysSuffix}</span>
+          <span className="font-display text-[22px] uppercase leading-none">
+            {copy.activeDaysSuffix}
+          </span>
         </span>
       </div>
 
@@ -69,7 +74,7 @@ export function ConstanciaStory({ summary }: { summary: YearSummary }) {
       >
         {cellsByMonth.map((row, monthIndex) => (
           <div key={monthIndex} className="flex items-center gap-2">
-            <span className="w-8 font-mono text-[10px] tracking-[0.08em] text-fg-subtle">
+            <span className="w-8 font-mono text-[10px] tracking-[0.08em] text-label-ink">
               {t.monthsShort[monthIndex] ?? ''}
             </span>
             <div className="grid flex-1 grid-cols-[repeat(31,minmax(0,1fr))] gap-[2px]">
@@ -90,7 +95,7 @@ export function ConstanciaStory({ summary }: { summary: YearSummary }) {
         ))}
         <div
           data-testid="constancia-legend"
-          className="mt-1 flex items-center gap-1.5 self-end text-[11px] text-fg-subtle"
+          className="mt-1 flex items-center gap-1.5 self-end text-[11px] text-label-ink"
         >
           <span>{copy.legendLess}</span>
           <span aria-hidden="true" className="flex items-center gap-1">
@@ -102,13 +107,13 @@ export function ConstanciaStory({ summary }: { summary: YearSummary }) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-2.5">
-        <div className="flex items-center gap-3 rounded-panel bg-surface p-4">
-          <span className="min-w-14 font-display text-4xl leading-none text-accent-text">
+      <div className="mt-auto flex flex-col gap-2.5">
+        <div className="flex items-center gap-3 rounded-[10px] bg-bone-muted px-3 py-2.5">
+          <span className="min-w-14 font-display text-[27px] leading-none text-accent-on-bone">
             {formatNumber(streak.days)}
           </span>
-          <span className="text-sm leading-snug text-fg-muted">
-            <strong className="text-fg">
+          <span className="text-[13.5px] leading-snug text-body-ink [text-wrap:pretty]">
+            <strong className="font-semibold text-text-ink">
               {streak.days} {streak.days === 1 ? copy.streakUnitSingular : copy.streakUnit}
               {streak.from !== null && streak.to !== null ? ',' : '.'}
             </strong>{' '}
@@ -118,17 +123,17 @@ export function ConstanciaStory({ summary }: { summary: YearSummary }) {
             {copy.streakTail}
           </span>
         </div>
-        <div className="flex items-center gap-3 rounded-panel bg-surface p-4">
-          <span className="min-w-14 font-display text-4xl leading-none text-accent-text">
+        <div className="flex items-center gap-3 rounded-[10px] bg-bone-muted px-3 py-2.5">
+          <span className="min-w-14 font-display text-[27px] leading-none text-accent-on-bone">
             {formatNumber(weeks)}
           </span>
-          <span className="text-sm leading-snug text-fg-muted">
-            <strong className="text-fg">{weekday}</strong> {copy.weekdayLead}{' '}
+          <span className="text-[13.5px] leading-snug text-body-ink [text-wrap:pretty]">
+            <strong className="font-semibold text-text-ink">{weekday}</strong> {copy.weekdayLead}{' '}
             <span data-testid="constancia-favorite-weekday-weeks">{formatNumber(weeks)}</span>{' '}
             {weeks === 1 ? copy.weekSingular : copy.weekPlural}.
           </span>
         </div>
       </div>
-    </div>
+    </StoryPlate>
   )
 }
